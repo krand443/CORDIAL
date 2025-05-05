@@ -22,7 +22,7 @@ class _LoginPageState extends State<LoginPage> {
       // ログイン成功時、ユーザー情報を保存し、ホーム画面に遷移
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MyHomePage(title: 'ログイン成功後')), // ログイン後にホーム画面に遷移
+        MaterialPageRoute(builder: (context) => const MyHomePage()), // ログイン後にホーム画面に遷移
       );
     } else {
       // ログイン失敗時にエラーメッセージを表示
