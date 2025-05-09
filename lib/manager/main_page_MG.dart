@@ -1,0 +1,89 @@
+import 'package:flutter/material.dart';
+import 'package:navigator_scope/navigator_scope.dart';
+import '../screens/home_page.dart';
+import '../screens/profile_page.dart';
+import '../widgets/under_bar.dart';
+
+//ログイン後の画面を管理するクラス
+class MainPage extends StatefulWidget {
+  const MainPage({super.key});
+
+  @override
+  State<MainPage> createState() => MainPageState();
+}
+
+class MainPageState extends State<MainPage> {
+  //　現在選択されているタブのインデックス（0: home, 1: profile）
+  int currentTab = 0;
+
+  // ナビゲーションバーに表示するタブの情報
+  final tabs = const [
+    NavigationDestination(
+      icon: Icon(Icons.home), // 検索アイコン
+      label: 'HOME', // タブのラベル
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.person), // カートアイコン
+      label: 'PROFILE', // タブのラベル
+    ),
+  ];
+
+  //各タブに対応する Navigator のキー
+  //これにより、各タブが独立したナビゲーションスタックを持てるようになる。
+  final navigatorKeys = [
+    GlobalKey<NavigatorState>(debugLabel: 'HOME Tab'),
+    GlobalKey<NavigatorState>(debugLabel: 'PROFILE Tab'),
+  ];
+
+  //現在表示中のタブに対応する Navigator を取得
+  NavigatorState get currentNavigator =>
+      navigatorKeys[currentTab].currentState!;
+
+  //タブが選択されたときの処理
+  void onTabSelected(int tab) {
+    if (tab == currentTab && currentNavigator.canPop()) {
+      // 同じタブが再度タップされた場合、
+      // そのタブ内のルートスタックを一番上（最初の画面）まで戻す。
+      currentNavigator.popUntil((route) => route.isFirst);
+    } else {
+      // 違うタブが選択されたら、そのタブに切り替える。
+      setState(() => currentTab = tab);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      //下部バー
+      bottomNavigationBar:SizedBox(
+        height: 60.0,
+        child: UnderBar(
+          currentIndex: currentTab,
+          onTap: (index) => setState(() => currentTab = index),),
+      ),
+
+      //ボディ部に選択されたタブの内容（NavigatorScope）を表示
+      body: NavigatorScope(
+        currentDestination: currentTab,     // どのタブが選ばれているかを通知
+        destinationCount: tabs.length,      // タブの総数（ここでは2つ：Search と Cart）
+        destinationBuilder: (context, index) {
+          // 各タブに NestedNavigator（内部専用ナビゲーター）を構築
+          return NestedNavigator(
+            navigatorKey: navigatorKeys[index], // 各タブ固有の navigatorKey を指定
+
+            builder: (context) {
+              switch (index) {
+                case 0:
+                  return const MyHomePage();  // タブ0のとき
+                case 1:
+                  return const ProfilePage();    // タブ1のとき
+                default:
+                  return const MyHomePage(); // 万が一
+              }
+            },
+          );
+        },
+      ),
+    );
+  }
+}

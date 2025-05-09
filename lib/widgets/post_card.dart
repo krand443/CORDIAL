@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import '../function/make_link_text.dart';
+import '../screens/post_page.dart';
 
 //投稿のカードを生成するクラス
 class PostCard extends StatelessWidget {
   final String postId;
 
-  const PostCard({super.key,required this.postId});
+  //画面遷移を有効にするか否か
+  final bool transition;
+
+  const PostCard({super.key,
+    required this.postId,
+    this.transition = true,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Colors.white, // ← 背景色をここで指定
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
@@ -17,8 +25,29 @@ class PostCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
+          //もしtransitionが有効化されてなければ、タップしても画面遷移しない
+          if(!transition)return;
           // タップ時の処理（デバッグ出力）
           print("投稿タップ: $postId");
+          //投稿を押したときはその投稿の詳細ページに飛ぶ
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              opaque: false, // 透明な背景にする
+              transitionDuration: const Duration(milliseconds: 200), // アニメーションの時間を指定
+              pageBuilder: (context, animation, secondaryAnimation) => const PostPage(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                // スライドインアニメーション
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1.0, 0.0), // 右から登場
+                    end: Offset.zero,               // 画面中央へ
+                  ).animate(animation),
+                  child: child,
+                );
+              },
+            ),
+          );
         },
         child: Padding(
           padding: const EdgeInsets.all(12.0),

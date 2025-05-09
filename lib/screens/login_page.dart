@@ -50,12 +50,12 @@ class _LoginPageState extends State<LoginPage> {
         centerTitle: true,
         elevation: 0, // アプリバーの影を消す
       ),
-      backgroundColor: Colors.black, // 背景を黒に設定
+      backgroundColor: Colors.lightGreen, // 背景を黒に設定
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0), // 横幅の余白を追加
           child: Card(
-            color: Colors.black, // カード自体の背景色を黒に設定
+            color: Colors.white, // カード自体の背景色を黒に設定
             elevation: 10, // 影の深さ
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20), // 角を丸く
@@ -69,8 +69,8 @@ class _LoginPageState extends State<LoginPage> {
                   _buildTextField(
                     controller: _usernameController,
                     label: 'ユーザー名',
-                    textColor: Colors.white,
-                    labelColor: Colors.white70,
+                    textColor: Colors.black,
+                    labelColor: Colors.grey,
                   ),
                   const SizedBox(height: 16), // 入力フィールド間に余白
 
@@ -79,8 +79,8 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _passwordController,
                     label: 'パスワード',
                     obscureText: true,
-                    textColor: Colors.white,
-                    labelColor: Colors.white70,
+                    textColor: Colors.black,
+                    labelColor: Colors.grey,
                   ),
                   const SizedBox(height: 24), // 入力フィールドとボタンの間に余白
 
@@ -159,7 +159,7 @@ class _LoginPageState extends State<LoginPage> {
       },
       child: const Text(
         'パスワードを忘れた場合',
-        style: TextStyle(color: Colors.white),
+        style: TextStyle(color: Colors.grey),
       ),
     );
   }

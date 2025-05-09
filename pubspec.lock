@@ -136,6 +136,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.11.0"
+  navigator_scope:
+    dependency: "direct main"
+    description:
+      name: navigator_scope
+      sha256: efe23b1ab2ca15d88a14ce6c5578e48706a105b14e935111bf6668c364618fdc
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   path:
     dependency: transitive
     description:

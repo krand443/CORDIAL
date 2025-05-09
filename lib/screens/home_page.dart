@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cordial/widgets/under_bar.dart';
 import 'package:cordial/widgets/post_card.dart';
-import 'package:cordial/function/make_link_text.dart';
-
 
 // アプリのホーム画面を表すStatefulWidget（状態を持つウィジェット）
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
-
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -31,7 +28,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-
   // 画面を描画するbuildメソッド（Flutterフレームワークが呼び出す）
   @override
   Widget build(BuildContext context) {
@@ -45,23 +41,17 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
 
       // 投稿一覧（縦スクロール可能なListViewで構成）
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 0), // 上下に余白を0
-        itemCount: _posts.length, // 投稿の数を指定（動的に変わる）
-        itemBuilder: (context, index) {
-          // 各投稿をカード形式で表示
-          return PostCard(postId: _posts[index]);
-        },
+      body: Container(
+        color: Colors.grey.shade300,
+        child: ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 0), // 上下に余白を0
+          itemCount: _posts.length, // 投稿の数を指定（動的に変わる）
+          itemBuilder: (context, index) {
+            // 各投稿をカード形式で表示
+            return PostCard(postId: _posts[index]);
+          },
+        ),
       ),
-
-      // FABとBottomAppBarを合体させたウィジェットを配置
-      bottomNavigationBar: const SizedBox(
-        height: 80, // Stackぶん余裕を持たせる
-        child: UnderBar(),
-      ),
-
-      // 下部に表示されるBottomAppBar
-
     );
   }
 }

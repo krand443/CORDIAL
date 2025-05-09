@@ -1,35 +1,16 @@
 import 'package:flutter/material.dart';
-import '../screens/home_page.dart'; // ホーム画面ウィジェットを読み込む
-import '../screens/profile_page.dart'; // プロフィールを読み込む
 
-// 下部バーのウィジット
+import '../screens/make_post_page.dart';
+
 class UnderBar extends StatelessWidget {
+  final int currentIndex;
+  final void Function(int) onTap;
 
-  const UnderBar({super.key});
-
-  //プロフィールを開く
-  void _openProfile(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
-        transitionDuration: Duration.zero, // アニメーションなし
-        reverseTransitionDuration: Duration.zero, // 逆方向のアニメーションもなし
-      ),
-    );
-  }
-
-  void _openHome(BuildContext context)
-  {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context,animation, secondaryAnimation) => const MyHomePage(),
-        transitionDuration: Duration.zero, // アニメーションなし
-        reverseTransitionDuration: Duration.zero, // 逆方向のアニメーションもなし
-      ),
-    );
-  }
+  const UnderBar({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,38 +18,60 @@ class UnderBar extends StatelessWidget {
       alignment: Alignment.bottomCenter,
       children: [
         BottomAppBar(
-          color: Colors.white38, // 透明感を出す
+          color: Colors.white38,
           shape: const CircularNotchedRectangle(),
           notchMargin: 6.0,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 35.0),
-            height: 60,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.home, size: 45),
-                  onPressed: () {
-                    // ホームボタン押下時の処理
-                    _openHome(context);
-                  },
+                  padding: const EdgeInsets.only(left: 20,right: 20),
+                  icon: Icon(
+                    Icons.home,
+                    size: 43,
+                    color: currentIndex == 0 ? Colors.blue : Colors.black,
+                  ),
+                  onPressed: () => onTap(0),
                 ),
+                const SizedBox(width: 40.0),//中央余白
                 IconButton(
-                  icon: const Icon(Icons.person, size: 45),
-                  onPressed: () {
-                    // プロフィールボタン押下時の処理
-                    _openProfile(context);
-                  },
+                  padding: const EdgeInsets.only(left: 20,right: 20),
+                  icon: Icon(
+                    Icons.person,
+                    size: 43,
+                    color: currentIndex == 1 ? Colors.blue : Colors.black,
+                  ),
+                  onPressed: () => onTap(1),
                 ),
               ],
             ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(bottom: 13),
+          padding: const EdgeInsets.only(bottom: 0),
           child: FloatingActionButton(
             tooltip: '新しい投稿',
-            onPressed: () {  },
+            onPressed: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  opaque: false, // 透明な背景にする
+                  transitionDuration: const Duration(milliseconds: 200), // アニメーションの時間を指定
+                  pageBuilder: (context, animation, secondaryAnimation) => const MakePostPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    // スライドインアニメーション
+                    return SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0.0, 1.0), // 下から登場
+                        end: Offset.zero,               // 画面中央へ
+                      ).animate(animation),
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            },
             child: const Icon(Icons.add),
           ),
         ),
