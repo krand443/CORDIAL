@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'home_page.dart'; // ホーム画面ウィジェットを読み込む
+import '../manager/main_page_MG.dart';
+import 'package:cordial/function/signin.dart';
+import '../function/database.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,22 +15,52 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // 仮のログイン処理
-  void _login() {
+  // ログイン処理
+  Future<void> _login() async {
+    //両方のTextを取得
     final String username = _usernameController.text;
     final String password = _passwordController.text;
 
-    //認証システムをここに追加
-    if (username == 'user' && password == 'password') {
-      // ログイン成功時、ユーザー情報を保存し、ホーム画面に遷移
+    try {
+      // メール/パスワードでログイン
+      await SignIn.mail(username, password);
+      final User? currentUser = SignIn.currentUser;
+      if (currentUser != null)
+        print("ログインしました　${currentUser.email} , ${currentUser.uid}");
+
+      //画面遷移
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MyHomePage()), // ログイン後にホーム画面に遷移
+        MaterialPageRoute(
+            builder: (context) => const MainPage()), // ログイン後にホーム画面に遷移
       );
-    } else {
+    } catch (e) {
+      print(e);
       // ログイン失敗時にエラーメッセージを表示
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('ユーザー名またはパスワードが間違っています')),
+      );
+    }
+  }
+
+  Future<void> _loginGoogle() async {
+    try {
+      //googleアカウントを使用してサインイン
+      await SignIn.google();
+
+      final User? currentUser = SignIn.currentUser;
+      if (currentUser != null)
+        print("ログインしました　${currentUser.email} , ${currentUser.uid}");
+
+      //画面遷移
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) => const MainPage()), // ログイン後にホーム画面に遷移
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ログインに失敗しました')),
       );
     }
   }
@@ -37,63 +70,87 @@ class _LoginPageState extends State<LoginPage> {
     // ログイン画面のUI構築
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent, // アプリバーを透明にして背景を見せる
+        backgroundColor:
+            Theme.of(context).colorScheme.inversePrimary, // アプリバーを透明にして背景を見せる
         title: const Text(
           'ログイン',
           style: TextStyle(
             fontFamily: 'Roboto', // モダンなフォント
-            fontSize: 28,
             fontWeight: FontWeight.w600, // 太めのフォントでモダンな印象
-            color: Colors.white, // タイトルを白に変更
+            color: Colors.black, // タイトルを白に変更
           ),
         ),
         centerTitle: true,
         elevation: 0, // アプリバーの影を消す
       ),
-      backgroundColor: Colors.lightGreen, // 背景を黒に設定
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0), // 横幅の余白を追加
-          child: Card(
-            color: Colors.white, // カード自体の背景色を黒に設定
-            elevation: 10, // 影の深さ
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20), // 角を丸く
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // ユーザー名入力フィールド
-                  _buildTextField(
-                    controller: _usernameController,
-                    label: 'ユーザー名',
-                    textColor: Colors.black,
-                    labelColor: Colors.grey,
-                  ),
-                  const SizedBox(height: 16), // 入力フィールド間に余白
-
-                  // パスワード入力フィールド（入力内容が見えないように設定）
-                  _buildTextField(
-                    controller: _passwordController,
-                    label: 'パスワード',
-                    obscureText: true,
-                    textColor: Colors.black,
-                    labelColor: Colors.grey,
-                  ),
-                  const SizedBox(height: 24), // 入力フィールドとボタンの間に余白
-
-                  // ログインボタン
-                  _buildLoginButton(),
-                  const SizedBox(height: 16), // ボタンの下に余白
-                  _buildForgotPasswordLink(),
-                ],
+      backgroundColor: Colors.white, // 背景
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Card(
+                      color: Colors.white,
+                      elevation: 10,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildTextField(
+                              controller: _usernameController,
+                              label: 'ユーザー名',
+                              textColor: Colors.black,
+                              labelColor: Colors.grey,
+                            ),
+                            const SizedBox(height: 16),
+                            _buildTextField(
+                              controller: _passwordController,
+                              label: 'パスワード',
+                              obscureText: true,
+                              textColor: Colors.black,
+                              labelColor: Colors.grey,
+                            ),
+                            const SizedBox(height: 24),
+                            _buildLoginButton(),
+                            _buildForgotPasswordLink(),
+                            const SizedBox(height: 16),
+                            InkWell(
+                              borderRadius: BorderRadius.circular(30),
+                              onTap: _loginGoogle,
+                              child: Ink(
+                                width: 180,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  image: const DecorationImage(
+                                    image: AssetImage('assets/google_logo.png'),
+                                    fit: BoxFit.contain,
+                                  ),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
+
     );
   }
 
@@ -111,15 +168,18 @@ class _LoginPageState extends State<LoginPage> {
       style: TextStyle(fontSize: 16, color: textColor), // 文字色を指定
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: labelColor), // ラベルの色
+        labelStyle: TextStyle(color: labelColor),
+        // ラベルの色
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12), // 角を丸く
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.white), // フォーカス時のボーダー色を白に変更
+          borderSide:
+              const BorderSide(color: Colors.white), // フォーカス時のボーダー色を白に変更
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16), // 内側に余白を追加
+        contentPadding: const EdgeInsets.symmetric(
+            vertical: 12, horizontal: 16), // 内側に余白を追加
       ),
     );
   }
@@ -129,7 +189,7 @@ class _LoginPageState extends State<LoginPage> {
     return ElevatedButton(
       onPressed: _login,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.deepPurpleAccent, // ボタンの色
+        backgroundColor: Colors.blue, // ボタンの色
         padding: const EdgeInsets.symmetric(vertical: 16), // ボタンの高さを調整
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16), // ボタンの角を丸く

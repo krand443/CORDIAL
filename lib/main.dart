@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'screens/home_page.dart'; // ホーム画面ウィジェットを読み込む
 import 'screens/login_page.dart';
-import 'screens/profile_page.dart';
-import 'manager/main_page_MG.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   // Flutterアプリの実行開始地点
   runApp(const MyApp());
 }
@@ -23,7 +27,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       // アプリ起動時に表示されるホーム画面
-      home: const MainPage(),
+      home: const LoginPage(),
     );
   }
 }

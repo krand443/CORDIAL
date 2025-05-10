@@ -3,30 +3,21 @@ import 'package:cordial/widgets/under_bar.dart';
 import 'package:cordial/widgets/post_card.dart';
 
 // アプリのホーム画面を表すStatefulWidget（状態を持つウィジェット）
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 // 上記のStatefulWidgetに対応する状態クラス
-class _MyHomePageState extends State<MyHomePage> {
+class _HomePageState extends State<HomePage> {
   // 投稿データを格納するリスト（ダミーデータを3件初期化）
   final List<String> _posts = [
     "こんにちは！FlutterでTwitter風アプリ作ってます。",
     "この投稿はダミーデータです。\njkasdhjakhsjashassakaskjk",
     "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
   ];
-
-  // 投稿追加処理（FloatingActionButtonが押されたときに実行）
-  void _addPost() {
-    setState(() {
-      // 投稿リストの先頭に新しい投稿を挿入（最新が上に来る）
-      _posts.insert(0, "新しい投稿が追加されました！${DateTime.now()}");
-      // setStateでUIを再描画させる
-    });
-  }
 
   // 画面を描画するbuildメソッド（Flutterフレームワークが呼び出す）
   @override

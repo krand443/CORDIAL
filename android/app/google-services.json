@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "592077403906",
+    "project_id": "projectcordial-596bd",
+    "storage_bucket": "projectcordial-596bd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592077403906:android:91d790f1463d62b7f3741b",
+        "android_client_info": {
+          "package_name": "ruten.cordial.cordial"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "592077403906-jkcorqhiq0c5iv7cb419jt6677lipj71.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ruten.cordial.cordial",
+            "certificate_hash": "daa04cb404369d9ada15aadc501ee8bda1001ebd"
+          }
+        },
+        {
+          "client_id": "592077403906-dl6rdprju5827uqhmpt8anqosqrfq0sb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALQmvHsWtSFgk79UPFEYzh99XKWTV7rE8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "592077403906-dl6rdprju5827uqhmpt8anqosqrfq0sb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "592077403906-q56o4a4cmkt7i0kk2r0fk5nugfe2tdak.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "ruten.cordial.cordial"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

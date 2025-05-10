@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "592077403906",
+    "project_id": "projectcordial-596bd",
+    "storage_bucket": "projectcordial-596bd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592077403906:android:91d790f1463d62b7f3741b",
+        "android_client_info": {
+          "package_name": "ruten.cordial.cordial"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "592077403906-dl6rdprju5827uqhmpt8anqosqrfq0sb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALQmvHsWtSFgk79UPFEYzh99XKWTV7rE8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "592077403906-dl6rdprju5827uqhmpt8anqosqrfq0sb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

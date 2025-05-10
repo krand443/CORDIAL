@@ -74,11 +74,11 @@ class MainPageState extends State<MainPage> {
             builder: (context) {
               switch (index) {
                 case 0:
-                  return const MyHomePage();  // タブ0のとき
+                  return const HomePage();  // タブ0のとき
                 case 1:
                   return const ProfilePage();    // タブ1のとき
                 default:
-                  return const MyHomePage(); // 万が一
+                  return const HomePage(); // 万が一
               }
             },
           );

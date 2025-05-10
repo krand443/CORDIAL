@@ -134,7 +134,7 @@ class ProfilePageState extends State<ProfilePage> {
                               children: [
                                 // ユーザー名（長くても横スクロールで対応）
                                 const Text(
-                                  "ユーザー名aaaaaaaaaaaaaaaaaaaaskoasaaaaa",
+                                  "ユーザー名",
                                   style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
@@ -144,9 +144,9 @@ class ProfilePageState extends State<ProfilePage> {
                                 const SizedBox(height: 4),
                                 // ユーザーID
                                 const Text(
-                                  "@0123456789012345",
+                                  "@kEott4gBkeFGqtrBOsyluJgOQAD1",
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 8,
                                     color: Colors.black54,
                                   ),
                                 ),
