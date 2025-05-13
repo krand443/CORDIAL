@@ -134,7 +134,7 @@ class ProfilePageState extends State<ProfilePage> {
                               children: [
                                 // ユーザー名（長くても横スクロールで対応）
                                 const Text(
-                                  "ユーザー名",
+                                  "ユーザー名ユーザー名ユーザー名ユーザー名",
                                   style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,

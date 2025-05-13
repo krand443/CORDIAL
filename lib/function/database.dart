@@ -19,4 +19,26 @@ class Database {
     }
   }
 
+  //ユーザー名が存在しているかを確認する
+  static Future<bool> isUserName() async
+  {
+    try{
+      var result = await FirebaseFirestore.instance
+          .collection('users') // コレクションID
+          .doc(SignIn.currentUser?.uid)
+          .get(); //ドキュメントID
+
+      var data = result.data();
+
+      //nullならfalse
+      bool isUser = data?['name'] != null ? true : false;
+
+      return isUser;
+    }
+    catch(e)
+    {
+      return false;
+    }
+  }
+
 }

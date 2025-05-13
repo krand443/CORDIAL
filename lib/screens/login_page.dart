@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../manager/main_page_MG.dart';
 import 'package:cordial/function/signin.dart';
 import '../function/database.dart';
+import 'make_profile_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,7 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // ログイン処理
+  // メールでログイン処理
   Future<void> _login() async {
     //両方のTextを取得
     final String username = _usernameController.text;
@@ -52,11 +53,12 @@ class _LoginPageState extends State<LoginPage> {
       if (currentUser != null)
         print("ログインしました　${currentUser.email} , ${currentUser.uid}");
 
+      bool isUserName = await Database.isUserName();
       //画面遷移
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => const MainPage()), // ログイン後にホーム画面に遷移
+            builder: (context) => isUserName ? const MainPage() : const MakeProfilePage()), // ログイン後にホーム画面に遷移
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

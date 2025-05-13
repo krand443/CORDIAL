@@ -6,7 +6,9 @@ import '../widgets/under_bar.dart';
 
 //ログイン後の画面を管理するクラス
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  const MainPage({super.key,this.selectTab = 0});
+
+  final int selectTab;
 
   @override
   State<MainPage> createState() => MainPageState();
@@ -14,7 +16,13 @@ class MainPage extends StatefulWidget {
 
 class MainPageState extends State<MainPage> {
   //　現在選択されているタブのインデックス（0: home, 1: profile）
-  int currentTab = 0;
+  late int currentTab;
+
+  @override
+  void initState() {
+    super.initState();
+    currentTab = widget.selectTab; // ← ここで受け取る
+  }
 
   // ナビゲーションバーに表示するタブの情報
   final tabs = const [
