@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../manager/main_page_MG.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:cordial/function/imageUploader.dart';
 
 class MakeProfilePage extends StatefulWidget {
   const MakeProfilePage({super.key});
@@ -17,9 +18,7 @@ class MakeProfilePageState extends State<MakeProfilePage> {
   // ギャラリーから写真を選択
   Future<void> ImagePick() async {
     final ImagePicker _picker = ImagePicker();
-
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-
     if (image != null) {
       setState(() {
         _pickImage = File(image.path);
@@ -27,8 +26,19 @@ class MakeProfilePageState extends State<MakeProfilePage> {
     }
   }
 
+  //デフォルトのアイコン
+  AssetImage defaultIcon = const AssetImage("assets/user_default_icon.png");
+
   //確定が押されたとき
-  void pushEnter() {
+  void pushEnter() async{
+
+    int a = await ImageUploader.upload(_pickImage!,"icon");
+
+    //画像アップロード
+    if(_pickImage != null) {
+      print("けっかはっぴょーーーーーーー$a");
+    }
+
     //画面遷移
     Navigator.pushReplacement(
       context,
@@ -72,7 +82,7 @@ class MakeProfilePageState extends State<MakeProfilePage> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: () {
+                          onPressed: (){
                             if (_controller.text.isNotEmpty) {
                               pushEnter();
                             }
@@ -107,7 +117,7 @@ class MakeProfilePageState extends State<MakeProfilePage> {
                             radius: 70,
                             backgroundImage: _pickImage != null
                                 ? FileImage(_pickImage!)
-                                : const AssetImage('assets/user_default_icon.png')
+                                : defaultIcon
                                     as ImageProvider,
                           ),
                           //編集ボタン

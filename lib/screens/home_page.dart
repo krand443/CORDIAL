@@ -17,6 +17,17 @@ class _HomePageState extends State<HomePage> {
     "こんにちは！FlutterでTwitter風アプリ作ってます。",
     "この投稿はダミーデータです。\njkasdhjakhsjashassakaskjk",
     "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
+    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
+    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
+    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
+    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
+    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
+    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
+    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
+    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
+    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
+    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
+    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
   ];
 
   // 画面を描画するbuildメソッド（Flutterフレームワークが呼び出す）
