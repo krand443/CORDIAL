@@ -92,7 +92,7 @@ class MakePostPageState extends State<MakePostPage> {
                               print('投稿押された！');
                             },
                             style: TextButton.styleFrom(
-                              backgroundColor: Colors.lightGreen, // ← 背景色
+                              backgroundColor: Theme.of(context).colorScheme.inversePrimary, // ← 背景色
                               foregroundColor: Colors.white, // ← テキスト色
                               textStyle: const TextStyle(
                                 fontSize: 18, // ← フォントサイズを指定
@@ -116,7 +116,7 @@ class MakePostPageState extends State<MakePostPage> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.lightGreenAccent, // 枠線の色
+                              color: Theme.of(context).colorScheme.inversePrimary, // 枠線の色
                               width: 5, // 枠線の太さ
                             ),
                           ),

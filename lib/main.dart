@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter デモアプリ',
       theme: ThemeData(
         // アプリ全体のテーマ設定
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightGreenAccent),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrangeAccent),
         useMaterial3: true,
       ),
       // アプリ起動時に表示されるホーム画面
