@@ -17,7 +17,8 @@ class PostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.white, // ← 背景色をここで指定
+      elevation: 2,
+      color: Colors.white, // 背景色をここで指定
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
@@ -25,7 +26,7 @@ class PostCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
-          //もしtransitionが有効化されてなければ、タップしても画面遷移しない
+          //もしtransitionが無効かされてれば、タップしても画面遷移しない
           if(!transition)return;
           // タップ時の処理（デバッグ出力）
           print("投稿タップ: $postId");
@@ -72,6 +73,14 @@ class PostCard extends StatelessWidget {
                     const Text(
                       'ユーザーname',
                       style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const Text(
+                      '2025年5月19日 0:22:13 UTC+9',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 9
+                      ),
                     ),
                     const SizedBox(height: 4),
 

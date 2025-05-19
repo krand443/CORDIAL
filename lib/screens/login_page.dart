@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       // メール/パスワードでログイン
       await SignIn.mail(username, password);
-      final User? currentUser = SignIn.currentUser;
+      final User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null)
         print("ログインしました　${currentUser.email} , ${currentUser.uid}");
 
@@ -44,12 +44,13 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  //Googleでサインイン
   Future<void> _loginGoogle() async {
     try {
       //googleアカウントを使用してサインイン
       await SignIn.google();
 
-      final User? currentUser = SignIn.currentUser;
+      final User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null)
         print("ログインしました　${currentUser.email} , ${currentUser.uid}");
 
@@ -65,6 +66,19 @@ class _LoginPageState extends State<LoginPage> {
         const SnackBar(content: Text('ログインに失敗しました')),
       );
     }
+  }
+
+  // パスワードを忘れた場合のリンク
+  Widget _buildForgotPasswordLink() {
+    return TextButton(
+      onPressed: () {
+        // パスワードリセットの処理をここに追加
+      },
+      child: const Text(
+        'パスワードを忘れた場合',
+        style: TextStyle(color: Colors.grey),
+      ),
+    );
   }
 
   @override
@@ -209,19 +223,6 @@ class _LoginPageState extends State<LoginPage> {
           ),
           textAlign: TextAlign.center, // テキストを中央揃え
         ),
-      ),
-    );
-  }
-
-  // パスワードを忘れた場合のリンク
-  Widget _buildForgotPasswordLink() {
-    return TextButton(
-      onPressed: () {
-        // パスワードリセットの処理をここに追加
-      },
-      child: const Text(
-        'パスワードを忘れた場合',
-        style: TextStyle(color: Colors.grey),
       ),
     );
   }

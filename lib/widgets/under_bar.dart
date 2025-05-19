@@ -17,36 +17,29 @@ class UnderBar extends StatelessWidget {
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
-        BottomAppBar(
-          color: Colors.white38,
-          shape: const CircularNotchedRectangle(),
-          notchMargin: 6.0,
-          child: Container(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
-                  padding: const EdgeInsets.only(left: 20,right: 20),
-                  icon: Icon(
-                    Icons.home,
-                    size: 43,
-                    color: currentIndex == 0 ? Colors.blue : Colors.black,
-                  ),
-                  onPressed: () => onTap(0),
-                ),
-                const SizedBox(width: 40.0),//中央余白
-                IconButton(
-                  padding: const EdgeInsets.only(left: 20,right: 20),
-                  icon: Icon(
-                    Icons.person,
-                    size: 43,
-                    color: currentIndex == 1 ? Colors.blue : Colors.black,
-                  ),
-                  onPressed: () => onTap(1),
-                ),
-              ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              padding: const EdgeInsets.only(left: 30,right: 30),
+              icon: Icon(
+                Icons.home,
+                size: 40,
+                color: currentIndex == 0 ? Colors.blue : Colors.black,
+              ),
+              onPressed: () => onTap(0),
             ),
-          ),
+            const SizedBox(width: 10.0),//中央余白
+            IconButton(
+              padding: const EdgeInsets.only(left: 30,right: 30),
+              icon: Icon(
+                Icons.person,
+                size: 40,
+                color: currentIndex == 1 ? Colors.blue : Colors.black,
+              ),
+              onPressed: () => onTap(1),
+            ),
+          ],
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 0),

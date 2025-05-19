@@ -5,10 +5,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class SignIn
 {
-  // ログインしたユーザー情報を保持する変数
-  static User? _user;
-  static User? get currentUser => _user;//外部読み取り用
-
   static final GoogleSignIn? _googleSignIn = GoogleSignIn(scopes: [
     // 例えば、Google Calendarの情報を操作するには、ここに範囲を記載する
     // https://www.googleapis.com/auth/calendar.readonly,
@@ -21,7 +17,7 @@ class SignIn
   //メールでログイン
   static Future<void> mail(String username,String password) async
   {
-    _user = (await _auth.signInWithEmailAndPassword(email: username, password: password)).user;
+    await _auth.signInWithEmailAndPassword(email: username, password: password);
 
   }
 
@@ -47,7 +43,6 @@ class SignIn
 
       // Firebaseに認証情報を登録
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      _user = userCredential.user;
 
       return 0;
 

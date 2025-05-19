@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:navigator_scope/navigator_scope.dart';
 import '../screens/home_page.dart';
@@ -21,7 +22,7 @@ class MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    currentTab = widget.selectTab; // ← ここで受け取る
+    currentTab = widget.selectTab; //ここで受け取る
   }
 
   // ナビゲーションバーに表示するタブの情報
@@ -64,10 +65,10 @@ class MainPageState extends State<MainPage> {
     return Scaffold(
       //下部バー
       bottomNavigationBar:SizedBox(
-        height: 60.0,
+        height: 50.0,
         child: UnderBar(
           currentIndex: currentTab,
-          onTap: (index) => setState(() => currentTab = index),),
+          onTap: onTabSelected),
       ),
 
       //ボディ部に選択されたタブの内容（NavigatorScope）を表示
@@ -84,7 +85,7 @@ class MainPageState extends State<MainPage> {
                 case 0:
                   return const HomePage();  // タブ0のとき
                 case 1:
-                  return const ProfilePage();    // タブ1のとき
+                  return ProfilePage(userId: FirebaseAuth.instance.currentUser!.uid,);    // タブ1のとき
                 default:
                   return const HomePage(); // 万が一
               }

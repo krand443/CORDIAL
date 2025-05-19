@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:cordial/function/database.dart';
 import 'dart:math' as math;
 import 'package:cordial/widgets/under_bar.dart';
 import 'package:cordial/widgets/post_card.dart';
@@ -13,6 +14,16 @@ class MakePostPage extends StatefulWidget {
 }
 
 class MakePostPageState extends State<MakePostPage> {
+
+  final TextEditingController _textController = TextEditingController();
+
+  //投稿ボタンを押したときに呼ばれる処理
+  void post(){
+    Database.addPost(_textController.text);//ポスト追加
+    setState(() => _isClosing = true); // 画面を閉じるフラグを立てる
+    Navigator.of(context).pop(); // 現在の画面を閉じる
+  }
+
   double _dragOffset = 0.0; // ドラッグした距離を記録する変数
   bool _isClosing = false; // 画面を閉じるフラグ
 
@@ -89,7 +100,7 @@ class MakePostPageState extends State<MakePostPage> {
                           padding: const EdgeInsets.only(top: 0, right: 0),
                           child: TextButton(
                             onPressed: () {
-                              print('投稿押された！');
+                              post();
                             },
                             style: TextButton.styleFrom(
                               backgroundColor: Theme.of(context).colorScheme.inversePrimary, // ← 背景色
@@ -135,15 +146,14 @@ class MakePostPageState extends State<MakePostPage> {
                         children: [
                           const CircleAvatar(
                             radius: 30,
-                            backgroundImage: NetworkImage(
-                              'https://videos.openai.com/vg-assets/assets%2Ftask_01jtqgenjbe9wrhdy83zwkant4%2F1746693299_img_0.webp?st=2025-05-08T06%3A45%3A36Z&se=2025-05-14T07%3A45%3A36Z&sks=b&skt=2025-05-08T06%3A45%3A36Z&ske=2025-05-14T07%3A45%3A36Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=SO%2F7eryTw%2FY2lKXRU%2BEZxjckSz%2BthwsLadK2AcxXtBE%3D&az=oaivgprodscus',
-                            ),
+                            backgroundImage: AssetImage("assets/user_default_icon.png"),
                           ),
                           const SizedBox(width: 8),
                           Flexible(
                             child: TextField(
                               autofocus: true, // ← ウィジェット表示時に自動でフォーカス
                               maxLines: null, // ← 改行を許可する
+                              controller: _textController,
                               keyboardType: TextInputType.multiline,
                               decoration: InputDecoration(
                                 // 入力欄に表示するヒントメッセージを生成

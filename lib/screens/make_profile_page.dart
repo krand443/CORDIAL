@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../manager/main_page_MG.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:cordial/function/imageUploader.dart';
+import 'package:cordial/function/imageMG.dart';
+import 'package:cordial/function/database.dart';
 
 class MakeProfilePage extends StatefulWidget {
   const MakeProfilePage({super.key});
@@ -30,13 +31,18 @@ class MakeProfilePageState extends State<MakeProfilePage> {
   AssetImage defaultIcon = const AssetImage("assets/user_default_icon.png");
 
   //確定が押されたとき
-  void pushEnter() async{
+  void pushEnter() async {
 
-    int a = await ImageUploader.upload(_pickImage!,"icon");
+    //ユーザー名を追加
+    await Database.addUser(_textController.text);
 
-    //画像アップロード
-    if(_pickImage != null) {
-      print("けっかはっぴょーーーーーーー$a");
+    //画像を追加(任意)
+    try {
+      await ImageMG.upload(_pickImage!, "icon");
+    }
+    catch(e)
+    {
+      print(e);
     }
 
     //画面遷移
@@ -47,10 +53,11 @@ class MakeProfilePageState extends State<MakeProfilePage> {
     );
   }
 
+  //未入力を確認するためのコントローラー
+  final TextEditingController _textController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    final TextEditingController _controller = TextEditingController();
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor:
@@ -79,27 +86,35 @@ class MakeProfilePageState extends State<MakeProfilePage> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       const SizedBox(height: 10),
+
+                      //完了ボタン
                       Align(
                         alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: (){
-                            if (_controller.text.isNotEmpty) {
-                              pushEnter();
-                            }
-                          },
-                          style: TextButton.styleFrom(
-                            backgroundColor: _controller.text.isNotEmpty
-                                ? Theme.of(context).colorScheme.inversePrimary
-                                : Colors.grey, // ← 背景色
-                            foregroundColor: Colors.white, // ← テキスト色
-                            textStyle: const TextStyle(
-                              fontSize: 18, // ← フォントサイズを指定
+                        child: Stack(children: [
+                          TextButton(
+                            onPressed: () {
+                              if (_textController.text.isNotEmpty) {
+                                pushEnter();
+                              }
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: _textController.text.isNotEmpty
+                                  ? Theme.of(context).colorScheme.inversePrimary
+                                  : Colors.grey, // ← 背景色
+                              foregroundColor: Colors.white, // ← テキスト色
+                              textStyle: const TextStyle(
+                                fontSize: 18, // ← フォントサイズを指定
+                              ),
                             ),
+                            child: const Text('完了→'),
                           ),
-                          child: const Text('完了→'),
-                        ),
+                          const CircularProgressIndicator(color: Colors.blue,)
+                        ]),
                       ),
+
                       const SizedBox(height: 10),
+
+                      //アイコンを表示
                       Container(
                         width: 150,
                         height: 150,
@@ -117,8 +132,7 @@ class MakeProfilePageState extends State<MakeProfilePage> {
                             radius: 70,
                             backgroundImage: _pickImage != null
                                 ? FileImage(_pickImage!)
-                                : defaultIcon
-                                    as ImageProvider,
+                                : defaultIcon as ImageProvider,
                           ),
                           //編集ボタン
                           GestureDetector(
@@ -132,16 +146,18 @@ class MakeProfilePageState extends State<MakeProfilePage> {
                           ),
                         ]),
                       ),
+
+                      //ユーザ名入力フォーム
                       TextField(
-                        controller: _controller,
+                        controller: _textController,
                         textAlign: TextAlign.center,
                         autofocus: true,
-                        // ← ウィジェット表示時に自動でフォーカス
+                        //ウィジェット表示時に自動でフォーカス
                         keyboardType: TextInputType.multiline,
                         maxLength: 20,
-                        // ← ここで文字数を制限
+                        //ここで文字数を制限
                         style: const TextStyle(
-                          fontSize: 20, // ← ここで文字サイズを変更
+                          fontSize: 20, //ここで文字サイズを変更
                         ),
                         decoration: const InputDecoration(
                           // 入力欄に表示するヒントメッセージを生成
