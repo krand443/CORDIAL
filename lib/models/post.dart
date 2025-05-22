@@ -5,10 +5,16 @@ class Post
   final String postedAt;
 
   //投稿自体のid
-  final int id;
+  final String id;
 
   //ユーザーid
-  final int userId;
+  final String userId;
+
+  //ユーザー名
+  final String userName;
+
+  //アイコンのURL
+  final String iconUrl;
 
   //投稿内容
   final String postText;
@@ -25,6 +31,8 @@ class Post
   const Post({
     required this.postedAt,
     required this.id,
+    required this.userName,
+    required this.iconUrl,
     required this.userId,
     required this.postText,
     required this.response,

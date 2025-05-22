@@ -1,8 +1,8 @@
 import 'package:cordial/screens/login_page.dart';
 import 'package:cordial/screens/make_profile_page.dart';
 import 'package:flutter/material.dart';
-import 'function/database.dart';
-import 'manager/main_page_MG.dart';
+import 'function/database_read.dart';
+import 'controller/main_page_MG.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
@@ -52,7 +52,7 @@ class MAIN extends StatelessWidget {
           //ユーザ登録がされてるなら直接HOMEへ行く
           if (snapshot.hasData) {
             return FutureBuilder<bool>(
-              future: Database.isUserName(),
+              future: DatabaseRead.isUserName(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   //ロード中の画面
@@ -73,7 +73,7 @@ class MAIN extends StatelessWidget {
               },
             );
           }
-          //ログインページ
+          //全て該当しないならログインページへ行く
           return const LoginPage();
         },
       ),

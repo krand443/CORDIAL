@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../manager/main_page_MG.dart';
+import '../controller/main_page_MG.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:cordial/function/imageMG.dart';
-import 'package:cordial/function/database.dart';
+import 'package:cordial/function/database_write.dart';
 
 class MakeProfilePage extends StatefulWidget {
   const MakeProfilePage({super.key});
@@ -33,9 +33,6 @@ class MakeProfilePageState extends State<MakeProfilePage> {
   //確定が押されたとき
   void pushEnter() async {
 
-    //ユーザー名を追加
-    await Database.addUser(_textController.text);
-
     //画像を追加(任意)
     try {
       await ImageMG.upload(_pickImage!, "icon");
@@ -44,6 +41,9 @@ class MakeProfilePageState extends State<MakeProfilePage> {
     {
       print(e);
     }
+
+    //ユーザーを追加
+    await DatabaseWrite.addUser(_textController.text);
 
     //画面遷移
     Navigator.pushReplacement(

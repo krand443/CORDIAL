@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cordial/widgets/under_bar.dart';
 import '../widgets/post_card.dart';
+import 'package:cordial/models/post.dart';
+import 'package:cordial/models/timeline.dart';
+import 'package:cordial/function/database_read.dart';
 
 //投稿詳細を閲覧するためのページ
 class PostPage extends StatefulWidget {
@@ -40,6 +43,7 @@ class PostPageState extends State<PostPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Colors.transparent,  // 背景を透明にする
       // GestureDetectorでスライドアニメーションの部分のみ処理
@@ -69,7 +73,8 @@ class PostPageState extends State<PostPage> {
                     itemCount: 20, // 投稿の数を指定（動的に変わる）
                     itemBuilder: (context, index) {
                       // 各投稿をカード形式で表示
-                      return const PostCard(postId: "HELLOOOO!!!!",transition:false);
+                      return const PostCard(post:Post(postedAt: "postedAt", id: "id", userId: "userId",userName: "userName",iconUrl: "https://firebasestorage.googleapis.com/v0/b/projectcordial-596bd.firebasestorage.app/o/FtLtSLQqCnU1tL5OXbERtUaeJ842%2Ficon.png?alt=media&token=d41d9da1-a22a-4aab-9adf-8f542684495b",
+                          postText: "postText", response: "response", nice: 0, isNice: true),transition:false,reply: true,);
                     },
                   ),
                 ),

@@ -1,0 +1,177 @@
+import 'package:flutter/material.dart';
+import 'package:cordial/function/database_read.dart';
+
+import '../models/profile.dart';
+
+//プロフィールカードを返す
+class ProfileCard extends StatefulWidget {
+  //userIdを受け取ってから構築
+  final String userId;
+
+  const ProfileCard({super.key, required this.userId});
+
+  @override
+  State<ProfileCard> createState() => ProfileCardState();
+}
+
+class ProfileCardState extends State<ProfileCard> {
+  //プロフィールを取得する非同期変数
+  Future<Profile?>? _profileFuture;
+  late String _userId;
+
+  @override
+  void initState() {
+    super.initState();
+
+    //widgetから変数を受け取る
+    _userId = widget.userId;
+
+    //プロフィールデータをDBから取得
+    _profileFuture = DatabaseRead.profile(_userId);
+  }
+
+  //アイコンをDBから取得して返す
+  FutureBuilder<Profile?> iconFuture() {
+    return FutureBuilder<Profile?>(
+      future: _profileFuture,
+      builder: (context, snapshot) {
+        //完了まで透明
+        if (snapshot.connectionState != ConnectionState.done ||
+            !snapshot.hasData) {
+          return const CircleAvatar(
+            radius: 50,
+            backgroundColor: Colors.white12,
+          );
+        }
+        //もし応答がnullならデフォルトのアイコンを表示
+        if (snapshot.data?.iconUrl == "null") {
+          return const CircleAvatar(
+            radius: 50,
+            backgroundImage: AssetImage("assets/user_default_icon.png"),
+          );
+        }
+        return CircleAvatar(
+          radius: 50,
+          backgroundImage: NetworkImage(snapshot.data!.iconUrl), //画像を取得して表示
+        );
+      },
+    );
+  }
+
+  //ユーザー名をDBから取得して返す
+  FutureBuilder<Profile?> userNameFuture() {
+    return FutureBuilder<Profile?>(
+        future: _profileFuture,
+        builder: (context, snapshot) {
+          String result;
+
+          //完了まで-------
+          if (snapshot.connectionState != ConnectionState.done ||
+              !snapshot.hasData) {
+            result = "..........";
+          }
+          //もし応答がnullなら
+          else if (snapshot.data?.iconUrl == "null") {
+            result = "unknown";
+          } else {
+            result = snapshot.data!.name;
+          }
+
+          //ユーザー名を返す（長くても横スクロールで対応）
+          return Text(
+            result,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+            softWrap: true,
+          );
+        });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      // 横幅は画面の85%に設定
+      width: MediaQuery.of(context).size.width * 0.9,
+      //カード台紙
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        //影
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.white70,
+            blurRadius: 5,
+            offset: Offset(0, 0),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
+      // プロフィールの中身（アイコン＋名前＋フォローボタン）
+      child: Row(
+        children: [
+          Container(
+              //============アイコン台紙＝＝＝＝＝＝＝＝＝＝＝
+              decoration: BoxDecoration(
+                shape: BoxShape.circle, // 丸型
+                border: Border.all(
+                  color: Colors.white,
+                  width: 3,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              //＝＝＝＝＝＝＝＝＝＝＝＝＝＝アイコン＝＝＝＝＝＝＝＝＝＝＝
+              child: iconFuture()),
+
+          const SizedBox(width: 20), // プロフィール画像と情報の間の余白
+
+          // ===== ユーザー情報エリア =====
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal, // 横方向にスクロール可能
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ユーザー名を関数から取得
+                  userNameFuture(),
+                  const SizedBox(height: 4),
+                  // ユーザーID
+                  Text(
+                    _userId,
+                    style: const TextStyle(
+                      fontSize: 8,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // ===== フォローボタン =====
+                  ElevatedButton(
+                    onPressed: () {
+                      // フォローボタンを押したときの動作
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    child: const Text('フォロー'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

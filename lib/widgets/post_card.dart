@@ -1,35 +1,43 @@
 import 'package:flutter/material.dart';
 import '../function/make_link_text.dart';
 import '../screens/post_page.dart';
+import '../models/post.dart';
+import 'package:cordial/function/database_read.dart';
 
 //投稿のカードを生成するクラス
 class PostCard extends StatelessWidget {
-  final String postId;
+
+  //ポストの内容を受け取る変数
+  final Post post;
 
   //画面遷移を有効にするか否か
   final bool transition;
 
+  //返信用か否か
+  final bool reply;
+
   const PostCard({super.key,
-    required this.postId,
+    required this.post,
     this.transition = true,
+    this.reply = false,
   });
 
   @override
   Widget build(BuildContext context) {
+
     return Card(
-      elevation: 2,
+      elevation: 0.1,
       color: Colors.white, // 背景色をここで指定
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
-        side: BorderSide(color: Colors.grey.shade300),
+        //side: BorderSide(color: Colors.grey.shade300, width: 0.2),
+        side: BorderSide.none,
       ),
       child: InkWell(
         onTap: () {
           //もしtransitionが無効かされてれば、タップしても画面遷移しない
           if(!transition)return;
-          // タップ時の処理（デバッグ出力）
-          print("投稿タップ: $postId");
           //投稿を押したときはその投稿の詳細ページに飛ぶ
           Navigator.push(
             context,
@@ -56,12 +64,13 @@ class PostCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // プロフィールアイコン
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 20,
-                backgroundImage: NetworkImage(
-                  'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png',
-                ),
+                backgroundImage:post.iconUrl != "null"
+                    ? NetworkImage(post.iconUrl) as ImageProvider
+                    : const AssetImage("assets/user_default_icon.png"),
               ),
+
               const SizedBox(width: 12),
 
               // ユーザー情報と投稿内容
@@ -70,12 +79,12 @@ class PostCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ユーザー名（仮で固定）
-                    const Text(
-                      'ユーザーname',
+                    Text(
+                      post.userName,
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    const Text(
-                      '2025年5月19日 0:22:13 UTC+9',
+                    Text(
+                      post.postedAt,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.grey,
@@ -86,9 +95,11 @@ class PostCard extends StatelessWidget {
 
                     // 投稿内容
                     RichText(
-                      text: makeLinkText(postId),
+                      text: makeLinkText(post.postText),
                     ),
-                    // AIアイコン&返信
+
+                    // AIアイコン&返信(replyがtrue、つまり投稿への返信であれば描画しない)
+                    if(!reply)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -109,8 +120,10 @@ class PostCard extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
+
+                                //AIからの応答
                                 Text(
-                                  postId,
+                                  post.response,
                                   softWrap: true,
                                   textAlign: TextAlign.start,
                                   style: const TextStyle(

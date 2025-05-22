@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:navigator_scope/navigator_scope.dart';
-import '../screens/home_page.dart';
+import '../screens/timeline_page.dart';
 import '../screens/profile_page.dart';
 import '../widgets/under_bar.dart';
 
@@ -65,7 +65,7 @@ class MainPageState extends State<MainPage> {
     return Scaffold(
       //下部バー
       bottomNavigationBar:SizedBox(
-        height: 50.0,
+        height: 45.0,
         child: UnderBar(
           currentIndex: currentTab,
           onTap: onTabSelected),
@@ -83,11 +83,11 @@ class MainPageState extends State<MainPage> {
             builder: (context) {
               switch (index) {
                 case 0:
-                  return const HomePage();  // タブ0のとき
+                  return const TimelinePage();  // タブ0のとき
                 case 1:
                   return ProfilePage(userId: FirebaseAuth.instance.currentUser!.uid,);    // タブ1のとき
                 default:
-                  return const HomePage(); // 万が一
+                  return const TimelinePage(); // 万が一
               }
             },
           );

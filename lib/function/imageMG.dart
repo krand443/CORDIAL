@@ -12,7 +12,7 @@ class ImageMG {
 
   // ギャラリーから画像を選択して、リサイズ後、Firebaseにアップロード
   static Future<int> upload(File originalFile, String fileName,
-      [int _width = 200, int _height = 200]) async {
+      [int _width = 300, int _height = 300]) async {
     try {
       //クロップしてからリサイズ
       final img.Image square =

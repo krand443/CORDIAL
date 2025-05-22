@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:cordial/function/database.dart';
+import 'package:cordial/function/database_write.dart';
 import 'dart:math' as math;
 import 'package:cordial/widgets/under_bar.dart';
 import 'package:cordial/widgets/post_card.dart';
@@ -19,7 +19,7 @@ class MakePostPageState extends State<MakePostPage> {
 
   //投稿ボタンを押したときに呼ばれる処理
   void post(){
-    Database.addPost(_textController.text);//ポスト追加
+    DatabaseWrite.addPost(_textController.text);//ポスト追加
     setState(() => _isClosing = true); // 画面を閉じるフラグを立てる
     Navigator.of(context).pop(); // 現在の画面を閉じる
   }

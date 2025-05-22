@@ -1,8 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../manager/main_page_MG.dart';
+import '../controller/main_page_MG.dart';
 import 'package:cordial/function/signin.dart';
-import '../function/database.dart';
+import '../function/database_write.dart';
+import '../function/database_read.dart';
 import 'make_profile_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -29,11 +30,13 @@ class _LoginPageState extends State<LoginPage> {
       if (currentUser != null)
         print("ログインしました　${currentUser.email} , ${currentUser.uid}");
 
+      bool isUserName = await DatabaseRead.isUserName();
+
       //画面遷移
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => const MainPage()), // ログイン後にホーム画面に遷移
+            builder: (context) => isUserName ? const MainPage() : const MakeProfilePage()), // ログイン後にホーム画面に遷移
       );
     } catch (e) {
       print(e);
@@ -54,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
       if (currentUser != null)
         print("ログインしました　${currentUser.email} , ${currentUser.uid}");
 
-      bool isUserName = await Database.isUserName();
+      bool isUserName = await DatabaseRead.isUserName();
       //画面遷移
       Navigator.pushReplacement(
         context,
@@ -166,7 +169,6 @@ class _LoginPageState extends State<LoginPage> {
           );
         },
       ),
-
     );
   }
 

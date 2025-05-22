@@ -2,85 +2,93 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cordial/function/imageMG.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:ui';
-import 'package:cordial/struct/profile.dart';
+import 'package:cordial/models/profile.dart';
+import 'package:cordial/models/post.dart';
+import 'package:cordial/models/timeline.dart';
+import 'package:http/http.dart';
 
-class Database {
-
-  //ユーザーを追加
-  static Future<void> addUser(String name) async {
+class DatabaseRead {
+  //タイムラインを取得<以前の最後のドキュメントを参照し返す>
+  static Future<Timeline?> timeline([DocumentSnapshot? lastVisible,String? userId]) async {
     /*
-    /users/{userId}                          //例:user001
-    ├── name: String                         //田中太郎
-    ├── iconUrl: String (URL)
-    ├── nationality: String                  //Japan
-    ├── /profile
-    │   ├── introduction: String             //自己紹介(100文字程度)
-    │   ├── lastAction: Timestamp
-    │   ├── followCount: int
-    │   └── followerCount: int
+    /posts/{postId}                          //例:post001
+    ├── postedAt: Timestamp
+    ├── userid: String                       //投稿者ID
+    ├── text: String                         //本文
+    ├── response: String                     //AIからの返信
+    ├── nice: int
+    ├── /niceList
+    │   └── {userId}: {}                     //いいねしたユーザー
      */
-
-    //アイコンURLを取得
-    final icon = await ImageMG.myIcon();
-
-    //端末の国・言語を取得
-    final locale = PlatformDispatcher.instance.locale;
-
     try {
-      // ドキュメント作成
-      await FirebaseFirestore.instance
-          .collection('users') // コレクションID
-          .doc(FirebaseAuth.instance.currentUser?.uid) // ドキュメントID
-          .set({
-            'name': name,
-            'iconUrl': icon ?? null,
-            'nationality': locale.countryCode,//日本ならJP
-          });
+      //ポスト時間でソート
+      var query = FirebaseFirestore.instance
+          .collection('posts') // コレクションID
+          .orderBy('postedAt', descending: true);
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(FirebaseAuth.instance.currentUser?.uid)
-          .collection('profile')
-          .doc('profile')
-          .set({
-            'lastAction': FieldValue.serverTimestamp(), //サーバー側の時刻セット
-          },SetOptions(merge: true)); //他のフィールドはそのまま残す
-    }
-    catch(e) {
+      //ドキュメントが渡されていたらその次のドキュメントから取得する
+      if (lastVisible != null) {
+        query = query.startAfterDocument(lastVisible);
+      }
+
+      //ユーザーIDが渡されてるならそのユーザーで絞り込む
+      if (userId != null) {
+        query = query.where('userid', isEqualTo: userId);
+      }
+
+      //タイムラインを取得
+      final result = await query.limit(10).get();
+
+      if (result.docs.isEmpty) {
+        return null;
+      }
+
+      //取得したドキュメントをリストList<Post>にするためのデータ取得(並列実行)
+      final futures = result.docs.map((doc) async {
+        final postId = doc.id;
+        final userId = doc['userid'];
+
+        final niceFuture = FirebaseFirestore.instance
+            .collection('posts')
+            .doc(postId)
+            .collection('niceList')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .get();
+
+        final userFuture =
+            FirebaseFirestore.instance.collection('users').doc(userId).get();
+
+        //二つの要素を待つ
+        final results = await Future.wait([niceFuture, userFuture]);
+
+        return Post(
+          postedAt: (doc['postedAt'] as Timestamp).toDate().toString(),
+          id: postId,
+          userId: userId,
+          userName: results[1]['name'],
+          iconUrl: results[1]['iconUrl'],
+          postText: doc['text'],
+          response: doc['response'],
+          nice: doc['nice'],
+          isNice: results[0].exists,
+        );
+      }).toList();
+
+      //取得を待つ
+      final posts = await Future.wait(futures);
+
+      //タイムラインを最後のDocumentSnapshotと返す。
+      return Timeline(posts: posts, lastVisible: result.docs.last);
+    } catch (e) {
+      print("えらーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー");
       print(e);
     }
-  }
 
-  //投稿するための関数
-  static Future<void> addPost(String text) async {
-  /*
-  /posts/{postId}                          //例:post001
-  ├── postedAt: Timestamp
-  ├── userid: String                       //投稿者ID
-  ├── text: String                         //本文
-  ├── response: String                     //AIからの返信
-  ├── nice: int
-   */
-    try{
-      await FirebaseFirestore.instance
-          .collection('posts')
-          .doc()
-          .set({
-            'PostedAt':FieldValue.serverTimestamp(),
-            'userid':FirebaseAuth.instance.currentUser?.uid,
-            'text':text,
-            'response' : "EXSAMPLE()",
-            'nice': 0
-          });
-    }
-    catch(e)
-    {
-      print(e);
-    }
+    return null;
   }
 
   //プロフィールを取得
-  static Future<Profile?> profile(String userid) async{
+  static Future<Profile?> profile(String userid) async {
     /*
     /users/{userId}                          //例:user001
     ├── name: String                         //田中太郎
@@ -92,7 +100,7 @@ class Database {
     │   ├── followCount: int
     │   └── followerCount: int
     */
-    try{
+    try {
       var result = await FirebaseFirestore.instance
           .collection('users') // コレクションID
           .doc(userid)
@@ -112,54 +120,32 @@ class Database {
           iconUrl: data?['iconUrl'] ?? 'null',
           introduction: dataDeep?['introduction'] ?? 'null',
           followCount: dataDeep?['followCount'] ?? 0,
-          followerCount: dataDeep?['followerCount'] ?? 0
-      );
-    }
-    catch(e)
-    {
+          followerCount: dataDeep?['followerCount'] ?? 0);
+    } catch (e) {
       print(e);
       return null;
     }
   }
 
-  //ユーザー名を取得する
-  static Future<String?> myUserName() async{
-    try{
-      var result = await FirebaseFirestore.instance
-          .collection('users') // コレクションID
-          .doc(FirebaseAuth.instance.currentUser?.uid)
-          .get(); //ドキュメントID
-
-      var data = result.data();
-
-      return data?['name'];
-    }
-    catch(e)
-    {
-      return null;
-    }
-  }
-
   //アイコンのURLをDBから返す
-  static Future<String?> iconUrl() async{
-    try{
+  static Future<String?> iconUrl([String? userid]) async {
+    try {
       var result = await FirebaseFirestore.instance
           .collection('users') // コレクションID
-          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .doc(userid ?? FirebaseAuth.instance.currentUser?.uid)
           .get(const GetOptions(source: Source.cache)); //ドキュメントID
 
       var data = result.data();
 
       return data?['iconUrl'];
-    }
-    catch(e){
+    } catch (e) {
       return null;
     }
   }
 
   //ユーザー名が存在しているかを確認する
   static Future<bool> isUserName() async {
-    try{
+    try {
       var result = await FirebaseFirestore.instance
           .collection('users') // コレクションID
           .doc(FirebaseAuth.instance.currentUser?.uid)
@@ -171,13 +157,26 @@ class Database {
       bool isUser = data?['name'] != null ? true : false;
 
       return isUser;
-    }
-    catch(e)
-    {
+    } catch (e) {
       return false;
     }
   }
 
+  //ユーザー名を取得する
+  static Future<String?> myUserName() async {
+    try {
+      var result = await FirebaseFirestore.instance
+          .collection('users') // コレクションID
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .get(); //ドキュメントID
+
+      var data = result.data();
+
+      return data?['name'];
+    } catch (e) {
+      return null;
+    }
+  }
 }
 
 /*////////////////////以下firebaseDB全体構造/////////////////////////////////
