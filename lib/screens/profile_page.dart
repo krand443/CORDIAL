@@ -4,8 +4,7 @@ import 'package:cordial/widgets/post_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cordial/widgets/profile_card.dart';
-
-import '../models/post.dart';
+import '../widgets/timeline_widget.dart';
 import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -82,28 +81,6 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ],
-              ),
-            ),
-
-            // ===== 投稿リスト部分（スクロール可能）=====
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  // 投稿1件ごとの表示
-                  return const PostCard(
-                      post: Post(
-                          postedAt: "postedAt",
-                          id: "id",
-                          userId: "userId",
-                          userName: "userName",
-                          iconUrl:
-                              "https://firebasestorage.googleapis.com/v0/b/projectcordial-596bd.firebasestorage.app/o/FtLtSLQqCnU1tL5OXbERtUaeJ842%2Ficon.png?alt=media&token=d41d9da1-a22a-4aab-9adf-8f542684495b",
-                          postText: "postText",
-                          response: "response",
-                          nice: 0,
-                          isNice: true));
-                },
-                childCount: _posts.length, // 投稿数
               ),
             ),
           ],

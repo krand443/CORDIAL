@@ -69,7 +69,7 @@ class DatabaseWrite {
             'postedAt':FieldValue.serverTimestamp(),
             'userid':FirebaseAuth.instance.currentUser?.uid,
             'text':text,
-            'response' : "EXSAMPLE()",
+            'response' : "EXAMPLE()",
             'nice': 0
           });
     }
