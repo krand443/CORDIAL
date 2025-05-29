@@ -14,7 +14,9 @@ class UnderBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Container(
+      color: Colors.white70,
+      child:Stack(
       alignment: Alignment.bottomCenter,
       children: [
         Row(
@@ -69,6 +71,7 @@ class UnderBar extends StatelessWidget {
           ),
         ),
       ],
+    ),
     );
   }
 }

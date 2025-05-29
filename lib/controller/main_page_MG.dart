@@ -63,6 +63,7 @@ class MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,//UnderBarを透過させるため
       //下部バー
       bottomNavigationBar:SizedBox(
         height: 45.0,

@@ -3,6 +3,7 @@ import 'package:cordial/screens/make_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'function/database_read.dart';
 import 'controller/main_page_MG.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
@@ -17,14 +18,22 @@ Future<void> main() async {
   //インターネットに接続できているかを確認
   var connectivityResult = await (Connectivity().checkConnectivity());
 
-  if (connectivityResult.contains(ConnectivityResult.mobile) ||
-      connectivityResult.contains(ConnectivityResult.wifi)) {
-    // ネットワーク接続あり
-    runApp(const MAIN());
-  } else {
-    // ネットワーク接続なし
-    runApp(const NotInterNet());
-  }
+  //画面を縦向きに制限
+  SystemChrome.setPreferredOrientations([
+    // 縦向き
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]).then((_) {
+
+    if (connectivityResult.contains(ConnectivityResult.mobile) ||
+        connectivityResult.contains(ConnectivityResult.wifi)) {
+      // ネットワーク接続あり
+      runApp(const MAIN());
+    } else {
+      // ネットワーク接続なし
+      runApp(const NotInterNet());
+    }
+  });
 }
 
 // アプリ全体のルートウィジェット
@@ -36,7 +45,7 @@ class MAIN extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         // アプリ全体のテーマ設定
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pinkAccent),
         useMaterial3: true,
       ),
       // アプリ起動時に表示されるホーム画面

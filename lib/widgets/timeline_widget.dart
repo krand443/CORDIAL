@@ -5,11 +5,16 @@ import 'package:cordial/models/timeline.dart';
 
 //タイムラインを表示するクラス
 class TimelineWidget extends StatefulWidget {
+  //任意でポストidを受け取る(受け取ったらそのリプライを返す)
+  final String? postId;
 
   //任意でユーザーidを受け取る
   final String? userId;
 
-  const TimelineWidget({super.key,this.userId});
+  //任意でスクロールコントローラーを受け取る
+  final ScrollController parentScrollController;
+
+  const TimelineWidget({super.key, this.userId, this.postId , required this.parentScrollController,});
 
   @override
   State<TimelineWidget> createState() => _TimelineWidgetState();
@@ -18,13 +23,16 @@ class TimelineWidget extends StatefulWidget {
 // 上記のStatefulWidgetに対応する状態クラス
 class _TimelineWidgetState extends State<TimelineWidget> {
   //最後までスクロールをしたときに投稿を追加するためのコントローラー
-  final ScrollController _scrollController = ScrollController();
+  late ScrollController _scrollController;
 
   //投稿を取得しているかどうか
   bool isLoading = false;
 
   //投稿をすべて取得したかどうか
   bool isShowAll = false;
+
+  //タイムライン生成で使用するポストId
+  String? _postId;
 
   //タイムライン生成で使用するユーザーId
   String? _userId;
@@ -35,6 +43,10 @@ class _TimelineWidgetState extends State<TimelineWidget> {
 
     //ウィジェットから値を受け取る
     _userId = widget.userId;
+    _postId = widget.postId;
+
+    //コントローラーを親ウィジットから受け取る。
+    _scrollController = widget.parentScrollController;
 
     timelineAdd(); // 初回表示時に実行される
 
@@ -60,18 +72,34 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     isLoading = true;
 
     //タイムラインを取得
-    Timeline? _timeline = await DatabaseRead.timeline(timeline?.lastVisible,_userId);
+    Timeline? _timeline = _postId != null
+        //ポストidが渡されているなら返信を取得する
+        ? await DatabaseRead.replyTimeline(_postId!,timeline?.lastVisible)
+        //渡されてないなら通常のタイムラインを取得する
+        : await DatabaseRead.timeline(_userId,timeline?.lastVisible);
 
     //タイムラインを更新
     if (_timeline != null) {
-      //タイムラインが空だったらそのまま挿入、でなければ更新
-
+      //もともとのタイムラインが空だったらそのまま挿入、でなければ更新
       setState(() {
         if (timeline == null) {
           timeline = _timeline;
+
         } else {
           timeline!.posts.addAll(_timeline.posts);
           timeline!.lastVisible = _timeline.lastVisible;
+        }
+      });
+
+      //要素は収まっているので追加の要素は存在しない。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients &&
+            _scrollController.position.maxScrollExtent <=
+                _scrollController.position.viewportDimension) {
+          if (!mounted) return;//メモリリーク予防
+          setState(() {
+            isShowAll = true;
+          });
         }
       });
     } else {
@@ -85,60 +113,62 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     isLoading = false;
   }
 
-  //投稿を更新する関数
-  Future<void> refresh() {
-    //現在のタイムラインを削除
-    timeline = null;
 
-    isShowAll = false;
-
-    //投稿を読み込み
-    return timelineAdd();
-  }
-
-  // 画面を描画するbuildメソッド（Flutterフレームワークが呼び出す）
   @override
   Widget build(BuildContext context) {
-    return Container(
-        color: Colors.grey.shade300,
-        child: timeline == null
-            ? const Center(
-                child: CircularProgressIndicator(
-                color: Colors.blue,
-                backgroundColor: Colors.transparent,
-              ))
-            : RefreshIndicator(
-                //オーバースクロールで再読込
-                onRefresh: refresh,
+    //タイムラインなし&すべてみせきってないなら読み込み
+    if(timeline == null && !isShowAll) {
+      return const SliverFillRemaining(
+        child: Center(
+          child: CircularProgressIndicator(
+            color: Colors.blue,
+            backgroundColor: Colors.transparent,
+          ),
+        ),
+      );
+    }
+    else {
+      return
+        timeline == null
+        ? SliverToBoxAdapter(
+          child: Container(
+            padding: EdgeInsets.all(16),
+          ),
+        )
+      :SliverList(
+        delegate: SliverChildBuilderDelegate(
+          childCount: timeline!.posts.length + 2,
+          // 最後にローディング用ウィジェットを1つ追加
+              (BuildContext context, int index) {
+            if (index < timeline!.posts.length) {
+              // 各投稿をカード形式で表示
+              return PostCard(post: timeline!.posts[index],
+                transition: _postId!=null ? false:true,//返信用なら遷移させない
+              );
+            }
 
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(vertical: 0),
-                  // 上下に余白を0
-                  itemCount: timeline!.posts.length + 1,
-
-                  // +1 で末尾にもう1個分確保 // 投稿の数を指定（動的に変わる）
-                  itemBuilder: (context, index) {
-                    if (index < timeline!.posts.length) {
-                      // 各投稿をカード形式で表示
-                      return PostCard(post: timeline!.posts[index]);
-                    } else {
-                      //最後に読み込みを追加する
-                      return Center(
-                          child: Padding(
-                        padding: const EdgeInsets.only(top: 5),
-                        child: !isShowAll
-                            ? const CircularProgressIndicator(
-                                color: Colors.blue,
-                                backgroundColor: Colors.transparent,
-                              )
-                            : const Padding(
-                                padding: EdgeInsets.only(bottom: 5),
-                                child: Text("投稿は以上です")),
-                      ));
-                    }
-                  },
+            if (index == timeline!.posts.length) {
+              //最後に読み込みを追加する
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 5),
+                  child: !isShowAll
+                      ? const CircularProgressIndicator(
+                    color: Colors.blue,
+                    backgroundColor: Colors.transparent,
+                  )
+                      : SizedBox.shrink(), // ← falseのときは何も表示しない
                 ),
-              ));
+              );
+            }
+
+            //最後に余白を追加する
+            if (index == timeline!.posts.length + 1) {
+              return const SizedBox(height: 90,);
+            }
+          },
+        ),
+      );
+    }
   }
 }

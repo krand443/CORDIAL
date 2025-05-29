@@ -13,6 +13,17 @@ class MakeProfilePage extends StatefulWidget {
 }
 
 class MakeProfilePageState extends State<MakeProfilePage> {
+
+  //未入力を確認するためのコントローラー
+  final TextEditingController _textController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _textController.addListener(() {
+      setState(() {}); // 入力変更で再描画
+    });
+  }
+
   //画像ピックで保存する変数
   File? _pickImage;
 
@@ -52,9 +63,6 @@ class MakeProfilePageState extends State<MakeProfilePage> {
           builder: (context) => const MainPage(selectTab: 1)), //プロフィールに飛ぶ
     );
   }
-
-  //未入力を確認するためのコントローラー
-  final TextEditingController _textController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {

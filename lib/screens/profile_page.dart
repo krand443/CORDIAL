@@ -28,91 +28,109 @@ class ProfilePageState extends State<ProfilePage> {
     print(_userId);
   }
 
-  // 投稿データを格納するリスト（ダミーデータを3件初期化）
-  final List<String> _posts = [
-    "こんにちは！FlutterでTwitter風アプリ作ってます。",
-    "こんにちは！FlutterでTwitter風アプリ作ってます。",
-    "こんにちは！FlutterでTwitter風アプリ作ってます。",
-    "こんにちは！FlutterでTwitter風アプリ作ってます。",
-    "こんにちは！FlutterでTwitter風アプリ作ってます。",
-    "この投稿はダミーデータです。\njkasdhjakhsjashassakaskjk",
-    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
-    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
-    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
-    "スクロールしてたくさんの投稿を表示できます。https://youtube.com",
-  ];
+  //最後までスクロールをしたときに投稿を追加するためのコントローラー
+  final ScrollController _scrollController = ScrollController();
+
+  //画面をリロード
+  Future reload() async {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => widget, // super.widget ではなく widget
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // メインのスクロールビュー（カスタムスクロールでSliverを組み合わせてUIを構築）
-        body: Stack(
-      children: [
-        //背景画像と投稿一覧
-        CustomScrollView(
-          slivers: [
-            // ===== プロフィールヘッダー部分（スクロール時に縮小） =====
-            SliverAppBar(
-              pinned: false,
-              surfaceTintColor: Colors.transparent, // ← M3特有の "変色" を防ぐ！
-              // AppBarの展開時の高さ（初期状態での高さ）
-              expandedHeight: 180,
-              // スクロールに応じて伸縮するコンテンツ
-              flexibleSpace: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // 背景画像（パララックスする）
-                  Image.network(
-                    'https://min-chi.material.jp/mc/materials/background-c/single_room2/_single_room2_1.jpg',
-                    alignment: Alignment.topCenter,
-                    fit: BoxFit.cover,
-                  ),
-                  //グラデーション
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.01),
-                          Colors.black.withOpacity(0.4),
-                        ],
-                      ),
+      // メインのスクロールビュー（カスタムスクロールでSliverを組み合わせてUIを構築）
+      body: Container(
+        color: Colors.grey.shade50,
+        child: RefreshIndicator(
+          onRefresh: reload,
+          child: Stack(
+            children: [
+              //背景画像と投稿一覧
+              CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  // ===== プロフィールヘッダー部分（スクロール時に縮小） =====
+                  SliverAppBar(
+                    pinned: false,
+                    surfaceTintColor: Colors.transparent, // ← M3特有の "変色" を防ぐ！
+                    // AppBarの展開時の高さ（初期状態での高さ）
+                    expandedHeight: 180,
+                    // スクロールに応じて伸縮するコンテンツ
+                    flexibleSpace: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // 背景画像（パララックスする）
+                        Image.network(
+                          'https://min-chi.material.jp/mc/materials/background-c/single_room2/_single_room2_1.jpg',
+                          alignment: Alignment.topCenter,
+                          fit: BoxFit.cover,
+                        ),
+                        //グラデーション
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.01),
+                                Colors.black.withOpacity(0.4),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+
+                  //タイムラインを取得
+                  TimelineWidget(
+                      parentScrollController: _scrollController,
+                      userId: _userId),
                 ],
               ),
-            ),
-          ],
-        ),
 
-        //プロフィールカード
-        Align(
-            alignment: Alignment.topCenter,
-            child: Padding(
-              padding: EdgeInsets.only(top: 30),
-              child: ProfileCard(
-                userId: _userId,
+              //プロフィールカード
+              SafeArea(
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 5),
+                    child: ProfileCard(
+                      userId: _userId,
+                    ),
+                  ),
+                ),
               ),
-            )),
 
-        IconButton(
-          icon: const Icon(Icons.logout),
-          tooltip: 'ログアウト',
-          onPressed: () async {
-            // Firebase のログアウト
-            await FirebaseAuth.instance.signOut();
+              IconButton(
+                icon: const Icon(Icons.logout),
+                tooltip: 'ログアウト',
+                onPressed: () async {
+                  // Firebase のログアウト
+                  await FirebaseAuth.instance.signOut();
 
-            // ログイン画面などに遷移（必要に応じて）
-            if (!context.mounted) return; // 安全チェック（ウィジェットが dispose されてないか）
+                  // ログイン画面などに遷移（必要に応じて）
+                  if (!context.mounted)
+                    return; // 安全チェック（ウィジェットが dispose されてないか）
 
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-            );
-          },
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
-      ],
-    ));
+      ),
+    );
   }
 }

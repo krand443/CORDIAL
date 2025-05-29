@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cordial/function/database_read.dart';
+import 'icon.dart';
 
 import '../models/profile.dart';
 
@@ -28,34 +29,6 @@ class ProfileCardState extends State<ProfileCard> {
 
     //プロフィールデータをDBから取得
     _profileFuture = DatabaseRead.profile(_userId);
-  }
-
-  //アイコンをDBから取得して返す
-  FutureBuilder<Profile?> iconFuture() {
-    return FutureBuilder<Profile?>(
-      future: _profileFuture,
-      builder: (context, snapshot) {
-        //完了まで透明
-        if (snapshot.connectionState != ConnectionState.done ||
-            !snapshot.hasData) {
-          return const CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.white12,
-          );
-        }
-        //もし応答がnullならデフォルトのアイコンを表示
-        if (snapshot.data?.iconUrl == "null") {
-          return const CircleAvatar(
-            radius: 50,
-            backgroundImage: AssetImage("assets/user_default_icon.png"),
-          );
-        }
-        return CircleAvatar(
-          radius: 50,
-          backgroundImage: NetworkImage(snapshot.data!.iconUrl), //画像を取得して表示
-        );
-      },
-    );
   }
 
   //ユーザー名をDBから取得して返す
@@ -112,22 +85,23 @@ class ProfileCardState extends State<ProfileCard> {
       child: Row(
         children: [
           Container(
-              //============アイコン台紙＝＝＝＝＝＝＝＝＝＝＝
-              decoration: BoxDecoration(
-                shape: BoxShape.circle, // 丸型
-                border: Border.all(
-                  color: Colors.white,
-                  width: 3,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 10,
-                  ),
-                ],
+            //============アイコン台紙＝＝＝＝＝＝＝＝＝＝＝
+            decoration: BoxDecoration(
+              shape: BoxShape.circle, // 丸型
+              border: Border.all(
+                color: Colors.white,
+                width: 3,
               ),
-              //＝＝＝＝＝＝＝＝＝＝＝＝＝＝アイコン＝＝＝＝＝＝＝＝＝＝＝
-              child: iconFuture()),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            //＝＝＝＝＝＝＝＝＝＝＝＝＝＝アイコン＝＝＝＝＝＝＝＝＝＝＝
+            child: UserIcon(userId: _userId, size: 40),
+          ),
 
           const SizedBox(width: 20), // プロフィール画像と情報の間の余白
 
@@ -151,21 +125,47 @@ class ProfileCardState extends State<ProfileCard> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  // ===== フォローボタン =====
-                  ElevatedButton(
-                    onPressed: () {
-                      // フォローボタンを押したときの動作
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+
+                  Row(
+                    children: [
+                      // ===== フォローボタン =====
+                      ElevatedButton(
+                        onPressed: () {
+                          // フォローボタンを押したときの動作
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                        child: const Text('フォロー'),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                    ),
-                    child: const Text('フォロー'),
-                  ),
+
+                      const SizedBox(width: 4),
+
+                      const Column(
+                        children: [
+                          Text(
+                            "フォロー200万",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.black54,
+                            ),
+                          ),
+                          Text(
+                            "フォロワー200万",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )
                 ],
               ),
             ),

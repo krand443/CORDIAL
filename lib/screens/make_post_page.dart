@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cordial/function/database_write.dart';
 import 'dart:math' as math;
 import 'package:cordial/widgets/under_bar.dart';
-import 'package:cordial/widgets/post_card.dart';
+import 'package:cordial/widgets/icon.dart';
 
 //投稿を作成する画面
 class MakePostPage extends StatefulWidget {
@@ -14,12 +14,19 @@ class MakePostPage extends StatefulWidget {
 }
 
 class MakePostPageState extends State<MakePostPage> {
-
+  //テキスト管理用
   final TextEditingController _textController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _textController.addListener(() {
+      setState(() {}); // 入力変更で再描画
+    });
+  }
 
   //投稿ボタンを押したときに呼ばれる処理
-  void post(){
-    DatabaseWrite.addPost(_textController.text);//ポスト追加
+  void post() {
+    DatabaseWrite.addPost(_textController.text); //ポスト追加
     setState(() => _isClosing = true); // 画面を閉じるフラグを立てる
     Navigator.of(context).pop(); // 現在の画面を閉じる
   }
@@ -55,7 +62,6 @@ class MakePostPageState extends State<MakePostPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: Colors.transparent, // 背景を透明にする
       // GestureDetectorでスライドアニメーションの部分のみ処理
@@ -100,16 +106,23 @@ class MakePostPageState extends State<MakePostPage> {
                           padding: const EdgeInsets.only(top: 0, right: 0),
                           child: TextButton(
                             onPressed: () {
-                              post();
+                              //テキストが入力されていれば実行
+                              if (_textController.text.isNotEmpty) {
+                                post();
+                              }
                             },
                             style: TextButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.inversePrimary, // ← 背景色
+                              backgroundColor: _textController.text.isNotEmpty
+                                  ? Theme.of(context).colorScheme.inversePrimary
+                                  : Colors.grey, // ← 背景色
                               foregroundColor: Colors.white, // ← テキスト色
                               textStyle: const TextStyle(
                                 fontSize: 18, // ← フォントサイズを指定
                               ),
                             ),
-                            child: const Text('メッセージを送信&投稿'),
+                            child: const Text(
+                              'メッセージを送信&投稿',
+                            ),
                           ),
                         )
                       ]),
@@ -127,15 +140,15 @@ class MakePostPageState extends State<MakePostPage> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Theme.of(context).colorScheme.inversePrimary, // 枠線の色
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .inversePrimary, // 枠線の色
                               width: 5, // 枠線の太さ
                             ),
                           ),
                           child: const CircleAvatar(
                             radius: 100,
-                            backgroundImage: NetworkImage(
-                              'https://www.to-bi.ac.jp/wp-content/uploads/sp_mv.jpg',
-                            ),
+                            backgroundImage: AssetImage('assets/AIicon.webp'),
                           ),
                         ),
                       ),
@@ -144,21 +157,21 @@ class MakePostPageState extends State<MakePostPage> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const CircleAvatar(
-                            radius: 30,
-                            backgroundImage: AssetImage("assets/user_default_icon.png"),
-                          ),
+                          const UserIcon(size: 30),
                           const SizedBox(width: 8),
                           Flexible(
                             child: TextField(
-                              autofocus: true, // ← ウィジェット表示時に自動でフォーカス
-                              maxLines: null, // ← 改行を許可する
+                              autofocus: true,
+                              // ← ウィジェット表示時に自動でフォーカス
+                              maxLines: null,
+                              // ← 改行を許可する
                               controller: _textController,
                               keyboardType: TextInputType.multiline,
                               decoration: InputDecoration(
                                 // 入力欄に表示するヒントメッセージを生成
                                 hintText: randomHintText,
-                                contentPadding: const EdgeInsets.only(top: 30), //上に余白追加して表示位置を下げる
+                                contentPadding: const EdgeInsets.only(top: 20),
+                                //上に余白追加して表示位置を下げる
                                 border: InputBorder.none,
                               ),
                             ),
@@ -177,8 +190,7 @@ class MakePostPageState extends State<MakePostPage> {
   }
 
   //入力欄に薄く表示する参考テキストをランダムに生成
-  String randomMassage()
-  {
+  String randomMassage() {
     //0.0～1未満の乱数生成
     var random = math.Random();
     //0~100のパーセンテージに変換
@@ -187,8 +199,7 @@ class MakePostPageState extends State<MakePostPage> {
     String result;
 
     //今回は10通り作成する
-    switch(value~/20)
-    {
+    switch (value ~/ 20) {
       case 0:
         result = "今日は雨だったからテルテル坊主作ったんだ！";
         break;
@@ -209,10 +220,9 @@ class MakePostPageState extends State<MakePostPage> {
         result = "今日は忙しかったからとにかく褒めて！";
         break;
 
-      default :
+      default:
         result = "今日はなんだかいい気分!!";
         break;
-
     }
 
     return result;

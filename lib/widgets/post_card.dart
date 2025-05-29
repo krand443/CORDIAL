@@ -13,13 +13,9 @@ class PostCard extends StatelessWidget {
   //画面遷移を有効にするか否か
   final bool transition;
 
-  //返信用か否か
-  final bool reply;
-
   const PostCard({super.key,
     required this.post,
     this.transition = true,
-    this.reply = false,
   });
 
   @override
@@ -44,7 +40,7 @@ class PostCard extends StatelessWidget {
             PageRouteBuilder(
               opaque: false, // 透明な背景にする
               transitionDuration: const Duration(milliseconds: 200), // アニメーションの時間を指定
-              pageBuilder: (context, animation, secondaryAnimation) => const PostPage(),
+              pageBuilder: (context, animation, secondaryAnimation) => PostPage(post: post),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                 // スライドインアニメーション
                 return SlideTransition(
@@ -85,7 +81,7 @@ class PostCard extends StatelessWidget {
                     ),
                     Text(
                       post.postedAt,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.grey,
                           fontSize: 9
@@ -99,24 +95,23 @@ class PostCard extends StatelessWidget {
                     ),
 
                     // AIアイコン&返信(replyがtrue、つまり投稿への返信であれば描画しない)
-                    if(!reply)
+                    if(post.response != "")
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         IntrinsicWidth(
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 250),
-                            // ← ここで最大幅を設定
+                            //ここで最大幅を設定
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Align(
                                   alignment: Alignment.centerRight,
-                                  child: Icon(
-                                    Icons.star,
-                                    size: 24,
-                                    color: Colors.blue,
+                                  child: const CircleAvatar(
+                                    radius: 15,
+                                    backgroundImage: AssetImage('assets/AIicon.webp'),
                                   ),
                                 ),
                                 const SizedBox(height: 4),
