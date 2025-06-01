@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../controller/main_page_MG.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:cordial/function/imageMG.dart';
+import 'package:cordial/function/firestore_storage.dart';
 import 'package:cordial/function/database_write.dart';
 
 class MakeProfilePage extends StatefulWidget {
@@ -46,7 +46,7 @@ class MakeProfilePageState extends State<MakeProfilePage> {
 
     //画像を追加(任意)
     try {
-      await ImageMG.upload(_pickImage!, "icon");
+      await Firestore.upload(_pickImage!, "icon");
     }
     catch(e)
     {

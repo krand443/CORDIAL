@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cordial/function/database_read.dart';
-import 'icon.dart';
-
-import '../models/profile.dart';
+import 'package:cordial/function/database_write.dart';
+import 'package:cordial/widgets/icon.dart';
+import 'package:cordial/models/profile.dart';
+import './follow_count.dart';
 
 //プロフィールカードを返す
 class ProfileCard extends StatefulWidget {
@@ -34,32 +36,33 @@ class ProfileCardState extends State<ProfileCard> {
   //ユーザー名をDBから取得して返す
   FutureBuilder<Profile?> userNameFuture() {
     return FutureBuilder<Profile?>(
-        future: _profileFuture,
-        builder: (context, snapshot) {
-          String result;
+      future: _profileFuture,
+      builder: (context, snapshot) {
+        String result;
 
-          //完了まで-------
-          if (snapshot.connectionState != ConnectionState.done ||
-              !snapshot.hasData) {
-            result = "..........";
-          }
-          //もし応答がnullなら
-          else if (snapshot.data?.iconUrl == "null") {
-            result = "unknown";
-          } else {
-            result = snapshot.data!.name;
-          }
+        //完了まで-------
+        if (snapshot.connectionState != ConnectionState.done ||
+            !snapshot.hasData) {
+          result = "..........";
+        }
+        //もし応答がnullなら
+        else if (snapshot.data?.iconUrl == "null") {
+          result = "unknown";
+        } else {
+          result = snapshot.data!.name;
+        }
 
-          //ユーザー名を返す（長くても横スクロールで対応）
-          return Text(
-            result,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-            softWrap: true,
-          );
-        });
+        //ユーザー名を返す（長くても横スクロールで対応）
+        return Text(
+          result,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+          softWrap: true,
+        );
+      },
+    );
   }
 
   @override
@@ -126,46 +129,8 @@ class ProfileCardState extends State<ProfileCard> {
                   ),
                   const SizedBox(height: 8),
 
-                  Row(
-                    children: [
-                      // ===== フォローボタン =====
-                      ElevatedButton(
-                        onPressed: () {
-                          // フォローボタンを押したときの動作
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                        ),
-                        child: const Text('フォロー'),
-                      ),
-
-                      const SizedBox(width: 4),
-
-                      const Column(
-                        children: [
-                          Text(
-                            "フォロー200万",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.black54,
-                            ),
-                          ),
-                          Text(
-                            "フォロワー200万",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  )
+                  //フォローボタンとフォロー数を返す関数を呼ぶ
+                  FollowCount(userId: _userId, profileFuture: _profileFuture),
                 ],
               ),
             ),

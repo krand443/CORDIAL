@@ -1,10 +1,8 @@
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cordial/function/imageMG.dart';
+import 'package:cordial/function/firestore_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:ui';
-import 'package:cordial/models/profile.dart';
 import 'package:http/http.dart' as http;
 
 class DatabaseWrite {
@@ -23,7 +21,7 @@ class DatabaseWrite {
      */
 
     //アイコンURLを取得
-    final icon = await ImageMG.myIcon();
+    final icon = await Firestore.myIcon();
 
     //端末の国・言語を取得
     final locale = PlatformDispatcher.instance.locale;
@@ -105,6 +103,58 @@ class DatabaseWrite {
       'text': text,
       'nice': 0,
     });
+  }
+
+  //フォロー時の処理
+  static Future<void> follow(String id) async {
+    final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+
+    final uri = Uri.parse(
+      'https://asia-northeast1-projectcordial-596bd.cloudfunctions.net/onFollow',
+    );
+
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer:$idToken', //ユーザーのトークンで認証
+      },
+      body: jsonEncode({
+        'followeeId': id,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("成功: ${response.body}");
+    } else {
+      print("エラー (${response.statusCode}): ${response.body}");
+    }
+  }
+
+  //フォロー時の処理
+  static Future<void> unFollow(String id) async {
+    final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+
+    final uri = Uri.parse(
+      'https://onunfollow-moq4fftydq-an.a.run.app',
+    );
+
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer:$idToken', //ユーザーのトークンで認証
+      },
+      body: jsonEncode({
+        'followeeId': id,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("成功: ${response.body}");
+    } else {
+      print("エラー (${response.statusCode}): ${response.body}");
+    }
   }
 }
 

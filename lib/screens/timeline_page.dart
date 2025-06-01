@@ -6,11 +6,11 @@ class TimelinePage extends StatefulWidget {
   const TimelinePage({super.key});
 
   @override
-  State<TimelinePage> createState() => _TimelinePageState();
+  TimelinePageState createState() => TimelinePageState();
 }
 
 // 上記のStatefulWidgetに対応する状態クラス
-class _TimelinePageState extends State<TimelinePage> {
+class TimelinePageState extends State<TimelinePage> {
   //最後までスクロールをしたときに投稿を追加するためのコントローラー
   final ScrollController _scrollController = ScrollController();
 

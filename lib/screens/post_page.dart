@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cordial/widgets/under_bar.dart';
-import '../widgets/post_card.dart';
+import 'package:cordial/widgets/post_card.dart';
 import 'package:cordial/models/post.dart';
-import 'package:cordial/models/timeline.dart';
-import 'package:cordial/function/database_read.dart';
 import 'package:cordial/function/database_write.dart';
-
-import '../widgets/timeline_widget.dart';
+import 'package:cordial/navigation/swipe_back_wrapper.dart';
+import 'package:cordial/widgets/timeline_widget.dart';
 
 //投稿詳細を閲覧するためのページ
 class PostPage extends StatefulWidget {
@@ -35,33 +32,6 @@ class PostPageState extends State<PostPage> {
     });
   }
 
-  double _dragOffset = 0.0; // ドラッグした距離を記録する変数
-  bool _isClosing = false; // 画面を閉じるフラグ
-
-  // ユーザーが指を動かすときに呼び出される処理
-  void _handleDragUpdate(DragUpdateDetails details) {
-    if (_isClosing) return;
-    setState(() {
-      // ドラッグの移動量を記録
-      _dragOffset += details.primaryDelta!;
-
-      // 左に行かせないように、ドラッグ量が0より小さくならないようにする
-      if (_dragOffset < 0) _dragOffset = 0;
-    });
-  }
-
-  // ユーザーが指を離したときに呼ばれる処理
-  void _handleDragEnd(DragEndDetails details) {
-    // ドラッグした距離が100ピクセル以上なら、画面を閉じる処理を開始
-    if (_dragOffset > 100) {
-      setState(() => _isClosing = true); // 画面を閉じるフラグを立てる
-      Navigator.of(context).pop(); // 現在の画面を閉じる
-    } else {
-      // 100ピクセル未満なら元の位置に戻す
-      setState(() => _dragOffset = 0);
-    }
-  }
-
   //最後までスクロールをしたときに投稿を追加するためのコントローラー
   final ScrollController _scrollController = ScrollController();
 
@@ -83,139 +53,120 @@ class PostPageState extends State<PostPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      backgroundColor: Colors.transparent, // 背景を透明にする
-      // GestureDetectorでスライドアニメーションの部分のみ処理
-      body: GestureDetector(
-        // 水平ドラッグの更新を検知し、_handleDragUpdate を呼び出す
-        onHorizontalDragUpdate: _handleDragUpdate,
-        // 水平ドラッグが終了したときに呼ばれる処理
-        onHorizontalDragEnd: _handleDragEnd,
+    //SwipeBackWrapperでスライドで前画面に戻る
+    return SwipeBackWrapper(
+      child: Scaffold(
+        extendBody: true,
+        appBar: AppBar(
+          // テーマに基づいた色をAppBarに設定（ダーク・ライトテーマ対応）
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          // 画面タイトルを表示（MyHomePageのtitleプロパティから取得）
+          title: const Text("投稿"),
+        ),
+        body: Container(
+          color: Colors.grey.shade300,
+          //再読込
+          child: RefreshIndicator(
+            onRefresh: reload,
 
-        child: Stack(
-          children: [
-            // スライドアニメーションを適用する部分
-            Transform.translate(
-              offset: Offset(_dragOffset, 0), // ドラッグ量に応じてウィジェットを移動
-              child: Scaffold(
-                extendBody: true,
-                appBar: AppBar(
-                  // テーマに基づいた色をAppBarに設定（ダーク・ライトテーマ対応）
-                  backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                  // 画面タイトルを表示（MyHomePageのtitleプロパティから取得）
-                  title: const Text("投稿"),
-                ),
-                body: Container(
-                  color: Colors.grey.shade300,
-                  //再読込
-                  child: RefreshIndicator(
-                    onRefresh: reload,
-
-                    //投稿とその返信
-                    child: CustomScrollView(
-                      controller: _scrollController,
-                      //投稿とその返信の位一覧
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: PostCard(
-                            post: _post,
-                            transition: false,
-                          ),
-                        ),
-
-                        //返信を挿入
-                        TimelineWidget(
-                            key: _reloadKey,//再読込用
-                            postId: _post.id,
-                            parentScrollController: _scrollController),
-                      ],
-                    ),
+            //投稿とその返信
+            child: CustomScrollView(
+              controller: _scrollController,
+              //投稿とその返信の位一覧
+              slivers: [
+                SliverToBoxAdapter(
+                  child: PostCard(
+                    post: _post,
+                    transition: false,
                   ),
                 ),
 
-                //返信フィールド
-                bottomNavigationBar: SafeArea(
-                  child: Container(
-                    color: Colors.transparent,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4), // 横方向のパディングを増やし、上下にもパディング
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200], //薄いグレーの背景色
-                                borderRadius:
-                                    BorderRadius.circular(25), //角を丸くする
-                              ),
-                              child: TextField(
-                                controller: _textController,
-                                decoration: InputDecoration(
-                                  hintText: 'メッセージを入力...',
-                                  hintStyle: TextStyle(
-                                      color: Colors.grey[600], fontSize: 13),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 20),
-                                  //パディングを調整して中央寄せ
-                                  border: InputBorder.none,
-                                  //デフォルトの枠線をなくす
-                                  isDense: true, //パディングをさらにコンパクトに
-                                ),
-                                minLines: 1,
-                                // 最小1行
-                                maxLines: 5,
-                                // 最大5行まで伸びるようにする
-                                keyboardType: TextInputType.multiline, //改行入力に対応
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10), // 送信ボタンとの間にスペースを追加
-                          Container(
-                            decoration: BoxDecoration(
-                              color: _textController.text.isNotEmpty
-                                  ? Colors.blueAccent
-                                  : Colors.grey, // ボタンの背景色
-                              shape: BoxShape.circle, // 丸い形状
-                            ),
-                            child: Material(
-                              // Materialウィジェットでラップして波紋エフェクトを有効にする
-                              color: Colors.transparent, // Materialの背景色を透明にする
-                              child: InkWell(
-                                // InkWellでタップ可能にし、波紋エフェクトを追加
-                                borderRadius: BorderRadius.circular(25),
-                                onTap: () {
-                                  //リプライを追加
-                                  if (_textController.text.isNotEmpty) {
-                                    addReply(_textController.text);
-                                    // キーボードを閉じる
-                                    FocusScope.of(context).unfocus();
-                                    // テキストをクリア
-                                    _textController.text = "";
-                                  }
-                                },
-                                child: const Padding(
-                                  // アイコンにパディングを追加
-                                  padding: EdgeInsets.all(12),
-                                  child: Icon(
-                                    Icons.send,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                //返信を挿入
+                TimelineWidget(
+                    key: _reloadKey, //再読込用
+                    postId: _post.id,
+                    parentScrollController: _scrollController),
+              ],
+            ),
+          ),
+        ),
+
+        //返信フィールド
+        bottomNavigationBar: SafeArea(
+          child: Container(
+            color: Colors.transparent,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 8, vertical: 4), // 横方向のパディングを増やし、上下にもパディング
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200], //薄いグレーの背景色
+                        borderRadius: BorderRadius.circular(25), //角を丸くする
+                      ),
+                      child: TextField(
+                        controller: _textController,
+                        decoration: InputDecoration(
+                          hintText: 'メッセージを入力...',
+                          hintStyle:
+                              TextStyle(color: Colors.grey[600], fontSize: 13),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 20),
+                          //パディングを調整して中央寄せ
+                          border: InputBorder.none,
+                          //デフォルトの枠線をなくす
+                          isDense: true, //パディングをさらにコンパクトに
+                        ),
+                        minLines: 1,
+                        // 最小1行
+                        maxLines: 5,
+                        // 最大5行まで伸びるようにする
+                        keyboardType: TextInputType.multiline, //改行入力に対応
                       ),
                     ),
                   ),
-                ),
+                  const SizedBox(width: 10), // 送信ボタンとの間にスペースを追加
+                  Container(
+                    decoration: BoxDecoration(
+                      color: _textController.text.isNotEmpty
+                          ? Colors.blueAccent
+                          : Colors.grey, // ボタンの背景色
+                      shape: BoxShape.circle, // 丸い形状
+                    ),
+                    child: Material(
+                      // Materialウィジェットでラップして波紋エフェクトを有効にする
+                      color: Colors.transparent, // Materialの背景色を透明にする
+                      child: InkWell(
+                        // InkWellでタップ可能にし、波紋エフェクトを追加
+                        borderRadius: BorderRadius.circular(25),
+                        onTap: () {
+                          //リプライを追加
+                          if (_textController.text.isNotEmpty) {
+                            addReply(_textController.text);
+                            // キーボードを閉じる
+                            FocusScope.of(context).unfocus();
+                            // テキストをクリア
+                            _textController.text = "";
+                          }
+                        },
+                        child: const Padding(
+                          // アイコンにパディングを追加
+                          padding: EdgeInsets.all(12),
+                          child: Icon(
+                            Icons.send,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

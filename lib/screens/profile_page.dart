@@ -1,19 +1,22 @@
-import 'package:cordial/function/database_read.dart';
-import 'package:cordial/models/profile.dart';
-import 'package:cordial/widgets/post_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cordial/widgets/profile_card.dart';
-import '../widgets/timeline_widget.dart';
+import 'package:cordial/widgets/profile/profile_card.dart';
+import 'package:cordial/widgets/timeline_widget.dart';
+import 'package:cordial/navigation/swipe_back_wrapper.dart';
 import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {
+  //プロフィールを取得するためのユーザーID
   final String userId;
 
-  const ProfilePage({super.key, required this.userId});
+  //trueならスワイプして画面を一つ前に戻せる
+  final bool swipeEnabled;
+
+
+  ProfilePage({super.key, required this.userId, this.swipeEnabled = false});
 
   @override
-  ProfilePageState createState() => ProfilePageState();
+  State<ProfilePage> createState() => ProfilePageState();
 }
 
 class ProfilePageState extends State<ProfilePage> {
@@ -45,6 +48,17 @@ class ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    //スワイプで戻せるようにするならSwipeBackWrapperでラップする
+    if(widget.swipeEnabled == true){
+      return SwipeBackWrapper(child: page(context),);
+    }
+    else{
+      return page(context);
+    }
+  }
+
+  //UI本体
+  Widget page(BuildContext context){
     return Scaffold(
       // メインのスクロールビュー（カスタムスクロールでSliverを組み合わせてUIを構築）
       body: Container(
@@ -59,8 +73,11 @@ class ProfilePageState extends State<ProfilePage> {
                 slivers: [
                   // ===== プロフィールヘッダー部分（スクロール時に縮小） =====
                   SliverAppBar(
+                    //trueならスクロールしても残す
                     pinned: false,
-                    surfaceTintColor: Colors.transparent, // ← M3特有の "変色" を防ぐ！
+                    //戻るアイコンの非表示
+                    automaticallyImplyLeading: false,
+                    surfaceTintColor: Colors.transparent, //M3特有の変色を防ぐ
                     // AppBarの展開時の高さ（初期状態での高さ）
                     expandedHeight: 180,
                     // スクロールに応じて伸縮するコンテンツ
@@ -118,8 +135,9 @@ class ProfilePageState extends State<ProfilePage> {
                   await FirebaseAuth.instance.signOut();
 
                   // ログイン画面などに遷移（必要に応じて）
-                  if (!context.mounted)
+                  if (!context.mounted) {
                     return; // 安全チェック（ウィジェットが dispose されてないか）
+                  }
 
                   Navigator.pushReplacement(
                     context,

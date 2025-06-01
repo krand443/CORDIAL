@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:cordial/function/signin.dart';
 import 'package:http/http.dart' as http;
 
-class ImageMG {
+class Firestore {
 
   // ギャラリーから画像を選択して、リサイズ後、Firebaseにアップロード
   static Future<int> upload(File originalFile, String fileName,

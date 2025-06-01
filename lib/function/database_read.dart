@@ -1,11 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cordial/function/imageMG.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:ui';
 import 'package:cordial/models/profile.dart';
 import 'package:cordial/models/post.dart';
 import 'package:cordial/models/timeline.dart';
-import 'package:http/http.dart';
 
 class DatabaseRead {
   //postIdをもとにpostを返す
@@ -306,6 +303,24 @@ class DatabaseRead {
     }
   }
 
+  //相手をフォローしているかを確認する
+  static Future<bool> isFollowing(String followeeId) async{
+    try {
+      var result = await FirebaseFirestore.instance.collection("users")
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .collection("follows")
+          .doc(followeeId)
+          .get();
+      //存在するならtrueを返す
+      if(result.exists){
+        return true;
+      }
+    }catch(e){
+      return false;
+    }
+    return false;
+  }
+
   //タイムスタンプで相対時間を返す
   static String timeAgoFromTimestamp(Timestamp timestamp) {
     final now = DateTime.now();
@@ -323,8 +338,8 @@ class DatabaseRead {
     } else if (difference.inDays < 7) {
       return '${difference.inDays}日前';
     } else {
-      // 7日以上前は日付表示（例: 5/19）
-      return '${time.month}/${time.day}';
+      // 7日以上前は日付表示（例: 2025/5/19）
+      return '${time.year}/${time.month}/${time.day}';
     }
   }
 }
