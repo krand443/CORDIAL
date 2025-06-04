@@ -1,34 +1,45 @@
+import 'package:cordial/widgets/icon.dart';
 import 'package:flutter/material.dart';
 import '../controller/main_page_MG.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:cordial/function/firestore_storage.dart';
 import 'package:cordial/function/database_write.dart';
+import 'package:cordial/function/database_read.dart';
 
 class MakeProfilePage extends StatefulWidget {
-  const MakeProfilePage({super.key});
+
+  //　既存の名前を受けとる(なくても可)
+  final String? existingName;
+
+  const MakeProfilePage({super.key, this.existingName});
 
   @override
   State<MakeProfilePage> createState() => MakeProfilePageState();
 }
 
 class MakeProfilePageState extends State<MakeProfilePage> {
-
-  //未入力を確認するためのコントローラー
+  // 未入力を確認するためのコントローラー
   final TextEditingController _textController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
+
+    // 既存のユーザー名を格納
+    if(widget.existingName != null) {
+      _textController.text = widget.existingName!;
+    }
     _textController.addListener(() {
       setState(() {}); // 入力変更で再描画
     });
   }
 
-  //画像ピックで保存する変数
+  // 画像ピックで保存する変数
   File? _pickImage;
 
   // ギャラリーから写真を選択
-  Future<void> ImagePick() async {
+  Future<void> imagePick() async {
     final ImagePicker _picker = ImagePicker();
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -38,29 +49,26 @@ class MakeProfilePageState extends State<MakeProfilePage> {
     }
   }
 
-  //デフォルトのアイコン
+  // デフォルトのアイコン
   AssetImage defaultIcon = const AssetImage("assets/user_default_icon.png");
 
-  //確定が押されたとき
+  // 確定が押されたとき
   void pushEnter() async {
-
-    //画像を追加(任意)
+    // 画像を追加(任意)
     try {
       await Firestore.upload(_pickImage!, "icon");
-    }
-    catch(e)
-    {
+    } catch (e) {
       print(e);
     }
 
-    //ユーザーを追加
+    // ユーザーを追加
     await DatabaseWrite.addUser(_textController.text);
 
-    //画面遷移
+    // 画面遷移
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-          builder: (context) => const MainPage(selectTab: 1)), //プロフィールに飛ぶ
+          builder: (context) => const MainPage(selectTab: 1)), // プロフィールに飛ぶ
     );
   }
 
@@ -83,19 +91,23 @@ class MakeProfilePageState extends State<MakeProfilePage> {
       ),
       backgroundColor: Colors.white, // 背景
       body: LayoutBuilder(
+        // 画面全体の制約（最大幅・最大高さ）を取得するために使用
         builder: (context, constraints) {
           return SingleChildScrollView(
+            //キーボード表示で画面が崩れないようスクロールにする
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              // 親からもらえる最大の高さで表示
               child: IntrinsicHeight(
+                //表示位置を上に寄せる
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       const SizedBox(height: 10),
 
-                      //完了ボタン
+                      // 完了ボタン
                       Align(
                         alignment: Alignment.centerRight,
                         child: Stack(children: [
@@ -116,13 +128,15 @@ class MakeProfilePageState extends State<MakeProfilePage> {
                             ),
                             child: const Text('完了→'),
                           ),
-                          const CircularProgressIndicator(color: Colors.blue,)
+                          const CircularProgressIndicator(
+                            color: Colors.blue,
+                          )
                         ]),
                       ),
 
                       const SizedBox(height: 10),
 
-                      //アイコンを表示
+                      // アイコンを表示
                       Container(
                         width: 150,
                         height: 150,
@@ -135,43 +149,46 @@ class MakeProfilePageState extends State<MakeProfilePage> {
                             width: 5, // 枠線の太さ
                           ),
                         ),
-                        child: Stack(children: [
-                          CircleAvatar(
-                            radius: 70,
-                            backgroundImage: _pickImage != null
-                                ? FileImage(_pickImage!)
-                                : defaultIcon as ImageProvider,
+
+                        // アイコンのプレビュー表示
+                        child: InkResponse(
+                          onTap: imagePick,
+                          child: Stack(
+                            children: [
+                              _pickImage == null
+                                  ? UserIcon(size: 70)
+                                  : CircleAvatar(
+                                      radius: 70,
+                                      backgroundImage: FileImage(_pickImage!),
+                                    ),
+                              const CircleAvatar(
+                                radius: 70,
+                                backgroundColor: Colors.transparent,
+                                backgroundImage:
+                                    AssetImage('assets/edit_icon.png'),
+                              ),
+                            ],
                           ),
-                          //編集ボタン
-                          GestureDetector(
-                            onTap: ImagePick,
-                            child: const CircleAvatar(
-                              radius: 70,
-                              backgroundColor: Colors.transparent,
-                              backgroundImage:
-                                  AssetImage('assets/edit_icon.png'),
-                            ),
-                          ),
-                        ]),
+                        ),
                       ),
 
-                      //ユーザ名入力フォーム
+                      // ユーザ名入力フォーム
                       TextField(
                         controller: _textController,
                         textAlign: TextAlign.center,
                         autofocus: true,
-                        //ウィジェット表示時に自動でフォーカス
+                        // ウィジェット表示時に自動でフォーカス
                         keyboardType: TextInputType.multiline,
                         maxLength: 20,
-                        //ここで文字数を制限
+                        // ここで文字数を制限
                         style: const TextStyle(
-                          fontSize: 20, //ここで文字サイズを変更
+                          fontSize: 20, // ここで文字サイズを変更
                         ),
                         decoration: const InputDecoration(
                           // 入力欄に表示するヒントメッセージを生成
                           hintText: "ユーザー名を入力",
                           contentPadding: EdgeInsets.only(top: 30),
-                          //上に余白追加して表示位置を下げる
+                          // 上に余白追加して表示位置を下げる
                           border: InputBorder.none,
                         ),
                       ),

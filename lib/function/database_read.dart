@@ -5,20 +5,20 @@ import 'package:cordial/models/post.dart';
 import 'package:cordial/models/timeline.dart';
 
 class DatabaseRead {
-  //postIdをもとにpostを返す
+  // postIdをもとにpostを返す
   static Future<Post?> getPost(String postId) async {
     /*
-    /posts/{postId}                          //例:post001
+    /posts/{postId}                          // 例:post001
     ├── postedAt: Timestamp
-    ├── userid: String                       //投稿者ID
-    ├── text: String                         //本文
-    ├── response: String                     //AIからの返信
+    ├── userid: String                       // 投稿者ID
+    ├── text: String                         // 本文
+    ├── response: String                     // AIからの返信
     ├── nice: int
     ├── /niceList
-    │   └── {userId}: {}                     //いいねしたユーザー
+    │   └── {userId}: {}                     // いいねしたユーザー
      */
     try {
-      //ポストをidから取得
+      // ポストをidから取得
       var post = await FirebaseFirestore.instance
           .collection('posts')
           .doc(postId)
@@ -55,42 +55,42 @@ class DatabaseRead {
     }
   }
 
-  //タイムラインを取得<以前の最後のドキュメントを参照し返す>
+  // タイムラインを取得<以前の最後のドキュメントを参照し返す>
   static Future<Timeline?> timeline([String? userId , DocumentSnapshot? lastVisible]) async {
     /*
-    /posts/{postId}                          //例:post001
+    /posts/{postId}                          // 例:post001
     ├── postedAt: Timestamp
-    ├── userid: String                       //投稿者ID
-    ├── text: String                         //本文
-    ├── response: String                     //AIからの返信
+    ├── userid: String                       // 投稿者ID
+    ├── text: String                         // 本文
+    ├── response: String                     // AIからの返信
     ├── nice: int
     ├── /niceList
-    │   └── {userId}: {}                     //いいねしたユーザー
+    │   └── {userId}: {}                     // いいねしたユーザー
      */
     try {
-      //ポスト時間でソート
+      // ポスト時間でソート
       var query = FirebaseFirestore.instance
           .collection('posts') // コレクションID
           .orderBy('postedAt', descending: true);
 
-      //ドキュメントが渡されていたらその次のドキュメントから取得する
+      // ドキュメントが渡されていたらその次のドキュメントから取得する
       if (lastVisible != null) {
         query = query.startAfterDocument(lastVisible);
       }
 
-      //ユーザーIDが渡されてるならそのユーザーで絞り込む
+      // ユーザーIDが渡されてるならそのユーザーで絞り込む
       if (userId != null) {
         query = query.where('userid', isEqualTo: userId);
       }
 
-      //タイムラインを取得
+      // タイムラインを取得
       final result = await query.limit(10).get();
 
       if (result.docs.isEmpty) {
         return null;
       }
 
-      //取得したドキュメントをリストList<Post>にするためのデータ取得(並列実行)
+      // 取得したドキュメントをリストList<Post>にするためのデータ取得(並列実行)
       final futures = result.docs.map((doc) async {
         final postId = doc.id;
         final userId = doc['userid'];
@@ -105,7 +105,7 @@ class DatabaseRead {
         final userFuture =
             FirebaseFirestore.instance.collection('users').doc(userId).get();
 
-        //二つの要素を待つ
+        // 二つの要素を待つ
         final results = await Future.wait([niceFuture, userFuture]);
 
         return Post(
@@ -121,10 +121,10 @@ class DatabaseRead {
         );
       }).toList();
 
-      //取得を待つ
+      // 取得を待つ
       final posts = await Future.wait(futures);
 
-      //タイムラインを最後のDocumentSnapshotと返す。
+      // タイムラインを最後のDocumentSnapshotと返す。
       return Timeline(posts: posts, lastVisible: result.docs.last);
     } catch (e) {
       print(e);
@@ -132,22 +132,22 @@ class DatabaseRead {
     return null;
   }
 
-  //投稿の返信を取得する
+  // 投稿の返信を取得する
   static Future<Timeline?> replyTimeline(String postId,[DocumentSnapshot? lastVisible]) async{
     /*
-    /posts/{postId}                //いいねしたユーザー
+    /posts/{postId}                // いいねしたユーザー
           ├─── /replies
-          ├─── {replyId}                       //reply001
+          ├─── {replyId}                       // reply001
                ├── repliedAt: Timestamp
-               ├── userid: String               //リプライ投稿者ID
+               ├── userid: String               // リプライ投稿者ID
                ├── text: String
                ├── nice: int
                └── /niceList
-                   └── {userId}: {}             //リプライにいいねしたユーザー
+                   └── {userId}: {}             // リプライにいいねしたユーザー
      */
 
     try {
-      //ポスト時間でソート
+      // ポスト時間でソート
       var query = FirebaseFirestore.instance
           .collection('posts') // コレクションID
           .doc(postId)
@@ -155,19 +155,19 @@ class DatabaseRead {
           .orderBy('nice', descending: true)
           .orderBy('repliedAt', descending: true);
 
-      //ドキュメントが渡されていたらその次のドキュメントから取得する
+      // ドキュメントが渡されていたらその次のドキュメントから取得する
       if (lastVisible != null) {
         query = query.startAfterDocument(lastVisible);
       }
 
-      //タイムラインを取得
+      // タイムラインを取得
       final result = await query.limit(10).get();
 
       if (result.docs.isEmpty) {
         return null;
       }
 
-      //取得したドキュメントをリストList<Post>にするためのデータ取得(並列実行)
+      // 取得したドキュメントをリストList<Post>にするためのデータ取得(並列実行)
       final futures = result.docs.map((doc) async {
         final replyId = doc.id;
         final userId = doc['userid'];
@@ -184,7 +184,7 @@ class DatabaseRead {
         final userFuture =
         FirebaseFirestore.instance.collection('users').doc(userId).get();
 
-        //二つの要素を待つ
+        // 二つの要素を待つ
         final results = await Future.wait([niceFuture, userFuture]);
 
         return Post(
@@ -200,10 +200,10 @@ class DatabaseRead {
         );
       }).toList();
 
-      //取得を待つ
+      // 取得を待つ
       final posts = await Future.wait(futures);
 
-      //タイムラインを最後のDocumentSnapshotと返す。
+      // タイムラインを最後のDocumentSnapshotと返す。
       return Timeline(posts: posts, lastVisible: result.docs.last);
     } catch (e) {
       print(e);
@@ -212,15 +212,15 @@ class DatabaseRead {
     return null;
   }
 
-  //プロフィールを取得
+  // プロフィールを取得
   static Future<Profile?> profile(String userid) async {
     /*
-    /users/{userId}                          //例:user001
-    ├── name: String                         //田中太郎
+    /users/{userId}                          // 例:user001
+    ├── name: String                         // 田中太郎
     ├── iconUrl: String (URL)
-    ├── nationality: String                  //Japan
+    ├── nationality: String                  // Japan
     ├── /profile
-    │   ├── introduction: String             //自己紹介(100文字程度)
+    │   ├── introduction: String             // 自己紹介(100文字程度)
     │   ├── lastAction: Timestamp
     │   ├── followCount: int
     │   └── followerCount: int
@@ -252,13 +252,13 @@ class DatabaseRead {
     }
   }
 
-  //アイコンのURLをDBから返す
+  // アイコンのURLをDBから返す
   static Future<String?> iconUrl([String? userid]) async {
     try {
       var result = await FirebaseFirestore.instance
           .collection('users') // コレクションID
           .doc(userid ?? FirebaseAuth.instance.currentUser?.uid)
-          .get(const GetOptions(source: Source.cache)); //ドキュメントID
+          .get(); // ドキュメントID
 
       var data = result.data();
 
@@ -268,17 +268,17 @@ class DatabaseRead {
     }
   }
 
-  //ユーザー名が存在しているかを確認する
+  // ユーザー名が存在しているかを確認する
   static Future<bool> isUserName() async {
     try {
       var result = await FirebaseFirestore.instance
           .collection('users') // コレクションID
           .doc(FirebaseAuth.instance.currentUser?.uid)
-          .get(); //ドキュメントID
+          .get(); // ドキュメントID
 
       var data = result.data();
 
-      //nullならfalse
+      // nullならfalse
       bool isUser = data?['name'] != null ? true : false;
 
       return isUser;
@@ -287,13 +287,13 @@ class DatabaseRead {
     }
   }
 
-  //ユーザー名を取得する
+  // ユーザー名を取得する
   static Future<String?> myUserName() async {
     try {
       var result = await FirebaseFirestore.instance
           .collection('users') // コレクションID
           .doc(FirebaseAuth.instance.currentUser?.uid)
-          .get(); //ドキュメントID
+          .get(); // ドキュメントID
 
       var data = result.data();
 
@@ -303,7 +303,7 @@ class DatabaseRead {
     }
   }
 
-  //相手をフォローしているかを確認する
+  // 相手をフォローしているかを確認する
   static Future<bool> isFollowing(String followeeId) async{
     try {
       var result = await FirebaseFirestore.instance.collection("users")
@@ -311,7 +311,7 @@ class DatabaseRead {
           .collection("follows")
           .doc(followeeId)
           .get();
-      //存在するならtrueを返す
+      // 存在するならtrueを返す
       if(result.exists){
         return true;
       }
@@ -321,7 +321,7 @@ class DatabaseRead {
     return false;
   }
 
-  //タイムスタンプで相対時間を返す
+  // タイムスタンプで相対時間を返す
   static String timeAgoFromTimestamp(Timestamp timestamp) {
     final now = DateTime.now();
     final time = timestamp.toDate();
@@ -345,43 +345,43 @@ class DatabaseRead {
 }
 
 
-/*////////////////////以下firebaseDB全体構造/////////////////////////////////
+/*// /// /// /// /// /// /// 以下firebaseDB全体構造// /// /// /// /// /// /// /// /// /// /// /
 
-/users/{userId}                          //例:user001
-├── name: String                         //田中太郎
+/users/{userId}                          // 例:user001
+├── name: String                         // 田中太郎
 ├── iconUrl: String (URL)
-├── nationality: String                  //Japan
+├── nationality: String                  // Japan
 ├── /profile
-│   ├── introduction: String             //自己紹介(100文字程度)
+│   ├── introduction: String             // 自己紹介(100文字程度)
 │   ├── lastAction: Timestamp
 │   ├── followCount: int
 │   └── followerCount: int
 ├── /hidden
-│   └── {hiddenUserId}: {}               //非表示ユーザーリスト
+│   └── {hiddenUserId}: {}               // 非表示ユーザーリスト
 ├── /follows
-│   ├─── {followsUserId}                //フォローしているユーザーのID
+│   ├─── {followsUserId}                // フォローしているユーザーのID
 │       ├── followedAt: Timestamp
-│       └── notify: boolean             //通知の切り替え
+│       └── notify: boolean             // 通知の切り替え
 ├─── /followers
-    ├─── {followerUserId}               //フォロワーのユーザーID
+    ├─── {followerUserId}               // フォロワーのユーザーID
         └── followedAt: Timestamp
 
 
-/posts/{postId}                          //例:post001
+/posts/{postId}                          // 例:post001
 ├── postedAt: Timestamp
-├── userid: String                       //投稿者ID
-├── text: String                         //本文
-├── response: String                     //AIからの返信
+├── userid: String                       // 投稿者ID
+├── text: String                         // 本文
+├── response: String                     // AIからの返信
 ├── nice: int
 ├── /niceList
-│   └── {userId}: {}                     //いいねしたユーザー
+│   └── {userId}: {}                     // いいねしたユーザー
 ├─── /replies
-    ├─── {replyId}                       //reply001
+    ├─── {replyId}                       // reply001
         ├── repliedAt: Timestamp
-        ├── userid: String               //リプライ投稿者ID
+        ├── userid: String               // リプライ投稿者ID
         ├── text: String
         ├── nice: int
         └── /niceList
-            └── {userId}: {}             //リプライにいいねしたユーザー
+            └── {userId}: {}             // リプライにいいねしたユーザー
 
  */

@@ -2,8 +2,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-TextSpan makeLinkText(String text) {
-  final RegExp urlRegex = RegExp(r'(https?://\S+)');
+TextSpan makeLinkText(String text,BuildContext context,{double? fontSize}) {
+  final RegExp urlRegex = RegExp(r'(https?:// \S+)');
   final List<TextSpan> spans = [];
 
   text.splitMapJoin(
@@ -36,8 +36,9 @@ TextSpan makeLinkText(String text) {
     },
   );
 
+  // 親ウィジェットからテーマを取得
   return TextSpan(
-    style: const TextStyle(fontSize: 14, color: Colors.black), // ベーススタイル
+    style: TextStyle(fontSize: fontSize ?? 14, color:Theme.of(context).colorScheme.onSurface), // ベーススタイル
     children: spans,
   );
 }

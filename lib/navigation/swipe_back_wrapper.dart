@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
-//スワイプで前の画面に戻れるようにするラッパーウィジェット
+// スワイプで前の画面に戻れるようにするラッパーウィジェット
 class SwipeBackWrapper extends StatefulWidget {
 
   final Widget child;
 
-  const SwipeBackWrapper({super.key, required this.child});
+  // これがtureなら左方向にスワイプ
+  final bool left;
+
+  const SwipeBackWrapper({super.key, required this.child, this.left = false});
 
   @override
   SwipeBackWrapperState createState() => SwipeBackWrapperState();
@@ -21,7 +24,7 @@ class SwipeBackWrapperState extends State<SwipeBackWrapper> {
     if (_isClosing) return;
     setState(() {
       // ドラッグの移動量を記録
-      _dragOffset += details.primaryDelta!;
+      _dragOffset += widget.left ? -details.primaryDelta! :details.primaryDelta!;
 
       // 左に行かせないように、ドラッグ量が0より小さくならないようにする
       if (_dragOffset < 0) _dragOffset = 0;
@@ -56,7 +59,7 @@ class SwipeBackWrapperState extends State<SwipeBackWrapper> {
           children: [
             // スライドアニメーションを適用する部分
             Transform.translate(
-              offset: Offset(_dragOffset, 0), // ドラッグ量に応じてウィジェットを移動
+              offset: Offset(widget.left ? -_dragOffset :_dragOffset , 0), // ドラッグ量に応じてウィジェットを移動
               child: widget.child,
             ),
           ],

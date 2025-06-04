@@ -15,7 +15,7 @@ class UnderBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white70,
+      color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
       child:Stack(
       alignment: Alignment.bottomCenter,
       children: [
@@ -27,17 +27,17 @@ class UnderBar extends StatelessWidget {
               icon: Icon(
                 Icons.home,
                 size: 40,
-                color: currentIndex == 0 ? Colors.blue : Colors.black,
+                color: currentIndex == 0 ? Colors.blue : Theme.of(context).colorScheme.onSurface,
               ),
               onPressed: () => onTap(0),
             ),
-            const SizedBox(width: 10.0),//中央余白
+            const SizedBox(width: 10.0),// 中央余白
             IconButton(
               padding: const EdgeInsets.only(left: 30,right: 30),
               icon: Icon(
                 Icons.person,
                 size: 40,
-                color: currentIndex == 1 ? Colors.blue : Colors.black,
+                color: currentIndex == 1 ? Colors.blue : Theme.of(context).colorScheme.onSurface,
               ),
               onPressed: () => onTap(1),
             ),

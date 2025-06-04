@@ -1,31 +1,31 @@
-//Postを管理するためのクラス
+// Postを管理するためのクラス
 class Post
 {
-  //ポスト時間
+  // ポスト時間
   final String postedAt;
 
-  //投稿自体のid
+  // 投稿自体のid
   final String id;
 
-  //ユーザーid
+  // ユーザーid
   final String userId;
 
-  //ユーザー名
+  // ユーザー名
   final String userName;
 
-  //アイコンのURL
+  // アイコンのURL
   final String iconUrl;
 
-  //投稿内容
+  // 投稿内容
   final String postText;
 
-  //AIの返信
+  // AIの返信
   final String response;
 
-  //いいねの数
+  // いいねの数
   final int nice;
 
-  //既に自分がniceを押しているかどうかの変数
+  // 既に自分がniceを押しているかどうかの変数
   final bool isNice;
 
   const Post({
@@ -41,20 +41,20 @@ class Post
   });
 }
 
-//ポスト構造
+// ポスト構造
 /*
-/posts/{postId}                          //例:post001
+/posts/{postId}                          // 例:post001
 ├── postedAt: Timestamp
-├── userid: String                       //投稿者ID
-├── text: String                         //本文
-├── response: String                     //AIからの返信
+├── userid: String                       // 投稿者ID
+├── text: String                         // 本文
+├── response: String                     // AIからの返信
 ├── nice: int
 ├── /niceList
-│   └── {userId}: {}                     //いいねしたユーザー
+│   └── {userId}: {}                     // いいねしたユーザー
 ├─── /replies
-    ├─── {replyId}                       //reply001
+    ├─── {replyId}                       // reply001
         ├── RepliedAt: Timestamp
-        ├── userid: String               //リプライ投稿者ID
+        ├── userid: String               // リプライ投稿者ID
         ├── text: String
         ├── nice: int
         └── /niceList

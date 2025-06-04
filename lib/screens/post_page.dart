@@ -3,9 +3,10 @@ import 'package:cordial/widgets/post_card.dart';
 import 'package:cordial/models/post.dart';
 import 'package:cordial/function/database_write.dart';
 import 'package:cordial/navigation/swipe_back_wrapper.dart';
-import 'package:cordial/widgets/timeline_widget.dart';
+import 'package:cordial/widgets/timeline/timeline_widget.dart';
+import 'package:cordial/widgets/custom_appbar.dart';
 
-//投稿詳細を閲覧するためのページ
+// 投稿詳細を閲覧するためのページ
 class PostPage extends StatefulWidget {
   final Post post;
 
@@ -18,7 +19,7 @@ class PostPage extends StatefulWidget {
 class PostPageState extends State<PostPage> {
   late Post _post;
 
-  //テキスト管理用
+  // テキスト管理用
   final TextEditingController _textController = TextEditingController();
 
   @override
@@ -32,20 +33,20 @@ class PostPageState extends State<PostPage> {
     });
   }
 
-  //最後までスクロールをしたときに投稿を追加するためのコントローラー
+  // 最後までスクロールをしたときに投稿を追加するためのコントローラー
   final ScrollController _scrollController = ScrollController();
 
-  //再読込用のkey
+  // 再読込用のkey
   Key _reloadKey = UniqueKey();
 
-  //画面をリロード
+  // 画面をリロード
   Future reload() async {
     setState(() {
-      _reloadKey = UniqueKey(); //強制再構築のためのキー更新
+      _reloadKey = UniqueKey(); // 強制再構築のためのキー更新
     });
   }
 
-  //リプライを追加する
+  // リプライを追加する
   Future addReply(String text) async {
     await DatabaseWrite.addReply(_post.id, _textController.text);
     reload();
@@ -53,27 +54,24 @@ class PostPageState extends State<PostPage> {
 
   @override
   Widget build(BuildContext context) {
-    //SwipeBackWrapperでスライドで前画面に戻る
+    // SwipeBackWrapperでスライドで前画面に戻る
     return SwipeBackWrapper(
       child: Scaffold(
         extendBody: true,
-        appBar: AppBar(
-          // テーマに基づいた色をAppBarに設定（ダーク・ライトテーマ対応）
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          // 画面タイトルを表示（MyHomePageのtitleプロパティから取得）
-          title: const Text("投稿"),
-        ),
         body: Container(
-          color: Colors.grey.shade300,
-          //再読込
+          color: Theme.of(context).colorScheme.surface,
+          // 再読込
           child: RefreshIndicator(
             onRefresh: reload,
 
-            //投稿とその返信
+            // 投稿とその返信
             child: CustomScrollView(
               controller: _scrollController,
-              //投稿とその返信の位一覧
+              // 投稿とその返信の位一覧
               slivers: [
+                // オリジナルAppbarを追加
+                CustomAppbar(titleText: "投稿"),
+
                 SliverToBoxAdapter(
                   child: PostCard(
                     post: _post,
@@ -81,9 +79,9 @@ class PostPageState extends State<PostPage> {
                   ),
                 ),
 
-                //返信を挿入
+                // 返信を挿入
                 TimelineWidget(
-                    key: _reloadKey, //再読込用
+                    key: _reloadKey, // 再読込用
                     postId: _post.id,
                     parentScrollController: _scrollController),
               ],
@@ -91,7 +89,7 @@ class PostPageState extends State<PostPage> {
           ),
         ),
 
-        //返信フィールド
+        // 返信フィールド
         bottomNavigationBar: SafeArea(
           child: Container(
             color: Colors.transparent,
@@ -103,8 +101,8 @@ class PostPageState extends State<PostPage> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.grey[200], //薄いグレーの背景色
-                        borderRadius: BorderRadius.circular(25), //角を丸くする
+                        color: Colors.grey[200], // 薄いグレーの背景色
+                        borderRadius: BorderRadius.circular(25), // 角を丸くする
                       ),
                       child: TextField(
                         controller: _textController,
@@ -114,16 +112,16 @@ class PostPageState extends State<PostPage> {
                               TextStyle(color: Colors.grey[600], fontSize: 13),
                           contentPadding: const EdgeInsets.symmetric(
                               vertical: 10, horizontal: 20),
-                          //パディングを調整して中央寄せ
+                          // パディングを調整して中央寄せ
                           border: InputBorder.none,
-                          //デフォルトの枠線をなくす
-                          isDense: true, //パディングをさらにコンパクトに
+                          // デフォルトの枠線をなくす
+                          isDense: true, // パディングをさらにコンパクトに
                         ),
                         minLines: 1,
                         // 最小1行
                         maxLines: 5,
                         // 最大5行まで伸びるようにする
-                        keyboardType: TextInputType.multiline, //改行入力に対応
+                        keyboardType: TextInputType.multiline, // 改行入力に対応
                       ),
                     ),
                   ),
@@ -142,7 +140,7 @@ class PostPageState extends State<PostPage> {
                         // InkWellでタップ可能にし、波紋エフェクトを追加
                         borderRadius: BorderRadius.circular(25),
                         onTap: () {
-                          //リプライを追加
+                          // リプライを追加
                           if (_textController.text.isNotEmpty) {
                             addReply(_textController.text);
                             // キーボードを閉じる

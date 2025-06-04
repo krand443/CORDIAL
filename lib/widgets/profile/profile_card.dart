@@ -4,11 +4,11 @@ import 'package:cordial/function/database_read.dart';
 import 'package:cordial/function/database_write.dart';
 import 'package:cordial/widgets/icon.dart';
 import 'package:cordial/models/profile.dart';
-import './follow_count.dart';
+import './follow_button_with_count.dart';
 
-//プロフィールカードを返す
+// プロフィールカードを返す
 class ProfileCard extends StatefulWidget {
-  //userIdを受け取ってから構築
+  // userIdを受け取ってから構築
   final String userId;
 
   const ProfileCard({super.key, required this.userId});
@@ -18,7 +18,7 @@ class ProfileCard extends StatefulWidget {
 }
 
 class ProfileCardState extends State<ProfileCard> {
-  //プロフィールを取得する非同期変数
+  // プロフィールを取得する非同期変数
   Future<Profile?>? _profileFuture;
   late String _userId;
 
@@ -26,38 +26,39 @@ class ProfileCardState extends State<ProfileCard> {
   void initState() {
     super.initState();
 
-    //widgetから変数を受け取る
+    // widgetから変数を受け取る
     _userId = widget.userId;
 
-    //プロフィールデータをDBから取得
+    // プロフィールデータをDBから取得
     _profileFuture = DatabaseRead.profile(_userId);
   }
 
-  //ユーザー名をDBから取得して返す
+  // ユーザー名をDBから取得して返す
   FutureBuilder<Profile?> userNameFuture() {
     return FutureBuilder<Profile?>(
       future: _profileFuture,
       builder: (context, snapshot) {
         String result;
 
-        //完了まで-------
+        // 完了まで-------
         if (snapshot.connectionState != ConnectionState.done ||
             !snapshot.hasData) {
           result = "..........";
         }
-        //もし応答がnullなら
+        // もし応答がnullなら
         else if (snapshot.data?.iconUrl == "null") {
           result = "unknown";
         } else {
           result = snapshot.data!.name;
         }
 
-        //ユーザー名を返す（長くても横スクロールで対応）
+        // ユーザー名を返す（長くても横スクロールで対応）
         return Text(
           result,
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
           softWrap: true,
         );
@@ -70,11 +71,11 @@ class ProfileCardState extends State<ProfileCard> {
     return Container(
       // 横幅は画面の85%に設定
       width: MediaQuery.of(context).size.width * 0.9,
-      //カード台紙
+      // カード台紙
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(20),
-        //影
+        // 影
         boxShadow: const [
           BoxShadow(
             color: Colors.white70,
@@ -88,7 +89,7 @@ class ProfileCardState extends State<ProfileCard> {
       child: Row(
         children: [
           Container(
-            //============アイコン台紙＝＝＝＝＝＝＝＝＝＝＝
+            // ============アイコン台紙＝＝＝＝＝＝＝＝＝＝＝
             decoration: BoxDecoration(
               shape: BoxShape.circle, // 丸型
               border: Border.all(
@@ -102,7 +103,7 @@ class ProfileCardState extends State<ProfileCard> {
                 ),
               ],
             ),
-            //＝＝＝＝＝＝＝＝＝＝＝＝＝＝アイコン＝＝＝＝＝＝＝＝＝＝＝
+            // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝アイコン＝＝＝＝＝＝＝＝＝＝＝
             child: UserIcon(userId: _userId, size: 40),
           ),
 
@@ -129,7 +130,7 @@ class ProfileCardState extends State<ProfileCard> {
                   ),
                   const SizedBox(height: 8),
 
-                  //フォローボタンとフォロー数を返す関数を呼ぶ
+                  // フォローボタンとフォロー数を返す関数を呼ぶ
                   FollowCount(userId: _userId, profileFuture: _profileFuture),
                 ],
               ),

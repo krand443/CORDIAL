@@ -1,11 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cordial/function/database_write.dart';
 import 'dart:math' as math;
 import 'package:cordial/widgets/under_bar.dart';
 import 'package:cordial/widgets/icon.dart';
 
-//投稿を作成する画面
+// 投稿を作成する画面
 class MakePostPage extends StatefulWidget {
   const MakePostPage({super.key});
 
@@ -14,7 +13,7 @@ class MakePostPage extends StatefulWidget {
 }
 
 class MakePostPageState extends State<MakePostPage> {
-  //テキスト管理用
+  // テキスト管理用
   final TextEditingController _textController = TextEditingController();
   @override
   void initState() {
@@ -24,9 +23,9 @@ class MakePostPageState extends State<MakePostPage> {
     });
   }
 
-  //投稿ボタンを押したときに呼ばれる処理
+  // 投稿ボタンを押したときに呼ばれる処理
   void post() {
-    DatabaseWrite.addPost(_textController.text); //ポスト追加
+    DatabaseWrite.addPost(_textController.text); // ポスト追加
     setState(() => _isClosing = true); // 画面を閉じるフラグを立てる
     Navigator.of(context).pop(); // 現在の画面を閉じる
   }
@@ -77,16 +76,16 @@ class MakePostPageState extends State<MakePostPage> {
             Transform.translate(
               offset: Offset(0, _dragOffset), // ドラッグ量に応じてウィジェットを移動
               child: Scaffold(
-                backgroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.surface,
                 resizeToAvoidBottomInset: true, // ← キーボードに合わせてUIを押し上げる
 
-                //closeボタンと投稿ボタンを配置
+                // closeボタンと投稿ボタンを配置
                 appBar: AppBar(
-                  backgroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                   surfaceTintColor: Colors.transparent, // ← M3特有の "変色" を防ぐ！
                   automaticallyImplyLeading: false, // ← 左の戻るボタンを消す（必要なら）
                   title: Row(
-                      //左右のスペースをまんべんなく使う
+                      // 左右のスペースをまんべんなく使う
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       // 左右に寄せる！
                       children: [
@@ -106,7 +105,7 @@ class MakePostPageState extends State<MakePostPage> {
                           padding: const EdgeInsets.only(top: 0, right: 0),
                           child: TextButton(
                             onPressed: () {
-                              //テキストが入力されていれば実行
+                              // テキストが入力されていれば実行
                               if (_textController.text.isNotEmpty) {
                                 post();
                               }
@@ -153,7 +152,7 @@ class MakePostPageState extends State<MakePostPage> {
                         ),
                       ),
 
-                      //ユーザーのアイコンと入力欄
+                      // ユーザーのアイコンと入力欄
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -171,7 +170,7 @@ class MakePostPageState extends State<MakePostPage> {
                                 // 入力欄に表示するヒントメッセージを生成
                                 hintText: randomHintText,
                                 contentPadding: const EdgeInsets.only(top: 20),
-                                //上に余白追加して表示位置を下げる
+                                // 上に余白追加して表示位置を下げる
                                 border: InputBorder.none,
                               ),
                             ),
@@ -189,16 +188,15 @@ class MakePostPageState extends State<MakePostPage> {
     );
   }
 
-  //入力欄に薄く表示する参考テキストをランダムに生成
+  // 入力欄に薄く表示する参考テキストをランダムに生成
   String randomMassage() {
-    //0.0～1未満の乱数生成
+    // 0.0～1未満の乱数生成
     var random = math.Random();
-    //0~100のパーセンテージに変換
+    // 0~100のパーセンテージに変換
     double value = random.nextDouble() * 100;
 
     String result;
 
-    //今回は10通り作成する
     switch (value ~/ 20) {
       case 0:
         result = "今日は雨だったからテルテル坊主作ったんだ！";

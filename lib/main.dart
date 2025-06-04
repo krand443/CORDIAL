@@ -1,5 +1,5 @@
 import 'package:cordial/screens/login_page.dart';
-import 'package:cordial/screens/make_profile_page.dart';
+import 'package:cordial/screens/edit_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'function/database_read.dart';
 import 'controller/main_page_MG.dart';
@@ -15,10 +15,10 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  //インターネットに接続できているかを確認
+  // インターネットに接続できているかを確認
   var connectivityResult = await (Connectivity().checkConnectivity());
 
-  //画面を縦向きに制限
+  // 画面を縦向きに制限
   SystemChrome.setPreferredOrientations([
     // 縦向き
     DeviceOrientation.portraitUp,
@@ -28,7 +28,7 @@ Future<void> main() async {
     if (connectivityResult.contains(ConnectivityResult.mobile) ||
         connectivityResult.contains(ConnectivityResult.wifi)) {
       // ネットワーク接続あり
-      runApp(const MAIN());
+      runApp(const Main());
     } else {
       // ネットワーク接続なし
       runApp(const NotInterNet());
@@ -37,19 +37,28 @@ Future<void> main() async {
 }
 
 // アプリ全体のルートウィジェット
-class MAIN extends StatelessWidget {
-  const MAIN({super.key});
+class Main extends StatelessWidget {
+  const Main({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      // ライトテーマ
       theme: ThemeData(
-        // アプリ全体のテーマ設定
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pinkAccent),
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
+      // ダークテーマ
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: Colors.black,
+        useMaterial3: true,
+      ),
+      // themeMode: ThemeMode.system, // 端末の設定に自動追従
+      themeMode: ThemeMode.dark, // 端末の設定に自動追従
       // アプリ起動時に表示されるホーム画面
-      //home: const LoginPage(),
+      // home: const LoginPage(),
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
@@ -58,13 +67,13 @@ class MAIN extends StatelessWidget {
             return const SizedBox();
           }
 
-          //ユーザ登録がされてるなら直接HOMEへ行く
+          // ユーザ登録がされてるなら直接HOMEへ行く
           if (snapshot.hasData) {
             return FutureBuilder<bool>(
               future: DatabaseRead.isUserName(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  //ロード中の画面
+                  // ロード中の画面
                   return const Center(
                       child: CircularProgressIndicator(
                     backgroundColor: Colors.white,
@@ -72,7 +81,7 @@ class MAIN extends StatelessWidget {
                   ));
                 }
 
-                //ユーザー名が存在するならそのままログイン
+                // ユーザー名が存在するならそのままログイン
                 if (snapshot.data == true) {
                   return const MainPage();
                 } else {
@@ -82,7 +91,7 @@ class MAIN extends StatelessWidget {
               },
             );
           }
-          //全て該当しないならログインページへ行く
+          // 全て該当しないならログインページへ行く
           return const LoginPage();
         },
       ),
@@ -102,7 +111,7 @@ class NotInterNet extends StatelessWidget {
         useMaterial3: true,
       ),
       // アプリ起動時に表示されるホーム画面
-      //home: const LoginPage(),
+      // home: const LoginPage(),
       home: const Center(
         child: Text(
           "インターネット接続を確認してください。",

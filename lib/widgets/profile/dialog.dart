@@ -11,7 +11,7 @@ void showCustomDialog({
   _dialogEntry = OverlayEntry(
     builder: (context) => Stack(
       children: [
-        //透明な背景（タップで閉じる）
+        // 透明な背景（タップで閉じる）
         Positioned.fill(
           child: GestureDetector(
             onTap: () {
@@ -19,20 +19,22 @@ void showCustomDialog({
               _dialogEntry = null;
             },
             child: Container(
+              width: double.infinity,
+              height: double.infinity,
               color: Colors.transparent, // タップは検知するが見えない
             ),
           ),
         ),
 
-        //カスタムダイアログ
+        // カスタムダイアログ
         Positioned(
-          //位置を調整
+          // 位置を調整
           left: offset.dx,
           top: offset.dy,
           child: Container(
             padding: EdgeInsets.all(0),
             decoration: BoxDecoration(
-              color: Colors.white70,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
@@ -40,7 +42,7 @@ void showCustomDialog({
               children: [
                 TextButton(
                   onPressed: () {
-                    //関数を実行し、閉じる
+                    // 関数を実行し、閉じる
                     onTap?.call();
                     _dialogEntry?.remove();
                     _dialogEntry = null;
@@ -55,5 +57,5 @@ void showCustomDialog({
     ),
   );
 
-  Overlay.of(context).insert(_dialogEntry!);
+  Overlay.of(context,rootOverlay: true).insert(_dialogEntry!);
 }

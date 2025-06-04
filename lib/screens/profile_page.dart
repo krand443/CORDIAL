@@ -1,19 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cordial/widgets/profile/profile_card.dart';
-import 'package:cordial/widgets/timeline_widget.dart';
+import 'package:cordial/widgets/timeline/timeline_widget.dart';
 import 'package:cordial/navigation/swipe_back_wrapper.dart';
 import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  //プロフィールを取得するためのユーザーID
+  // プロフィールを取得するためのユーザーID
   final String userId;
 
-  //trueならスワイプして画面を一つ前に戻せる
+  // trueならスワイプして画面を一つ前に戻せる
   final bool swipeEnabled;
 
 
-  ProfilePage({super.key, required this.userId, this.swipeEnabled = false});
+  const ProfilePage({super.key, required this.userId, this.swipeEnabled = false});
 
   @override
   State<ProfilePage> createState() => ProfilePageState();
@@ -26,15 +26,14 @@ class ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
 
-    //widgetから変数を受け取る
+    // widgetから変数を受け取る
     _userId = widget.userId;
-    print(_userId);
   }
 
-  //最後までスクロールをしたときに投稿を追加するためのコントローラー
+  // 最後までスクロールをしたときに投稿を追加するためのコントローラー
   final ScrollController _scrollController = ScrollController();
 
-  //画面をリロード
+  // 画面をリロード
   Future reload() async {
     Navigator.pushReplacement(
       context,
@@ -48,7 +47,7 @@ class ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    //スワイプで戻せるようにするならSwipeBackWrapperでラップする
+    // スワイプで戻せるようにするならSwipeBackWrapperでラップする
     if(widget.swipeEnabled == true){
       return SwipeBackWrapper(child: page(context),);
     }
@@ -57,27 +56,27 @@ class ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  //UI本体
+  // UI本体
   Widget page(BuildContext context){
     return Scaffold(
       // メインのスクロールビュー（カスタムスクロールでSliverを組み合わせてUIを構築）
       body: Container(
-        color: Colors.grey.shade50,
+        color: Theme.of(context).colorScheme.surface,
         child: RefreshIndicator(
           onRefresh: reload,
           child: Stack(
             children: [
-              //背景画像と投稿一覧
+              // 背景画像と投稿一覧
               CustomScrollView(
                 controller: _scrollController,
                 slivers: [
                   // ===== プロフィールヘッダー部分（スクロール時に縮小） =====
                   SliverAppBar(
-                    //trueならスクロールしても残す
+                    // trueならスクロールしても残す
                     pinned: false,
-                    //戻るアイコンの非表示
+                    // 戻るアイコンの非表示
                     automaticallyImplyLeading: false,
-                    surfaceTintColor: Colors.transparent, //M3特有の変色を防ぐ
+                    surfaceTintColor: Colors.transparent, // M3特有の変色を防ぐ
                     // AppBarの展開時の高さ（初期状態での高さ）
                     expandedHeight: 180,
                     // スクロールに応じて伸縮するコンテンツ
@@ -90,7 +89,7 @@ class ProfilePageState extends State<ProfilePage> {
                           alignment: Alignment.topCenter,
                           fit: BoxFit.cover,
                         ),
-                        //グラデーション
+                        // グラデーション
                         Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
@@ -107,14 +106,14 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
 
-                  //タイムラインを取得
+                  // タイムラインを取得
                   TimelineWidget(
                       parentScrollController: _scrollController,
                       userId: _userId),
                 ],
               ),
 
-              //プロフィールカード
+              // プロフィールカード
               SafeArea(
                 child: Align(
                   alignment: Alignment.topCenter,
@@ -125,25 +124,6 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
-              ),
-
-              IconButton(
-                icon: const Icon(Icons.logout),
-                tooltip: 'ログアウト',
-                onPressed: () async {
-                  // Firebase のログアウト
-                  await FirebaseAuth.instance.signOut();
-
-                  // ログイン画面などに遷移（必要に応じて）
-                  if (!context.mounted) {
-                    return; // 安全チェック（ウィジェットが dispose されてないか）
-                  }
-
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginPage()),
-                  );
-                },
               ),
             ],
           ),

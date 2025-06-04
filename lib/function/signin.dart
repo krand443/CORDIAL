@@ -7,21 +7,21 @@ class SignIn
 {
   static final GoogleSignIn? _googleSignIn = GoogleSignIn(scopes: [
     // 例えば、Google Calendarの情報を操作するには、ここに範囲を記載する
-    // https://www.googleapis.com/auth/calendar.readonly,
-    // https://www.googleapis.com/auth/calendar.events,
+    // https:// www.googleapis.com/auth/calendar.readonly,
+    // https:// www.googleapis.com/auth/calendar.events,
   ]);
 
   // FirebaseAuthインスタンスを取得
   static final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  //メールでログイン
+  // メールでログイン
   static Future<void> mail(String username,String password) async
   {
     await _auth.signInWithEmailAndPassword(email: username, password: password);
 
   }
 
-  //googleアカウントを利用したログイン
+  // googleアカウントを利用したログイン
   static Future<int> google() async
   {
     try {

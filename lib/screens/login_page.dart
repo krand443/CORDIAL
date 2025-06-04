@@ -4,7 +4,7 @@ import '../controller/main_page_MG.dart';
 import 'package:cordial/function/signin.dart';
 import '../function/database_write.dart';
 import '../function/database_read.dart';
-import 'make_profile_page.dart';
+import 'edit_profile_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
 
   // メールでログイン処理
   Future<void> _login() async {
-    //両方のTextを取得
+    // 両方のTextを取得
     final String username = _usernameController.text;
     final String password = _passwordController.text;
 
@@ -32,11 +32,11 @@ class _LoginPageState extends State<LoginPage> {
 
       bool isUserName = await DatabaseRead.isUserName();
 
-      //画面遷移
+      // 画面遷移
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => isUserName ? const MainPage() : const MakeProfilePage()), // ログイン後にホーム画面に遷移
+            builder: (context) => isUserName ? const MainPage() : MakeProfilePage()), // ログイン後にホーム画面に遷移
       );
     } catch (e) {
       print(e);
@@ -47,10 +47,10 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  //Googleでサインイン
+  // Googleでサインイン
   Future<void> _loginGoogle() async {
     try {
-      //googleアカウントを使用してサインイン
+      // googleアカウントを使用してサインイン
       await SignIn.google();
 
       final User? currentUser = FirebaseAuth.instance.currentUser;
@@ -58,11 +58,11 @@ class _LoginPageState extends State<LoginPage> {
         print("ログインしました　${currentUser.email} , ${currentUser.uid}");
 
       bool isUserName = await DatabaseRead.isUserName();
-      //画面遷移
+      // 画面遷移
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => isUserName ? const MainPage() : const MakeProfilePage()), // ログイン後にホーム画面に遷移
+            builder: (context) => isUserName ? const MainPage() : MakeProfilePage()), // ログイン後にホーム画面に遷移
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

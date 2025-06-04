@@ -1,18 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cordial/models/profile.dart';
-import 'package:cordial/widgets/dialog.dart';
+import 'package:cordial/widgets/profile/dialog.dart';
+import 'package:cordial/screens/edit_profile_page.dart';
+import 'package:cordial/navigation/page_transitions.dart';
 import 'package:cordial/function/database_write.dart';
 import 'package:cordial/function/database_read.dart';
 
-//フォローボタンとフォロー数フォロワー数widgetを返すクラス。
+// フォローボタンとフォロー数フォロワー数widgetを返すクラス。
 // 新規フォローすると見た目のみ数値を増やす。
 class FollowCount extends StatefulWidget {
-  //プロフィール情報を受け取る
+  // プロフィール情報を受け取る
   final Future<Profile?>? profileFuture;
 
-  //ユーザーidを受け取る
+  // ユーザーidを受け取る
   final String userId;
 
   const FollowCount(
@@ -23,66 +24,75 @@ class FollowCount extends StatefulWidget {
 }
 
 class FollowCountState extends State<FollowCount> {
-  //フォロー数とフォロワー数を格納する変数
+  // フォロー数とフォロワー数を格納する変数
   int? follows, followers;
 
-  //このユーザーをフォローしているか
+  // このユーザーをフォローしているか
   bool? isFollow;
 
   @override
   void initState() {
     super.initState();
 
-    //フォロー,フォロワー数を取得
+    // フォロー,フォロワー数を取得
     setFollowCount();
 
-    //ユーザーをフォローしているかを確認
+    // ユーザーをフォローしているかを確認
     setIsFollowing();
   }
 
-  //フォローしているかを判別する
+  // フォローしているかを判別する
   Future setIsFollowing() async {
-    //自分自身のページでないならフォローしているかを確認する。
+    // 自分自身のページでないならフォローしているかを確認する。
     if (widget.userId != FirebaseAuth.instance.currentUser?.uid) {
       isFollow = await DatabaseRead.isFollowing(widget.userId);
     }
   }
 
-  //フォロー,フォロワー数を取得
+  //プロフィールデータ格納用変数
+  Profile? _profile;
+  // フォロー,フォロワー数を取得
   Future setFollowCount() async {
-    //データ取得を待つ
-    Profile? _profile = await widget.profileFuture;
+    // データ取得を待つ
+    _profile = await widget.profileFuture;
 
+    if (!mounted)return;
     setState(() {
-      //それぞれデータ挿入
+      // それぞれデータ挿入
       follows = _profile?.followCount ?? 0;
       followers = _profile?.followerCount ?? 0;
     });
   }
 
-  //フォローボタンが押されたときに呼び出す
+  // 編集画面に飛ばす
+  void profileEdit(){
+    PageTransitions.fromBottom(MakeProfilePage(existingName: _profile?.name,), context);
+  }
+
+  // フォローボタンが押されたときに呼び出す
   void onFollow() async {
     if(isFollow == true)return;
 
-    //フォロー処理を実行
+    // フォロー処理を実行
     await DatabaseWrite.follow(widget.userId);
 
+    if (!mounted)return;
     setState(() {
-      //見かけ上フォロワー数を一つ上げる(実際にも上がってる)
+      // 見かけ上フォロワー数を一つ上げる(実際にも上がってる)
       followers = (followers ?? 0) + 1;
       isFollow = true;
     });
   }
 
-  //フォロー解除ボタンが押されたときに呼び出す
+  // フォロー解除ボタンが押されたときに呼び出す
   void onUnFollow() async {
     if(isFollow == false)return;
 
-    //フォロー処理を実行
+    // フォロー処理を実行
     await DatabaseWrite.unFollow(widget.userId);
 
     setState(() {
-      //見かけ上フォロワー数を一つ下げる(実際にも下がってる)
+      // 見かけ上フォロワー数を一つ下げる(実際にも下がってる)
       followers = (followers ?? 0) - 1;
       isFollow = false;
     });
@@ -92,11 +102,12 @@ class FollowCountState extends State<FollowCount> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        //通常フォローボタンを表示するが、自分自身のプロフィールの場合プロフィール編集ボタンを表示する
+        // 通常フォローボタンを表示するが、自分自身のプロフィールの場合プロフィール編集ボタンを表示する
         widget.userId == FirebaseAuth.instance.currentUser?.uid
             ? ElevatedButton(
                 onPressed: () {
-                  //編集を押したときの動作
+                  // 編集を押したときの動作
+                  profileEdit();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
@@ -119,10 +130,10 @@ class FollowCountState extends State<FollowCount> {
                   ],
                 ),
               )
-            //=====フォローボタンを表示=====
+            // =====フォローボタンを表示=====
             : ElevatedButton(
                 onPressed: () {
-                  //まだ読み込み中なら反応させない
+                  // まだ読み込み中なら反応させない
                   if(isFollow == null)return;
 
                   if(isFollow!){
@@ -130,35 +141,34 @@ class FollowCountState extends State<FollowCount> {
                       offset:  const Offset(150, 150),
                       text: "フォロー解除しますか？",
                       onTap: (){
-                        //フォロー解除
+                        // フォロー解除
                         onUnFollow();
                         print("解除");
                       }
                     );
                   }
                   else{
-                    //フォローする
+                    // フォローする
                     onFollow();
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isFollow != null //読み込み中でないなら
+                  backgroundColor: isFollow != null // 読み込み中でないなら
                       ? (isFollow! ? Colors.transparent : Colors.blue)
                       : Colors.blue,
-                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   minimumSize: const Size(0, 35),
                 ),
-                child: isFollow != null //読み込み中でないなら
+                child: isFollow != null // 読み込み中でないなら
                     ? (isFollow! ? const Text('フォロー済') : const Text('フォロー'))
                     : const Text('・・・'),
               ),
         const SizedBox(width: 4),
 
-        //フォロー数とフォロワー数を取得して表示
+        // フォロー数とフォロワー数を取得して表示
         Text(
           "フォロー${follows ?? "..."}人\n"
           "フォロワー${followers ?? "..."}人",

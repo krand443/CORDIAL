@@ -14,20 +14,20 @@ class Firestore {
   static Future<int> upload(File originalFile, String fileName,
       [int _width = 300, int _height = 300]) async {
     try {
-      //クロップしてからリサイズ
+      // クロップしてからリサイズ
       final img.Image square =
           await _cropToSquare(originalFile, _width, _height) as img.Image;
       final resized = img.copyResize(square, width: _width, height: _height);
 
-      //PNG形式でバイトデータにエンコード
+      // PNG形式でバイトデータにエンコード
       final Uint8List resizedBytes = Uint8List.fromList(img.encodePng(resized));
 
-      //一時ディレクトリに画像を保存
+      // 一時ディレクトリに画像を保存
       final tempDir = await getTemporaryDirectory();
       final file = File('${tempDir.path}/resized.png');
       await file.writeAsBytes(resizedBytes);
 
-      //Firebase Storage にアップロード
+      // Firebase Storage にアップロード
       final ref = FirebaseStorage.instance
           .ref()
           .child('${FirebaseAuth.instance.currentUser?.uid}/$fileName.png');
@@ -41,10 +41,10 @@ class Firestore {
     }
   }
 
-  //自分のアイコン画像を取得する関数
+  // 自分のアイコン画像を取得する関数
   static Future<String?> myIcon() async {
     try{
-      //firebase上に画像があればそれを返す
+      // firebase上に画像があればそれを返す
       final ref = FirebaseStorage.instance
           .ref()
           .child('${FirebaseAuth.instance.currentUser?.uid}/icon.png');
@@ -58,25 +58,25 @@ class Firestore {
     }
   }
 
-  //元画像の中央を基準にクロップする関数(デフォルトは正方形に切り取る)
+  // 元画像の中央を基準にクロップする関数(デフォルトは正方形に切り取る)
   static Future<img.Image?> _cropToSquare(File originalFile,
       [int _width = 1, int _height = 1]) async {
-    //バイトデータに変換
+    // バイトデータに変換
     final Uint8List imageBytes = await originalFile.readAsBytes();
-    //Dartのimageパッケージで画像をデコード
+    // Dartのimageパッケージで画像をデコード
     final image = img.decodeImage(imageBytes);
     if (image != null) {
       final double imageRatio = image.width / image.height;
       final double targetRatio = _width / _height;
 
-      //新規画像サイズ
+      // 新規画像サイズ
       int xSize, ySize;
 
-      //切り取り始める座標
+      // 切り取り始める座標
       int xOffset;
       int yOffset;
 
-      //比率があっていない方の幅を再定義する。
+      // 比率があっていない方の幅を再定義する。
       if (imageRatio > targetRatio) {
         xSize = (image.height * targetRatio).toInt();
         ySize = image.height;
