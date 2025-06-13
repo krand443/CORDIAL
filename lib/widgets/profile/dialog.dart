@@ -34,7 +34,7 @@ void showCustomDialog({
           child: Container(
             padding: EdgeInsets.all(0),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: Theme.of(context).colorScheme.secondary,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
@@ -47,7 +47,9 @@ void showCustomDialog({
                     _dialogEntry?.remove();
                     _dialogEntry = null;
                   },
-                  child: Text(text),
+                  child: Text(
+                    text,
+                    style: TextStyle(color: Theme.of(context).colorScheme.tertiary),),
                 ),
               ],
             ),

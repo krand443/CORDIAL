@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cordial/widgets/post_card.dart';
 import 'package:cordial/function/database_read.dart';
 import 'package:cordial/models/timeline.dart';
+import 'package:cordial/widgets/admob_widgets.dart';
+import 'package:rive/rive.dart';
 
 // タイムラインを表示するクラス
 class TimelineWidget extends StatefulWidget {
@@ -14,14 +16,19 @@ class TimelineWidget extends StatefulWidget {
   // 任意でスクロールコントローラーを受け取る
   final ScrollController parentScrollController;
 
-  const TimelineWidget({super.key, this.userId, this.postId , required this.parentScrollController,});
+  const TimelineWidget({
+    super.key,
+    this.userId,
+    this.postId,
+    required this.parentScrollController,
+  });
 
   @override
-  State<TimelineWidget> createState() => _TimelineWidgetState();
+  State<TimelineWidget> createState() => TimelineWidgetState();
 }
 
-// 上記のStatefulWidgetに対応する状態クラス
-class _TimelineWidgetState extends State<TimelineWidget> with AutomaticKeepAliveClientMixin{
+class TimelineWidgetState extends State<TimelineWidget>
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true; // ステートを保持する
 
@@ -57,7 +64,7 @@ class _TimelineWidgetState extends State<TimelineWidget> with AutomaticKeepAlive
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent -
-                  500 // 画面の縦の高さは: 783.2727272727273
+                  300 // 画面の縦の高さは: 783.2727272727273
           &&
           !isLoading &&
           !isShowAll) {
@@ -77,9 +84,9 @@ class _TimelineWidgetState extends State<TimelineWidget> with AutomaticKeepAlive
     // タイムラインを取得
     Timeline? _timeline = _postId != null
         // ポストidが渡されているなら返信を取得する
-        ? await DatabaseRead.replyTimeline(_postId!,timeline?.lastVisible)
+        ? await DatabaseRead.replyTimeline(_postId!, timeline?.lastVisible)
         // 渡されてないなら通常のタイムラインを取得する
-        : await DatabaseRead.timeline(_userId,timeline?.lastVisible);
+        : await DatabaseRead.timeline(_userId, timeline?.lastVisible);
 
     // タイムラインを更新
     if (_timeline != null) {
@@ -87,7 +94,6 @@ class _TimelineWidgetState extends State<TimelineWidget> with AutomaticKeepAlive
       setState(() {
         if (timeline == null) {
           timeline = _timeline;
-
         } else {
           timeline!.posts.addAll(_timeline.posts);
           timeline!.lastVisible = _timeline.lastVisible;
@@ -99,7 +105,7 @@ class _TimelineWidgetState extends State<TimelineWidget> with AutomaticKeepAlive
         if (_scrollController.hasClients &&
             _scrollController.position.maxScrollExtent <=
                 _scrollController.position.viewportDimension) {
-          if (!mounted) return;// メモリリーク予防
+          if (!mounted) return; // メモリリーク予防
           setState(() {
             isShowAll = true;
           });
@@ -116,64 +122,88 @@ class _TimelineWidgetState extends State<TimelineWidget> with AutomaticKeepAlive
     isLoading = false;
   }
 
-
   @override
   Widget build(BuildContext context) {
-    super.build(context);// AutomaticKeepAliveClientMixin有効化のため
+    super.build(context); // AutomaticKeepAliveClientMixin有効化のため
 
     // タイムラインなし&すべてみせきってないなら読み込み
-    if(timeline == null && !isShowAll) {
+    if (timeline == null && !isShowAll) {
       return const SliverFillRemaining(
         child: Center(
-          child: CircularProgressIndicator(
-            color: Colors.blue,
-            backgroundColor: Colors.transparent,
+          child: SizedBox(
+            height: 150,
+            width: 150,
+            child: RiveAnimation.asset(
+              'assets/animations/load_icon.riv',
+              animations: ['load'],
+            ),
           ),
         ),
       );
-    }
-    else {
-      return
-        timeline == null
-        ? SliverToBoxAdapter(
-          child: Container(
-            padding: EdgeInsets.all(16),
-          ),
-        )
-      :SliverList(
-        delegate: SliverChildBuilderDelegate(
-          childCount: timeline!.posts.length + 2,
-          // 最後にローディング用ウィジェットを1つ追加
-              (BuildContext context, int index) {
-            if (index < timeline!.posts.length) {
-              // 各投稿をカード形式で表示
-              return PostCard(post: timeline!.posts[index],
-                transition: _postId!=null ? false:true,// 返信用なら遷移させない
-              );
-            }
+    } else {
+      return timeline == null
+          ? SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.all(16),
+              ),
+            )
+          : SliverList(
+              delegate: SliverChildBuilderDelegate(
+                childCount: (() {
+                  final postCount = timeline!.posts.length;
+                  final adCount = (postCount / 7).floor();
+                  return postCount + adCount + 2; // +2: ローディング + 余白
+                })(),
+                // 最後にローディング用ウィジェットを1つ追加
+                (BuildContext context, int index) {
+                  // 表示する投稿数
+                  final postCount = timeline!.posts.length;
 
-            if (index == timeline!.posts.length) {
-              // 最後に読み込みを追加する
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 5),
-                  child: !isShowAll
-                      ? const CircularProgressIndicator(
-                    color: Colors.blue,
-                    backgroundColor: Colors.transparent,
-                  )
-                      : SizedBox.shrink(), // ← falseのときは何も表示しない
-                ),
-              );
-            }
+                  // 投稿と広告の総アイテム数を計算
+                  final adInterval = 7;// ADを数投稿ごとに挟む
+                  final adCount = (postCount / adInterval).floor();
+                  final totalItemCount = postCount + adCount + 2; // +2 は読み込み＋余白
 
-            // 最後に余白を追加する
-            if (index == timeline!.posts.length + 1) {
-              return const SizedBox(height: 90,);
-            }
-          },
-        ),
-      );
+                  if (index == totalItemCount - 2) {
+                    // 最後に読み込みを追加する
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 5),
+                        child: !isShowAll
+                            // 読み込みアニメーション
+                            ? const CircularProgressIndicator(
+                                color: Colors.blue,
+                                backgroundColor: Colors.transparent,
+                              )
+                            : const SizedBox.shrink(), // ← falseのときは何も表示しない
+                      ),
+                    );
+                  }
+
+                  // 末端に余白を追加する
+                  if (index == totalItemCount - 1) {
+                    return const SizedBox(
+                      height: 90,
+                    );
+                  }
+
+                  // 広告を挿入する位置かどうかを判定
+                  if ((index + 1) % (adInterval + 1) == 0) {
+                    return AdMob.getBannerAdUnit(); // 広告ウィジェット
+                  }
+
+                  // 実際のポストのインデックスを算出
+                  final adsBefore = (index / (adInterval + 1)).floor();
+                  final postIndex = index - adsBefore;
+
+                  return PostCard(
+                    post: timeline!.posts[postIndex],
+                    transition: _postId != null ? false : true, // 返信用なら遷移を禁止
+                    parentPostId: _postId ?? null, //返信用なら親ポストIDをカードに渡す
+                  );
+                },
+              ),
+            );
     }
   }
 }

@@ -1,4 +1,4 @@
-// Postを管理するためのクラス
+// Postを管理するためのデータ構造
 class Post
 {
   // ポスト時間
@@ -23,12 +23,12 @@ class Post
   final String response;
 
   // いいねの数
-  final int nice;
+  int nice;
 
   // 既に自分がniceを押しているかどうかの変数
-  final bool isNice;
+  bool isNice;
 
-  const Post({
+  Post({
     required this.postedAt,
     required this.id,
     required this.userName,

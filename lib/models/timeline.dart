@@ -1,7 +1,7 @@
 import 'post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// タイムラインを保持する構造
+// タイムラインを保持するデータ構造
 class Timeline
 {
   // 取得したポストのリスト

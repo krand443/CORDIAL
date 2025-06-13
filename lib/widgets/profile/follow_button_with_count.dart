@@ -66,7 +66,7 @@ class FollowCountState extends State<FollowCount> {
 
   // 編集画面に飛ばす
   void profileEdit(){
-    PageTransitions.fromBottom(MakeProfilePage(existingName: _profile?.name,), context);
+    PageTransitions.fromBottom(targetWidget: EditProfilePage(existingName: _profile?.name,), context: context);
   }
 
   // フォローボタンが押されたときに呼び出す
@@ -111,7 +111,8 @@ class FollowCountState extends State<FollowCount> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
-                  foregroundColor: Colors.white,
+                  shadowColor: Colors.black,
+                  foregroundColor: Colors.green[50],
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -153,9 +154,11 @@ class FollowCountState extends State<FollowCount> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
+                  shadowColor: Colors.black,
+                  foregroundColor: Colors.green[50],
                   backgroundColor: isFollow != null // 読み込み中でないなら
-                      ? (isFollow! ? Colors.transparent : Colors.blue)
-                      : Colors.blue,
+                      ? (isFollow! ? Colors.transparent : Theme.of(context).colorScheme.tertiary)
+                      : Theme.of(context).colorScheme.tertiary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),

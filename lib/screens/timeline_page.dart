@@ -3,6 +3,9 @@ import 'package:cordial/widgets/timeline/timeline_widget.dart';
 import 'package:cordial/widgets/custom_appbar.dart';
 import 'package:cordial/widgets/timeline/timeline_menu.dart';
 import 'package:cordial/navigation/page_transitions.dart';
+import 'package:cordial/widgets/admob_widgets.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:rive/rive.dart';
 
 // 投稿のタイムラインを表示するウィジェット
 class TimelinePage extends StatefulWidget {
@@ -31,25 +34,26 @@ class TimelinePageState extends State<TimelinePage> {
   // 画面を描画するbuildメソッド（Flutterフレームワークが呼び出す）
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       // 投稿一覧（縦スクロール可能なListViewで構成）
-      body: Container(
-        color: Theme.of(context).colorScheme.surface,
-        child: RefreshIndicator(
-          onRefresh: reload,
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              CustomAppbar(
-                titleText: "タイムライン",
-                onTap: (){
-                  PageTransitions.fromLeft(const TimelineMenu(), context);
-              },),
+      body: RefreshIndicator(
+        color: Theme.of(context).colorScheme.tertiary,
+        onRefresh: reload,
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            CustomAppbar(
+              titleText: "タイムライン",
+              onTap: () {
+                PageTransitions.fromLeft(
+                    targetWidget: const TimelineMenu(), context: context);
+              },
+            ),
 
-              // タイムラインをリストで取得する
-              TimelineWidget(parentScrollController: _scrollController),
-            ],
-          ),
+            // タイムラインをリストで取得する
+            TimelineWidget(parentScrollController: _scrollController),
+          ],
         ),
       ),
     );

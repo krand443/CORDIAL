@@ -52,7 +52,6 @@ class DatabaseWrite {
 
   // 投稿するための関数
   static Future<void> addPost(String text) async {
-    print("よびだしーーーーーーーーー");
     /*
       await FirebaseFirestore.instance
           .collection('posts')
@@ -100,10 +99,131 @@ class DatabaseWrite {
         .doc()
         .set({
       'repliedAt': FieldValue.serverTimestamp(),
-      'userid': FirebaseAuth.instance.currentUser?.uid,
+      'userid': FirebaseAuth.instance.currentUser!.uid,
       'text': text,
       'nice': 0,
     });
+  }
+
+  // いいねを追加
+  static Future<void> nice(String postId, {String? parentId}) async {
+    /*
+    /posts/{postId}                          // 例:post001
+           ├── postedAt: Timestamp
+           ├── userid: String                       // 投稿者ID
+           ├── text: String                         // 本文
+           ├── response: String                     // AIからの返信
+           ├── nice: int
+           ├── /niceList
+           │   └── {userId}: {}
+           ├─── /replies
+                ├─── {replyId}                       // reply001
+                      ├── repliedAt: Timestamp
+                      ├── userid: String               // リプライ投稿者ID
+                      ├── text: String
+                      ├── nice: int
+                      └── /niceList
+                          └── {userId}: {}             // リプライにいいねしたユーザー
+    */
+
+    // ドキュメント参照用
+    DocumentReference postDocRef;
+
+    // 親Idが送られてるなら返信用
+    if (parentId != null) {
+      postDocRef = FirebaseFirestore.instance
+          .collection('posts')
+          .doc(parentId)
+          .collection('replies')
+          .doc(postId);
+    } else {
+      postDocRef = FirebaseFirestore.instance.collection('posts').doc(postId);
+    }
+
+    try {
+      await FirebaseFirestore.instance.runTransaction(
+        (transaction) async {
+
+          // 既にいいねをしていないか確認
+          final docRef = postDocRef
+              .collection('niceList')
+              .doc(FirebaseAuth.instance.currentUser!.uid);
+          final snapshot = await transaction.get(docRef);
+          if (snapshot.exists) {
+            throw Exception('ドキュメントはすでに存在しています。');
+          }
+
+          // niceListに追加
+          transaction.set(
+            postDocRef
+                .collection('niceList')
+                .doc(FirebaseAuth.instance.currentUser!.uid),
+            <String, dynamic>{},
+          );
+
+          // niceを加算
+          transaction.set(
+            postDocRef,
+            {
+              'nice': FieldValue.increment(1),
+            },
+            SetOptions(merge: true),
+          );
+        },
+      );
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  // いいねを削除
+  static Future<void> unNice(String postId, {String? parentId}) async {
+    /*
+    /posts/{postId}                          // 例:post001
+           ├── postedAt: Timestamp
+           ├── userid: String                       // 投稿者ID
+           ├── text: String                         // 本文
+           ├── response: String                     // AIからの返信
+           ├── nice: int
+           ├── /niceList
+           │   └── {userId}: {}
+    */
+    // ドキュメント参照用
+    DocumentReference postDocRef;
+
+    // 親Idが送られてるなら返信用
+    if (parentId != null) {
+      postDocRef = FirebaseFirestore.instance
+          .collection('posts')
+          .doc(parentId)
+          .collection('replies')
+          .doc(postId);
+    } else {
+      postDocRef = FirebaseFirestore.instance.collection('posts').doc(postId);
+    }
+
+    await FirebaseFirestore.instance.runTransaction(
+      (transaction) async {
+        // 参照を追加
+        final niceDocRef = postDocRef
+            .collection('niceList')
+            .doc(FirebaseAuth.instance.currentUser!.uid);
+
+        // 存在するなら削除
+        final niceSnapshot = await transaction.get(niceDocRef);
+
+        if (niceSnapshot.exists) {
+          transaction.delete(niceDocRef);
+
+          // いいね数を減らす
+          transaction.set(
+            postDocRef,
+            {'nice': FieldValue.increment(-1)},
+            SetOptions(merge: true),
+          );
+        }
+      },
+    );
   }
 
   // フォロー時の処理
@@ -132,7 +252,7 @@ class DatabaseWrite {
     }
   }
 
-  // フォロー時の処理
+  // フォロー解除時の処理
   static Future<void> unFollow(String id) async {
     final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
 
@@ -174,8 +294,7 @@ class DatabaseWrite {
 │   └── {hiddenUserId}: {}               // 非表示ユーザーリスト
 ├── /follows
 │   ├─── {followsUserId}                // フォローしているユーザーのID
-│       ├── followedAt: Timestamp
-│       └── notify: boolean             // 通知の切り替え
+│       └── followedAt: Timestamp
 ├─── /followers
     ├─── {followerUserId}               // フォロワーのユーザーID
         └── followedAt: Timestamp

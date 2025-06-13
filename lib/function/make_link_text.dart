@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+// 送られてきたテキストのリンク部分をタップして遷移可能な形にして返す。
 TextSpan makeLinkText(String text,BuildContext context,{double? fontSize}) {
   final RegExp urlRegex = RegExp(r'(https?:// \S+)');
   final List<TextSpan> spans = [];

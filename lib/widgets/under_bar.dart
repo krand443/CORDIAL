@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:cordial/navigation/page_transitions.dart';
 import '../screens/make_post_page.dart';
 
 class UnderBar extends StatelessWidget {
@@ -27,7 +27,7 @@ class UnderBar extends StatelessWidget {
               icon: Icon(
                 Icons.home,
                 size: 40,
-                color: currentIndex == 0 ? Colors.blue : Theme.of(context).colorScheme.onSurface,
+                color: currentIndex == 0 ? Theme.of(context).colorScheme.tertiaryContainer : Theme.of(context).colorScheme.onSurface,
               ),
               onPressed: () => onTap(0),
             ),
@@ -37,7 +37,7 @@ class UnderBar extends StatelessWidget {
               icon: Icon(
                 Icons.person,
                 size: 40,
-                color: currentIndex == 1 ? Colors.blue : Theme.of(context).colorScheme.onSurface,
+                color: currentIndex == 1 ? Theme.of(context).colorScheme.tertiaryContainer : Theme.of(context).colorScheme.onSurface,
               ),
               onPressed: () => onTap(1),
             ),
@@ -46,26 +46,11 @@ class UnderBar extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 0),
           child: FloatingActionButton(
+            backgroundColor: Theme.of(context).colorScheme.tertiary,
             tooltip: '新しい投稿',
             onPressed: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  opaque: false, // 透明な背景にする
-                  transitionDuration: const Duration(milliseconds: 200), // アニメーションの時間を指定
-                  pageBuilder: (context, animation, secondaryAnimation) => const MakePostPage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                    // スライドインアニメーション
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0.0, 1.0), // 下から登場
-                        end: Offset.zero,               // 画面中央へ
-                      ).animate(animation),
-                      child: child,
-                    );
-                  },
-                ),
-              );
+              // 下から投稿画面を表示
+              PageTransitions.fromBottom(targetWidget: const MakePostPage(), context: context);
             },
             child: const Icon(Icons.add),
           ),

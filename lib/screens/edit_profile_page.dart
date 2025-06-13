@@ -1,24 +1,24 @@
 import 'package:cordial/widgets/icon.dart';
 import 'package:flutter/material.dart';
-import '../controller/main_page_MG.dart';
+import 'root_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:cordial/function/firestore_storage.dart';
 import 'package:cordial/function/database_write.dart';
 import 'package:cordial/function/database_read.dart';
 
-class MakeProfilePage extends StatefulWidget {
+class EditProfilePage extends StatefulWidget {
 
   //　既存の名前を受けとる(なくても可)
   final String? existingName;
 
-  const MakeProfilePage({super.key, this.existingName});
+  const EditProfilePage({super.key, this.existingName});
 
   @override
-  State<MakeProfilePage> createState() => MakeProfilePageState();
+  State<EditProfilePage> createState() => EditProfilePageState();
 }
 
-class MakeProfilePageState extends State<MakeProfilePage> {
+class EditProfilePageState extends State<EditProfilePage> {
   // 未入力を確認するためのコントローラー
   final TextEditingController _textController = TextEditingController();
 
@@ -52,8 +52,14 @@ class MakeProfilePageState extends State<MakeProfilePage> {
   // デフォルトのアイコン
   AssetImage defaultIcon = const AssetImage("assets/user_default_icon.png");
 
+  // 完了ボタンを押したらtrueになる。
+  bool waitForUpload = false;
+
   // 確定が押されたとき
   void pushEnter() async {
+    waitForUpload = true;
+    setState(() {});// 画面更新
+
     // 画像を追加(任意)
     try {
       await Firestore.upload(_pickImage!, "icon");
@@ -68,28 +74,27 @@ class MakeProfilePageState extends State<MakeProfilePage> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-          builder: (context) => const MainPage(selectTab: 1)), // プロフィールに飛ぶ
+          builder: (context) => const RootPage(selectTab: 1)), // プロフィールに飛ぶ
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       appBar: AppBar(
-        backgroundColor:
-            Theme.of(context).colorScheme.inversePrimary, // アプリバーを透明にして背景を見せる
+        backgroundColor:Colors.transparent,// アプリバーの色
+        automaticallyImplyLeading: false, // 戻るアイコンを非表示にする
         title: const Text(
           'プロフィールを作成',
           style: TextStyle(
             fontFamily: 'Roboto', // モダンなフォント
             fontWeight: FontWeight.w600, // 太めのフォントでモダンな印象
-            color: Colors.black, // タイトルを白に変更
           ),
         ),
         centerTitle: true,
         elevation: 0, // アプリバーの影を消す
       ),
-      backgroundColor: Colors.white, // 背景
       body: LayoutBuilder(
         // 画面全体の制約（最大幅・最大高さ）を取得するために使用
         builder: (context, constraints) {
@@ -113,22 +118,27 @@ class MakeProfilePageState extends State<MakeProfilePage> {
                         child: Stack(children: [
                           TextButton(
                             onPressed: () {
-                              if (_textController.text.isNotEmpty) {
+                              if (_textController.text.isNotEmpty && !waitForUpload) {
                                 pushEnter();
                               }
                             },
                             style: TextButton.styleFrom(
-                              backgroundColor: _textController.text.isNotEmpty
-                                  ? Theme.of(context).colorScheme.inversePrimary
-                                  : Colors.grey, // ← 背景色
-                              foregroundColor: Colors.white, // ← テキスト色
+                              // テキストが入力されていないかアップロード待ちなら灰色表示する
+                              backgroundColor: _textController.text.isEmpty || waitForUpload
+                                  ? Colors.grey
+                                  : Theme.of(context).colorScheme.tertiaryContainer, // 背景色
+                              foregroundColor: Colors.black, // テキスト色
                               textStyle: const TextStyle(
-                                fontSize: 18, // ← フォントサイズを指定
+                                fontSize: 18, // フォントサイズを指定
                               ),
                             ),
                             child: const Text('完了→'),
                           ),
-                          const CircularProgressIndicator(
+
+                          // アップロード待ちなら読み込みアニメーションを表示
+                          if(waitForUpload)
+                            const CircularProgressIndicator(
+                            padding: EdgeInsets.only(left: 20,top: 5),
                             color: Colors.blue,
                           )
                         ]),

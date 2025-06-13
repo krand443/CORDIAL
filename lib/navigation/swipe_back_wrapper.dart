@@ -1,68 +1,122 @@
 import 'package:flutter/material.dart';
 
-// スワイプで前の画面に戻れるようにするラッパーウィジェット
-class SwipeBackWrapper extends StatefulWidget {
-
-  final Widget child;
-
-  // これがtureなら左方向にスワイプ
-  final bool left;
-
-  const SwipeBackWrapper({super.key, required this.child, this.left = false});
-
-  @override
-  SwipeBackWrapperState createState() => SwipeBackWrapperState();
+// 方向を指定する列挙型
+enum SwipeDirection {
+  left,   // 右から左へスワイプ
+  right,  // 左から右へスワイプ
+  up,     // 下から上へスワイプ
+  down,   // 上から下へスワイプ
 }
 
-class SwipeBackWrapperState extends State<SwipeBackWrapper> {
+// 方向とWidgetを受け取ってスワイプで画面を閉じることができるクラス
+class SwipeBackWrapper extends StatefulWidget {
+  final Widget child;
+  final SwipeDirection direction;
+  final VoidCallback? onClose;// 閉じたときに呼ばれる関数
 
-  double _dragOffset = 0.0; // ドラッグした距離を記録する変数
-  bool _isClosing = false; // 画面を閉じるフラグ
+  const SwipeBackWrapper({
+    super.key,
+    required this.child,
+    required this.direction,
+    this.onClose,
+  });
 
-  // ユーザーが指を動かすときに呼び出される処理
-  void _handleDragUpdate(DragUpdateDetails details) {
+  @override
+  State<SwipeBackWrapper> createState() => _SwipeBackWrapperState();
+}
+
+class _SwipeBackWrapperState extends State<SwipeBackWrapper> {
+  Offset _dragOffset = Offset.zero; // スワイプされた距離
+  bool _isClosing = false; // すでに閉じようとしているかのフラグ
+  static const _threshold = 100.0; // この距離を超えたら画面を閉じる
+
+  bool get _isHorizontal =>
+      widget.direction == SwipeDirection.left || widget.direction == SwipeDirection.right;
+
+  // スワイプを始めた時
+  void _onDragUpdate(DragUpdateDetails d) {
     if (_isClosing) return;
-    setState(() {
-      // ドラッグの移動量を記録
-      _dragOffset += widget.left ? -details.primaryDelta! :details.primaryDelta!;
 
-      // 左に行かせないように、ドラッグ量が0より小さくならないようにする
-      if (_dragOffset < 0) _dragOffset = 0;
+    // スワイプに追従
+    setState(() {
+      switch (widget.direction) {
+        case SwipeDirection.left:
+          _dragOffset += Offset(d.delta.dx, 0);
+
+          // 右側にはみ出ないようにする
+          if(_dragOffset.dx > 0) {
+            _dragOffset = const Offset(0, 0);
+          }
+          break;
+        case SwipeDirection.right:
+          _dragOffset += Offset(d.delta.dx, 0);
+
+          // 左側にはみ出ないようにする
+          if(_dragOffset.dx < 0) {
+            _dragOffset = const Offset(0, 0);
+          }
+          break;
+        case SwipeDirection.up:
+          _dragOffset += Offset(0, d.delta.dy);
+
+          // 下側にはみ出ないようにする
+          if(_dragOffset.dy > 0) {
+            _dragOffset = const Offset(0, 0);
+          }
+          break;
+        case SwipeDirection.down:
+          _dragOffset += Offset(0, d.delta.dy);
+
+          // 上側にはみ出ないようにする
+          if(_dragOffset.dy < 0) {
+            _dragOffset = const Offset(0, 0);
+          }
+          break;
+      }
     });
   }
 
-  // ユーザーが指を離したときに呼ばれる処理
-  void _handleDragEnd(DragEndDetails details) {
-    // ドラッグした距離が100ピクセル以上なら、画面を閉じる処理を開始
-    if (_dragOffset > 100) {
-      setState(() => _isClosing = true); // 画面を閉じるフラグを立てる
-      Navigator.of(context).pop(); // 現在の画面を閉じる
+  void _onDragEnd(DragEndDetails d) {
+    final distance = _isHorizontal ? _dragOffset.dx.abs() : _dragOffset.dy.abs();
+    if (distance > _threshold) {
+      setState(() => _isClosing = true);
+      widget.onClose?.call();
+      Navigator.of(context).maybePop();
     } else {
-      // 100ピクセル未満なら元の位置に戻す
-      setState(() => _dragOffset = 0);
+      setState(() => _dragOffset = Offset.zero);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    Offset offset = Offset.zero;
+    switch (widget.direction) {
+      case SwipeDirection.left:
+        offset = Offset(_dragOffset.dx, 0);
+        break;
+      case SwipeDirection.right:
+        offset = Offset(_dragOffset.dx, 0);
+        break;
+      case SwipeDirection.up:
+        offset = Offset(0, _dragOffset.dy);
+        break;
+      case SwipeDirection.down:
+        offset = Offset(0, _dragOffset.dy);
+        break;
+    }
+
     return Scaffold(
       extendBody: true,
-      backgroundColor: Colors.transparent, // 背景を透明にする
-      // GestureDetectorでスライドアニメーションの部分のみ処理
+      backgroundColor: Colors.transparent,
       body: GestureDetector(
-        // 水平ドラッグの更新を検知し、_handleDragUpdate を呼び出す
-        onHorizontalDragUpdate: _handleDragUpdate,
-        // 水平ドラッグが終了したときに呼ばれる処理
-        onHorizontalDragEnd: _handleDragEnd,
-
-        child: Stack(
-          children: [
-            // スライドアニメーションを適用する部分
-            Transform.translate(
-              offset: Offset(widget.left ? -_dragOffset :_dragOffset , 0), // ドラッグ量に応じてウィジェットを移動
-              child: widget.child,
-            ),
-          ],
+        behavior: HitTestBehavior.translucent,
+        onHorizontalDragUpdate: _isHorizontal ? _onDragUpdate : null,
+        onHorizontalDragEnd: _isHorizontal ? _onDragEnd : null,
+        onVerticalDragUpdate: !_isHorizontal ? _onDragUpdate : null,
+        onVerticalDragEnd: !_isHorizontal ? _onDragEnd : null,
+        child: Transform.translate(
+          offset: offset,
+          child: widget.child,
         ),
       ),
     );

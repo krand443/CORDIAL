@@ -189,7 +189,7 @@ class DatabaseRead {
 
         return Post(
           postedAt: timeAgoFromTimestamp(doc['repliedAt'] as Timestamp),
-          id: postId,
+          id: replyId,
           userId: userId,
           userName: results[1]['name'],
           iconUrl: results[1]['iconUrl'],
@@ -360,8 +360,7 @@ class DatabaseRead {
 │   └── {hiddenUserId}: {}               // 非表示ユーザーリスト
 ├── /follows
 │   ├─── {followsUserId}                // フォローしているユーザーのID
-│       ├── followedAt: Timestamp
-│       └── notify: boolean             // 通知の切り替え
+│       └── followedAt: Timestamp
 ├─── /followers
     ├─── {followerUserId}               // フォロワーのユーザーID
         └── followedAt: Timestamp

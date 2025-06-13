@@ -26,38 +26,10 @@ class MakePostPageState extends State<MakePostPage> {
   // 投稿ボタンを押したときに呼ばれる処理
   void post() {
     DatabaseWrite.addPost(_textController.text); // ポスト追加
-    setState(() => _isClosing = true); // 画面を閉じるフラグを立てる
     Navigator.of(context).pop(); // 現在の画面を閉じる
   }
 
-  double _dragOffset = 0.0; // ドラッグした距離を記録する変数
-  bool _isClosing = false; // 画面を閉じるフラグ
-
   late String randomHintText = randomMassage();
-
-  // ユーザーが指を動かすときに呼び出される処理
-  void _handleDragUpdate(DragUpdateDetails details) {
-    if (_isClosing) return;
-    setState(() {
-      // ドラッグの移動量を記録
-      _dragOffset += details.primaryDelta!;
-
-      // 上に行かせないように、ドラッグ量が0より小さくならないようにする
-      if (_dragOffset < 0) _dragOffset = 0;
-    });
-  }
-
-  // ユーザーが指を離したときに呼ばれる処理
-  void _handleDragEnd(DragEndDetails details) {
-    // ドラッグした距離が100ピクセル以上なら、画面を閉じる処理を開始
-    if (_dragOffset > 100) {
-      setState(() => _isClosing = true); // 画面を閉じるフラグを立てる
-      Navigator.of(context).pop(); // 現在の画面を閉じる
-    } else {
-      // 100ピクセル未満なら元の位置に戻す
-      setState(() => _dragOffset = 0);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,124 +37,110 @@ class MakePostPageState extends State<MakePostPage> {
       backgroundColor: Colors.transparent, // 背景を透明にする
       // GestureDetectorでスライドアニメーションの部分のみ処理
       body: GestureDetector(
-        // 垂直ドラッグの更新を検知し、_handleDragUpdate を呼び出す
-        onVerticalDragUpdate: _handleDragUpdate,
-        // 垂直ドラッグが終了したときに呼ばれる処理
-        onVerticalDragEnd: _handleDragEnd,
+        child: Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          resizeToAvoidBottomInset: true, // キーボードに合わせてUIを押し上げる
 
-        child: Stack(
-          children: [
-            // スライドアニメーションを適用する部分
-            Transform.translate(
-              offset: Offset(0, _dragOffset), // ドラッグ量に応じてウィジェットを移動
-              child: Scaffold(
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                resizeToAvoidBottomInset: true, // ← キーボードに合わせてUIを押し上げる
-
-                // closeボタンと投稿ボタンを配置
-                appBar: AppBar(
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  surfaceTintColor: Colors.transparent, // ← M3特有の "変色" を防ぐ！
-                  automaticallyImplyLeading: false, // ← 左の戻るボタンを消す（必要なら）
-                  title: Row(
-                      // 左右のスペースをまんべんなく使う
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      // 左右に寄せる！
-                      children: [
-                        IconButton(
-                          padding: const EdgeInsets.only(top: 0),
-                          icon: const Icon(
-                            Icons.close,
-                            size: 45,
-                            color: Colors.grey,
-                          ),
-                          onPressed: () {
-                            _isClosing = true;
-                            Navigator.of(context).pop(); // 現在の画面を閉じる
-                          },
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 0, right: 0),
-                          child: TextButton(
-                            onPressed: () {
-                              // テキストが入力されていれば実行
-                              if (_textController.text.isNotEmpty) {
-                                post();
-                              }
-                            },
-                            style: TextButton.styleFrom(
-                              backgroundColor: _textController.text.isNotEmpty
-                                  ? Theme.of(context).colorScheme.inversePrimary
-                                  : Colors.grey, // ← 背景色
-                              foregroundColor: Colors.white, // ← テキスト色
-                              textStyle: const TextStyle(
-                                fontSize: 18, // ← フォントサイズを指定
-                              ),
-                            ),
-                            child: const Text(
-                              'メッセージを送信&投稿',
-                            ),
-                          ),
-                        )
-                      ]),
-                ),
-
-                body: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // AIのアイコン
-                      Padding(
-                        padding: const EdgeInsets.all(40),
-                        child: Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .inversePrimary, // 枠線の色
-                              width: 5, // 枠線の太さ
-                            ),
-                          ),
-                          child: const CircleAvatar(
-                            radius: 100,
-                            backgroundImage: AssetImage('assets/AIicon.webp'),
-                          ),
+          // closeボタンと投稿ボタンを配置
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            surfaceTintColor: Colors.transparent, // M3特有の変色を防ぐ！
+            automaticallyImplyLeading: false, // 左の戻るボタンを消す（必要なら）
+            title: Row(
+              // 左右のスペースをまんべんなく使う
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // 左右に寄せる！
+                children: [
+                  IconButton(
+                    padding: const EdgeInsets.only(top: 0),
+                    icon: const Icon(
+                      Icons.close,
+                      size: 45,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop(); // 現在の画面を閉じる
+                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 0, right: 0),
+                    child: TextButton(
+                      onPressed: () {
+                        // テキストが入力されていれば実行
+                        if (_textController.text.isNotEmpty) {
+                          post();
+                        }
+                      },
+                      style: TextButton.styleFrom(
+                        backgroundColor: _textController.text.isNotEmpty
+                            ? Theme.of(context).colorScheme.tertiaryContainer
+                            : Colors.grey, // ← 背景色
+                        foregroundColor:  _textController.text.isNotEmpty ? Colors.black : Colors.grey[50], // ← テキスト色
+                        textStyle: const TextStyle(
+                          fontSize: 18, // ← フォントサイズを指定
                         ),
                       ),
-
-                      // ユーザーのアイコンと入力欄
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const UserIcon(size: 30),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: TextField(
-                              autofocus: true,
-                              // ← ウィジェット表示時に自動でフォーカス
-                              maxLines: null,
-                              // ← 改行を許可する
-                              controller: _textController,
-                              keyboardType: TextInputType.multiline,
-                              decoration: InputDecoration(
-                                // 入力欄に表示するヒントメッセージを生成
-                                hintText: randomHintText,
-                                contentPadding: const EdgeInsets.only(top: 20),
-                                // 上に余白追加して表示位置を下げる
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          )
-                        ],
+                      child: const Text(
+                        'メッセージを送信&投稿',
                       ),
-                    ],
+                    ),
+                  )
+                ]),
+          ),
+
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                // AIのアイコン
+                Padding(
+                  padding: const EdgeInsets.all(40),
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .inversePrimary, // 枠線の色
+                        width: 5, // 枠線の太さ
+                      ),
+                    ),
+                    child: const CircleAvatar(
+                      radius: 100,
+                      backgroundImage: AssetImage('assets/AIicon.webp'),
+                    ),
                   ),
                 ),
-              ),
+
+                // ユーザーのアイコンと入力欄
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const UserIcon(size: 30),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: TextField(
+                        autofocus: true,
+                        // ← ウィジェット表示時に自動でフォーカス
+                        maxLines: null,
+                        // ← 改行を許可する
+                        controller: _textController,
+                        keyboardType: TextInputType.multiline,
+                        decoration: InputDecoration(
+                          // 入力欄に表示するヒントメッセージを生成
+                          hintText: randomHintText,
+                          contentPadding: const EdgeInsets.only(top: 20),
+                          // 上に余白追加して表示位置を下げる
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

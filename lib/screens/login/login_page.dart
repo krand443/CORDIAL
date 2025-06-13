@@ -1,10 +1,12 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../controller/main_page_MG.dart';
+import '../root_page.dart';
 import 'package:cordial/function/signin.dart';
-import '../function/database_write.dart';
-import '../function/database_read.dart';
-import 'edit_profile_page.dart';
+import 'package:cordial/screens/login/reset_password_page.dart';
+import 'package:cordial/navigation/page_transitions.dart';
+import '../../function/database_read.dart';
+import '../edit_profile_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,13 +16,13 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _mailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   // メールでログイン処理
   Future<void> _login() async {
     // 両方のTextを取得
-    final String username = _usernameController.text;
+    final String username = _mailController.text;
     final String password = _passwordController.text;
 
     try {
@@ -36,7 +38,9 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => isUserName ? const MainPage() : MakeProfilePage()), // ログイン後にホーム画面に遷移
+            builder: (context) => isUserName
+                ? const RootPage()
+                : const EditProfilePage()), // ログイン後にホーム画面に遷移
       );
     } catch (e) {
       print(e);
@@ -62,7 +66,9 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => isUserName ? const MainPage() : MakeProfilePage()), // ログイン後にホーム画面に遷移
+            builder: (context) => isUserName
+                ? const RootPage()
+                : EditProfilePage()), // ログイン後にホーム画面に遷移
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -71,15 +77,113 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // パスワードを忘れた場合のリンク
+  // アカウント登録処理(メールアドレス&パスワード)
+  Future createAccount(String email, String passWord) async {
+    try {
+      // アカウント登録
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: passWord,
+      );
+
+      // 認証メールを送信
+      if (!userCredential.user!.emailVerified) {
+        await userCredential.user!.sendEmailVerification();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('認証メールを送信しました。メールを確認してください。')),
+        );
+      }
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('アカウントの作成に失敗しました。')),
+      );
+    }
+  }
+
+  // ログインボタン
+  Widget _loginButton() {
+    return ElevatedButton(
+      onPressed: _login,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green, // ボタンの色
+        padding: const EdgeInsets.symmetric(vertical: 16), // ボタンの高さを調整
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), // ボタンの角を丸く
+        ),
+        elevation: 5, // ボタンの影
+      ),
+      child: const SizedBox(
+        width: 200, // 幅を200に設定
+        child: Text(
+          'ログイン',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white, // テキストの色を白に設定
+          ),
+          textAlign: TextAlign.center, // テキストを中央揃え
+        ),
+      ),
+    );
+  }
+
+  // パスワードを忘れた場合のボタン
   Widget _buildForgotPasswordLink() {
     return TextButton(
       onPressed: () {
-        // パスワードリセットの処理をここに追加
+        PageTransitions.fromBottom(targetWidget: const ResetPasswordPage(), context: context);
       },
       child: const Text(
         'パスワードを忘れた場合',
         style: TextStyle(color: Colors.grey),
+      ),
+    );
+  }
+
+  // 新規作成
+  Widget _makeAccountLink() {
+    return ElevatedButton(
+      onPressed: () {
+        // メールアドレスかパスワードが入力されていないなら
+        if (_mailController.text == "" || _passwordController.text == "") {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('メールアドレスまたはパスワードが入力されていません。')),
+          );
+          return;
+        }
+
+        // メールアドレスの形式があってるか確かめる
+        if (!EmailValidator.validate(_mailController.text)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('メールアドレスの形式が間違っています。')),
+          );
+          return;
+        }
+
+        // アカウントを作成する
+        createAccount(_mailController.text, _passwordController.text);
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green, // ボタンの色
+        padding: const EdgeInsets.symmetric(vertical: 13), // ボタンの高さを調整
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), // ボタンの角を丸く
+        ),
+        elevation: 5, // ボタンの影
+      ),
+      child: const SizedBox(
+        child: Text(
+          '新規作成',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.white, // テキストの色を白に設定
+          ),
+          textAlign: TextAlign.center, // テキストを中央揃え
+        ),
       ),
     );
   }
@@ -89,20 +193,17 @@ class _LoginPageState extends State<LoginPage> {
     // ログイン画面のUI構築
     return Scaffold(
       appBar: AppBar(
-        backgroundColor:
-            Theme.of(context).colorScheme.inversePrimary, // アプリバーを透明にして背景を見せる
+        backgroundColor: Colors.transparent, // アプリバーを透明にして背景を見せる
         title: const Text(
           'ログイン',
           style: TextStyle(
             fontFamily: 'Roboto', // モダンなフォント
             fontWeight: FontWeight.w600, // 太めのフォントでモダンな印象
-            color: Colors.black, // タイトルを白に変更
           ),
         ),
         centerTitle: true,
         elevation: 0, // アプリバーの影を消す
       ),
-      backgroundColor: Colors.white, // 背景
       body: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
@@ -114,7 +215,7 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Card(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.secondaryContainer,
                       elevation: 10,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
@@ -125,9 +226,10 @@ class _LoginPageState extends State<LoginPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             _buildTextField(
-                              controller: _usernameController,
-                              label: 'ユーザー名',
-                              textColor: Colors.black,
+                              controller: _mailController,
+                              label: 'メールアドレス',
+                              textColor:
+                                  Theme.of(context).colorScheme.onPrimary,
                               labelColor: Colors.grey,
                             ),
                             const SizedBox(height: 16),
@@ -135,11 +237,24 @@ class _LoginPageState extends State<LoginPage> {
                               controller: _passwordController,
                               label: 'パスワード',
                               obscureText: true,
-                              textColor: Colors.black,
+                              textColor:
+                                  Theme.of(context).colorScheme.onPrimary,
                               labelColor: Colors.grey,
                             ),
                             const SizedBox(height: 24),
-                            _buildLoginButton(),
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: _loginButton(),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 1,
+                                  child: _makeAccountLink(),
+                                ),
+                              ],
+                            ),
                             _buildForgotPasswordLink(),
                             const SizedBox(height: 16),
                             InkWell(
@@ -198,33 +313,6 @@ class _LoginPageState extends State<LoginPage> {
         ),
         contentPadding: const EdgeInsets.symmetric(
             vertical: 12, horizontal: 16), // 内側に余白を追加
-      ),
-    );
-  }
-
-  // ログインボタン
-  Widget _buildLoginButton() {
-    return ElevatedButton(
-      onPressed: _login,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blue, // ボタンの色
-        padding: const EdgeInsets.symmetric(vertical: 16), // ボタンの高さを調整
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16), // ボタンの角を丸く
-        ),
-        elevation: 5, // ボタンの影
-      ),
-      child: const SizedBox(
-        width: 200, // 幅を200に設定
-        child: Text(
-          'ログイン',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.white, // テキストの色を白に設定
-          ),
-          textAlign: TextAlign.center, // テキストを中央揃え
-        ),
       ),
     );
   }

@@ -46,7 +46,7 @@ class ProfileCardState extends State<ProfileCard> {
           result = "..........";
         }
         // もし応答がnullなら
-        else if (snapshot.data?.iconUrl == "null") {
+        else if (snapshot.data?.name == "null") {
           result = "unknown";
         } else {
           result = snapshot.data!.name;
@@ -87,6 +87,7 @@ class ProfileCardState extends State<ProfileCard> {
       padding: const EdgeInsets.all(20),
       // プロフィールの中身（アイコン＋名前＋フォローボタン）
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           Container(
             // ============アイコン台紙＝＝＝＝＝＝＝＝＝＝＝

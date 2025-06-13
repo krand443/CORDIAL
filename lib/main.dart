@@ -1,13 +1,16 @@
-import 'package:cordial/screens/login_page.dart';
+import 'package:cordial/screens/login/login_page.dart';
 import 'package:cordial/screens/edit_profile_page.dart';
+import 'package:cordial/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:rive/rive.dart';
 import 'function/database_read.dart';
-import 'controller/main_page_MG.dart';
+import 'screens/root_page.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +27,6 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]).then((_) {
-
     if (connectivityResult.contains(ConnectivityResult.mobile) ||
         connectivityResult.contains(ConnectivityResult.wifi)) {
       // ネットワーク接続あり
@@ -44,21 +46,14 @@ class Main extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       // ライトテーマ
-      theme: ThemeData(
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: Colors.white,
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
       // ダークテーマ
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: Colors.black,
-        useMaterial3: true,
-      ),
+      darkTheme: AppTheme.darkTheme,
+
       // themeMode: ThemeMode.system, // 端末の設定に自動追従
-      themeMode: ThemeMode.dark, // 端末の設定に自動追従
+      themeMode: ThemeMode.light,
+
       // アプリ起動時に表示されるホーム画面
-      // home: const LoginPage(),
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
@@ -74,19 +69,27 @@ class Main extends StatelessWidget {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   // ロード中の画面
-                  return const Center(
-                      child: CircularProgressIndicator(
-                    backgroundColor: Colors.white,
-                    color: Colors.blue,
-                  ));
+                  return Container(
+                    color: Theme.of(context).scaffoldBackgroundColor, // ここで背景色を指定
+                    child: const Center(
+                      child: SizedBox(
+                        height: 270,
+                        width: 270,
+                        child: RiveAnimation.asset(
+                          'assets/animations/load_icon.riv',
+                          animations: ['load'],
+                        ),
+                      ),
+                    ),
+                  );
                 }
 
                 // ユーザー名が存在するならそのままログイン
                 if (snapshot.data == true) {
-                  return const MainPage();
+                  return const RootPage();
                 } else {
                   // ユーザー名未登録ならプロフィール作成
-                  return const MakeProfilePage();
+                  return const EditProfilePage();
                 }
               },
             );
@@ -99,6 +102,7 @@ class Main extends StatelessWidget {
   }
 }
 
+// インターネット接続なし
 class NotInterNet extends StatelessWidget {
   const NotInterNet({super.key});
 
@@ -114,7 +118,7 @@ class NotInterNet extends StatelessWidget {
       // home: const LoginPage(),
       home: const Center(
         child: Text(
-          "インターネット接続を確認してください。",
+          'インターネット接続を確認してください。',
           style: TextStyle(
             fontSize: 18.0,
             fontWeight: FontWeight.bold,

@@ -3,10 +3,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+// 引数の情報を使用し、サインインするクラス
 class SignIn
 {
   static final GoogleSignIn? _googleSignIn = GoogleSignIn(scopes: [
-    // 例えば、Google Calendarの情報を操作するには、ここに範囲を記載する
+    // Google Calendarの情報を操作するには、ここに範囲を記載する
     // https:// www.googleapis.com/auth/calendar.readonly,
     // https:// www.googleapis.com/auth/calendar.events,
   ]);
@@ -51,6 +52,4 @@ class SignIn
       return 1;
     }
   }
-
-
 }

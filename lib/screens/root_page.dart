@@ -5,17 +5,17 @@ import 'package:cordial/screens/timeline_page.dart';
 import 'package:cordial/screens/profile_page.dart';
 import 'package:cordial/widgets/under_bar.dart';
 
-// ログイン後の画面を管理するクラス
-class MainPage extends StatefulWidget {
-  const MainPage({super.key,this.selectTab = 0});
+// ログイン後の画面を管理するクラス。複数画面にここから遷移する
+class RootPage extends StatefulWidget {
+  const RootPage({super.key,this.selectTab = 0});
 
   final int selectTab;
 
   @override
-  State<MainPage> createState() => MainPageState();
+  State<RootPage> createState() => RootPageState();
 }
 
-class MainPageState extends State<MainPage> {
+class RootPageState extends State<RootPage> {
   // 現在選択されているタブのインデックス（0: home, 1: profile）
   late int currentTab;
 
