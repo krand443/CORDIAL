@@ -2,10 +2,10 @@ import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../root_page.dart';
-import 'package:cordial/function/signin.dart';
+import 'package:cordial/services/signin.dart';
 import 'package:cordial/screens/login/reset_password_page.dart';
 import 'package:cordial/navigation/page_transitions.dart';
-import '../../function/database_read.dart';
+import '../../services/database_read.dart';
 import '../edit_profile_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -58,8 +58,13 @@ class _LoginPageState extends State<LoginPage> {
       await SignIn.google();
 
       final User? currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null)
+      if (currentUser != null) {
         print("ログインしました　${currentUser.email} , ${currentUser.uid}");
+      }
+      else{
+        // ログインできていないなら遷移させない
+        return;
+      }
 
       bool isUserName = await DatabaseRead.isUserName();
       // 画面遷移
@@ -67,8 +72,8 @@ class _LoginPageState extends State<LoginPage> {
         context,
         MaterialPageRoute(
             builder: (context) => isUserName
-                ? const RootPage()
-                : EditProfilePage()), // ログイン後にホーム画面に遷移
+                ? const RootPage() // 既にアカウントが存在するならメインページに飛ばす
+                : const EditProfilePage()), // ログイン後にホーム画面に遷移
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -1,16 +1,18 @@
+import 'package:cordial/provider/theme_model.dart';
 import 'package:cordial/screens/login/login_page.dart';
 import 'package:cordial/screens/edit_profile_page.dart';
+import 'package:cordial/screens/license_page.dart';
 import 'package:cordial/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rive/rive.dart';
-import 'function/database_read.dart';
+import 'services/database_read.dart';
 import 'screens/root_page.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/foundation.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +23,13 @@ Future<void> main() async {
   // インターネットに接続できているかを確認
   var connectivityResult = await (Connectivity().checkConnectivity());
 
+  // ThemeModelの初期化が完了するまで待つ
+  final themeModelInstance = ThemeModel(); // ここでインスタンスを作成
+  await themeModelInstance.initializationDone; // 初期化が完了するまで待機
+
+  // ライセンスをセットする
+  MyLicenseDialog.addCustomLicense();
+
   // 画面を縦向きに制限
   SystemChrome.setPreferredOrientations([
     // 縦向き
@@ -30,7 +39,13 @@ Future<void> main() async {
     if (connectivityResult.contains(ConnectivityResult.mobile) ||
         connectivityResult.contains(ConnectivityResult.wifi)) {
       // ネットワーク接続あり
-      runApp(const Main());
+      runApp(
+        // ThemeModelをアプリ全体に提供し、どのウィジェット階層からでもテーマ変更を可能にする
+        ChangeNotifierProvider.value(
+          value: themeModelInstance, // 初期化済みのインスタンスを渡す
+          child: const Main(),
+        ),
+      );
     } else {
       // ネットワーク接続なし
       runApp(const NotInterNet());
@@ -44,14 +59,27 @@ class Main extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeModel = Provider.of<ThemeModel>(context);
+
+    // 現在のテーマモードを返す
+    ThemeMode currentThemeMode(){
+      if(themeModel.isLight())return ThemeMode.light;
+      if(themeModel.isDark())return ThemeMode.dark;
+      if(themeModel.isTerminal())return ThemeMode.system; // 端末のシステム設定に自動追従
+
+      // 全て該当しないなら端末の設定に合わせる
+      return ThemeMode.system;
+    }
+
+    // ThemeModelの変更を監視し、その変更があったときに自動的にUIを再構築
     return MaterialApp(
       // ライトテーマ
       theme: AppTheme.lightTheme,
       // ダークテーマ
       darkTheme: AppTheme.darkTheme,
 
-      // themeMode: ThemeMode.system, // 端末の設定に自動追従
-      themeMode: ThemeMode.light,
+      // テーマを設定
+      themeMode: currentThemeMode(),
 
       // アプリ起動時に表示されるホーム画面
       home: StreamBuilder<User?>(
@@ -70,7 +98,8 @@ class Main extends StatelessWidget {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   // ロード中の画面
                   return Container(
-                    color: Theme.of(context).scaffoldBackgroundColor, // ここで背景色を指定
+                    color: Theme.of(context)
+                        .scaffoldBackgroundColor, // ここで背景色を指定
                     child: const Center(
                       child: SizedBox(
                         height: 270,
@@ -115,7 +144,6 @@ class NotInterNet extends StatelessWidget {
         useMaterial3: true,
       ),
       // アプリ起動時に表示されるホーム画面
-      // home: const LoginPage(),
       home: const Center(
         child: Text(
           'インターネット接続を確認してください。',

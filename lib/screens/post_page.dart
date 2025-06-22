@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cordial/widgets/post_card.dart';
-import 'package:cordial/models/post.dart';
-import 'package:cordial/function/database_write.dart';
-import 'package:cordial/widgets/timeline/timeline_widget.dart';
+import 'package:cordial/data_models/post.dart';
+import 'package:cordial/services/database_write.dart';
+import 'package:cordial/screens/timeline/timeline_widget.dart';
 import 'package:cordial/widgets/custom_appbar.dart';
 
 // 投稿詳細を閲覧するためのページ
@@ -70,7 +70,7 @@ class PostPageState extends State<PostPage> {
             // 投稿とその返信の位一覧
             slivers: [
               // オリジナルAppbarを追加
-              CustomAppbar(titleText: "投稿"),
+              const CustomAppbar(titleText: "投稿"),
 
               SliverToBoxAdapter(
                 child: PostCard(
@@ -109,7 +109,7 @@ class PostPageState extends State<PostPage> {
                       decoration: InputDecoration(
                         hintText: 'メッセージを入力...',
                         hintStyle:
-                            TextStyle(color: Colors.grey[600], fontSize: 13),
+                            TextStyle(color: Colors.grey[500], fontSize: 13),
                         contentPadding: const EdgeInsets.symmetric(
                             vertical: 10, horizontal: 20),
                         // パディングを調整して中央寄せ
@@ -129,7 +129,7 @@ class PostPageState extends State<PostPage> {
                 Container(
                   decoration: BoxDecoration(
                     color: _textController.text.isNotEmpty
-                        ? Colors.blueAccent
+                        ? Theme.of(context).colorScheme.tertiary
                         : Colors.grey, // ボタンの背景色
                     shape: BoxShape.circle, // 丸い形状
                   ),

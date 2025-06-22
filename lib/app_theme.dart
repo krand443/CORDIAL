@@ -14,14 +14,14 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       brightness: Brightness.light,
-      scaffoldBackgroundColor: Colors.grey[300],
+      scaffoldBackgroundColor: Colors.grey[100],
       useMaterial3: true,
       colorScheme: ColorScheme.light(
         primary: Colors.white,
         onPrimary: Colors.black,
         primaryContainer: const Color.fromARGB(255, 250, 250, 250),
         onPrimaryContainer: Colors.black,
-        secondary: const Color.fromARGB(255, 220, 220, 220),
+        secondary: const Color.fromARGB(255, 240, 240, 240),
         onSecondary: Colors.black,
         secondaryContainer: const Color.fromARGB(255, 230, 230, 230),
         onSecondaryContainer: Colors.black,
@@ -65,9 +65,9 @@ class AppTheme {
       colorScheme: ColorScheme.dark(
         primary: Colors.black,
         onPrimary: Colors.white,
-        primaryContainer: const Color.fromARGB(255, 20, 20, 20),
+        primaryContainer: const Color.fromARGB(255, 25,25, 25),
         onPrimaryContainer: Colors.white,
-        secondary: const Color.fromARGB(255, 30, 30, 30),
+        secondary: const Color.fromARGB(255, 50, 50, 50),
         onSecondary: Colors.white,
         secondaryContainer: const Color.fromARGB(255, 30, 30, 30),
         onSecondaryContainer: Colors.white,
@@ -94,7 +94,11 @@ class AppTheme {
         inversePrimary: Colors.white,
       ),
 
-      // にカーソルの色を追加
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: Color.fromARGB(255, 50, 50, 50),
+      ),
+
+      // カーソルの色を追加
       textSelectionTheme: const TextSelectionThemeData(
         cursorColor: Colors.white, // カーソルを設定
         selectionHandleColor: Colors.grey, // 選択ハンドルの色

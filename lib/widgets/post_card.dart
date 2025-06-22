@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:cordial/function/database_write.dart';
+import 'package:cordial/services/database_write.dart';
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
-import '../function/make_link_text.dart';
+import '../utils/make_link_text.dart';
 import '../screens/post_page.dart';
-import '../models/post.dart';
+import '../data_models/post.dart';
 import 'package:cordial/navigation/page_transitions.dart';
-import 'package:cordial/screens/profile_page.dart';
+import 'package:cordial/screens/profile/profile_page.dart';
 
 // 投稿のカードを生成するクラス
 class PostCard extends StatefulWidget {
@@ -215,7 +215,7 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                   alignment: Alignment.centerRight,
                   child: CircleAvatar(
                     radius: 15,
-                    backgroundImage: AssetImage('assets/AIicon.webp'),
+                    backgroundImage: AssetImage('assets/AI_icon.webp'),
                   ),
                 ),
                 const SizedBox(height: 4),

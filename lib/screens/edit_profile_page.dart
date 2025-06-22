@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'root_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:cordial/function/firestore_storage.dart';
-import 'package:cordial/function/database_write.dart';
-import 'package:cordial/function/database_read.dart';
+import 'package:cordial/services/firestore_storage.dart';
+import 'package:cordial/services/database_write.dart';
+import 'package:cordial/services/database_read.dart';
 
+// プロフィール編集画面
 class EditProfilePage extends StatefulWidget {
 
-  //　既存の名前を受けとる(なくても可)
+  //　既存のユーザー名を受けとる(なくても可)
   final String? existingName;
 
   const EditProfilePage({super.key, this.existingName});
@@ -62,29 +63,39 @@ class EditProfilePageState extends State<EditProfilePage> {
 
     // 画像を追加(任意)
     try {
-      await Firestore.upload(_pickImage!, "icon");
+      await FirestoreStorage.upload(_pickImage!, "icon");
     } catch (e) {
       print(e);
     }
 
-    // ユーザーを追加
-    await DatabaseWrite.addUser(_textController.text);
+    // ユーザー情報を変更
+    await DatabaseWrite.setUser(_textController.text);
 
     // 画面遷移
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-          builder: (context) => const RootPage(selectTab: 1)), // プロフィールに飛ぶ
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const RootPage(selectTab: 1)),
+          (route) => false,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor:Colors.transparent,// アプリバーの色
         automaticallyImplyLeading: false, // 戻るアイコンを非表示にする
+        leading: IconButton(
+          padding: const EdgeInsets.only(top: 0),
+          icon: const Icon(
+            Icons.close,
+            size: 45,
+            color: Colors.grey,
+          ),
+          onPressed: () {
+            Navigator.of(context).pop(); // 現在の画面を閉じる
+          },
+        ),
         title: const Text(
           'プロフィールを作成',
           style: TextStyle(
@@ -127,7 +138,7 @@ class EditProfilePageState extends State<EditProfilePage> {
                               backgroundColor: _textController.text.isEmpty || waitForUpload
                                   ? Colors.grey
                                   : Theme.of(context).colorScheme.tertiaryContainer, // 背景色
-                              foregroundColor: Colors.black, // テキスト色
+                              foregroundColor: Colors.white, // テキスト色
                               textStyle: const TextStyle(
                                 fontSize: 18, // フォントサイズを指定
                               ),

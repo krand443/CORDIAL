@@ -1,13 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:navigator_scope/navigator_scope.dart';
-import 'package:cordial/screens/timeline_page.dart';
-import 'package:cordial/screens/profile_page.dart';
+import 'package:cordial/screens/timeline/timeline_page.dart';
+import 'package:cordial/screens/profile/profile_page.dart';
 import 'package:cordial/widgets/under_bar.dart';
 
 // ログイン後の画面を管理するクラス。複数画面にここから遷移する
 class RootPage extends StatefulWidget {
-  const RootPage({super.key,this.selectTab = 0});
+  const RootPage({super.key, this.selectTab = 0});
 
   final int selectTab;
 
@@ -63,19 +63,19 @@ class RootPageState extends State<RootPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,// UnderBarを透過させるため
+      extendBody: true, // UnderBarを透過させるため
       // 下部バー
-      bottomNavigationBar:SizedBox(
-        height: 45.0,
-        child: UnderBar(
-          currentIndex: currentTab,
-          onTap: onTabSelected),
+      bottomNavigationBar: SafeArea(
+        child: SizedBox(
+          height: 45.0,
+          child: UnderBar(currentIndex: currentTab, onTap: onTabSelected),
+        ),
       ),
 
       // ボディ部に選択されたタブの内容（NavigatorScope）を表示
       body: NavigatorScope(
-        currentDestination: currentTab,// どのタブが選ばれているかを通知
-        destinationCount: tabs.length,// タブの総数（ここでは2つ：Search と Cart）
+        currentDestination: currentTab, // どのタブが選ばれているかを通知
+        destinationCount: tabs.length, // タブの総数（ここでは2つ：Search と Cart）
         destinationBuilder: (context, index) {
           // 各タブに NestedNavigator（内部専用ナビゲーター）を構築
           return NestedNavigator(
@@ -84,11 +84,13 @@ class RootPageState extends State<RootPage> {
             builder: (context) {
               switch (index) {
                 case 0:
-                  return const TimelinePage();// タブ0のとき
+                  return const TimelinePage(); // タブ0のとき
                 case 1:
-                  return ProfilePage(userId: FirebaseAuth.instance.currentUser!.uid,);// タブ1のとき
+                  return ProfilePage(
+                    userId: FirebaseAuth.instance.currentUser!.uid,
+                  ); // タブ1のとき
                 default:
-                  return const TimelinePage();// 万が一
+                  return const TimelinePage(); // 万が一
               }
             },
           );

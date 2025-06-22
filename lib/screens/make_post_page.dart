@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:cordial/function/database_write.dart';
+import 'package:cordial/services/database_write.dart';
 import 'dart:math' as math;
 import 'package:cordial/widgets/under_bar.dart';
+import 'package:infinite_carousel/infinite_carousel.dart';
 import 'package:cordial/widgets/icon.dart';
+import 'package:infinite_carousel/infinite_carousel.dart';
 
 // 投稿を作成する画面
 class MakePostPage extends StatefulWidget {
@@ -15,139 +17,201 @@ class MakePostPage extends StatefulWidget {
 class MakePostPageState extends State<MakePostPage> {
   // テキスト管理用
   final TextEditingController _textController = TextEditingController();
+
+  // 投稿ボタンを押したときに呼ばれる処理
+  void _post() {
+    DatabaseWrite.addPost(_textController.text); // ポスト追加
+    Navigator.of(context).pop(); // 現在の画面を閉じる
+  }
+
+  late final String _randomHintText = _randomMessage();
+
+  // AIの画像パスを格納
+  final List<String> _aiImagesPath = [
+    'assets/AI_icon.webp',
+    'assets/AI_icon2.webp',
+    'assets/AI_icon3.webp',
+  ];
+  final int _selectedAiIndex = 0;
+  // AI選択のコントローラーを作成
+  late final InfiniteScrollController _selectAiController =
+      InfiniteScrollController(initialItem: _selectedAiIndex);
+
   @override
   void initState() {
     super.initState();
+
     _textController.addListener(() {
       setState(() {}); // 入力変更で再描画
     });
   }
 
-  // 投稿ボタンを押したときに呼ばれる処理
-  void post() {
-    DatabaseWrite.addPost(_textController.text); // ポスト追加
-    Navigator.of(context).pop(); // 現在の画面を閉じる
-  }
-
-  late String randomHintText = randomMassage();
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent, // 背景を透明にする
-      // GestureDetectorでスライドアニメーションの部分のみ処理
-      body: GestureDetector(
-        child: Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          resizeToAvoidBottomInset: true, // キーボードに合わせてUIを押し上げる
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(30), // 上の角を丸くする
+      ),
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        resizeToAvoidBottomInset: true, // キーボードに合わせてUIを押し上げる
 
-          // closeボタンと投稿ボタンを配置
-          appBar: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            surfaceTintColor: Colors.transparent, // M3特有の変色を防ぐ！
-            automaticallyImplyLeading: false, // 左の戻るボタンを消す（必要なら）
-            title: Row(
-              // 左右のスペースをまんべんなく使う
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                // 左右に寄せる！
+        // closeボタンと投稿ボタンを配置
+        appBar: _appbar(),
+
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(
+                height: 20,
+              ),
+
+              // AIをスワイプで選択
+              SizedBox(height: 200, child: _selectAiCarousel(_aiImagesPath)),
+
+              const SizedBox(
+                height: 20,
+              ),
+
+              // ユーザーのアイコンと入力欄
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    padding: const EdgeInsets.only(top: 0),
-                    icon: const Icon(
-                      Icons.close,
-                      size: 45,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop(); // 現在の画面を閉じる
-                    },
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 0, right: 0),
-                    child: TextButton(
-                      onPressed: () {
-                        // テキストが入力されていれば実行
-                        if (_textController.text.isNotEmpty) {
-                          post();
-                        }
-                      },
-                      style: TextButton.styleFrom(
-                        backgroundColor: _textController.text.isNotEmpty
-                            ? Theme.of(context).colorScheme.tertiaryContainer
-                            : Colors.grey, // ← 背景色
-                        foregroundColor:  _textController.text.isNotEmpty ? Colors.black : Colors.grey[50], // ← テキスト色
-                        textStyle: const TextStyle(
-                          fontSize: 18, // ← フォントサイズを指定
-                        ),
-                      ),
-                      child: const Text(
-                        'メッセージを送信&投稿',
+                  const UserIcon(size: 30),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: TextField(
+                      autofocus: true,
+                      // ウィジェット表示時に自動でフォーカス
+                      maxLines: null,
+                      // 改行を許可する
+                      controller: _textController,
+                      keyboardType: TextInputType.multiline,
+                      decoration: InputDecoration(
+                        // 入力欄に表示するヒントメッセージを生成
+                        hintText: _randomHintText,
+                        contentPadding: const EdgeInsets.only(top: 20),
+                        // 上に余白追加して表示位置を下げる
+                        border: InputBorder.none,
                       ),
                     ),
                   )
-                ]),
-          ),
-
-          body: SingleChildScrollView(
-            child: Column(
-              children: [
-                // AIのアイコン
-                Padding(
-                  padding: const EdgeInsets.all(40),
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .inversePrimary, // 枠線の色
-                        width: 5, // 枠線の太さ
-                      ),
-                    ),
-                    child: const CircleAvatar(
-                      radius: 100,
-                      backgroundImage: AssetImage('assets/AIicon.webp'),
-                    ),
-                  ),
-                ),
-
-                // ユーザーのアイコンと入力欄
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const UserIcon(size: 30),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: TextField(
-                        autofocus: true,
-                        // ← ウィジェット表示時に自動でフォーカス
-                        maxLines: null,
-                        // ← 改行を許可する
-                        controller: _textController,
-                        keyboardType: TextInputType.multiline,
-                        decoration: InputDecoration(
-                          // 入力欄に表示するヒントメッセージを生成
-                          hintText: randomHintText,
-                          contentPadding: const EdgeInsets.only(top: 20),
-                          // 上に余白追加して表示位置を下げる
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
+  AppBar _appbar() {
+    return AppBar(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      surfaceTintColor: Colors.transparent,
+      // M3特有の変色を防ぐ！
+      automaticallyImplyLeading: false,
+      // 左端の戻るボタン
+      leading: IconButton(
+        padding: const EdgeInsets.only(top: 0),
+        icon: const Icon(
+          Icons.close,
+          size: 45,
+          color: Colors.grey,
+        ),
+        onPressed: () {
+          Navigator.of(context).pop(); // 現在の画面を閉じる
+        },
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(top: 10, right: 20),
+          child: TextButton(
+            onPressed: () {
+              print(_selectAiController.selectedItem);
+
+              // テキストが入力されていれば実行
+              if (_textController.text.isNotEmpty) {
+                _post();
+              }
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: _textController.text.isNotEmpty
+                  ? Theme.of(context).colorScheme.tertiaryContainer
+                  : Colors.grey,
+              foregroundColor: _textController.text.isNotEmpty
+                  ? Colors.white
+                  : Colors.grey[50],
+            ),
+            child: const Padding(
+              padding: EdgeInsets.only(left: 15, right: 15),
+              child: Icon(
+                Icons.send,
+                size: 25,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // AIをスワイプで選択するためのウィジェット
+  Widget _selectAiCarousel(List<String> images) {
+    return Stack(
+      children: [
+        // アイコンをスワイプで選択
+        InfiniteCarousel.builder(
+          itemCount: images.length,
+          itemExtent: 250,
+          loop: true,
+          controller: _selectAiController,
+          itemBuilder: (context, itemIndex, realIndex) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: GestureDetector(
+                  onTap: () {},
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.tertiary,
+                        width: 5,
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      backgroundImage: AssetImage(images[itemIndex]),
+                      radius: 100, // Borderの内側に収める
+                    ),
+                  )),
+            );
+          },
+        ),
+
+        // 矢印を表示
+        Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(
+                Icons.chevron_left,
+                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
+                size: 70,
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
+                size: 70,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   // 入力欄に薄く表示する参考テキストをランダムに生成
-  String randomMassage() {
+  String _randomMessage() {
     // 0.0～1未満の乱数生成
     var random = math.Random();
     // 0~100のパーセンテージに変換

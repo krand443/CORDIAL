@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cordial/function/database_read.dart';
-import '../models/profile.dart';
+import 'package:cordial/services/database_read.dart';
+import '../data_models/profile.dart';
 
 // ユーザーアイコンを返す
 class UserIcon extends StatefulWidget {
@@ -60,4 +60,15 @@ class UserIconState extends State<UserIcon> {
       },
     );
   }
+}
+
+// AIアイコンを返す
+class AiIcon extends StatelessWidget{
+  const AiIcon({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    throw UnimplementedError();
+  }
+
 }

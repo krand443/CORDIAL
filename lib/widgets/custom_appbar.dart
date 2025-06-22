@@ -5,15 +5,19 @@ class CustomAppbar extends StatelessWidget {
   // バーのタイトルを指定
   final String titleText;
 
-  // コールバック関数定義用
-  final VoidCallback? onTap;
+  // 先頭アイコン
+  final Widget? leading;
 
-  const CustomAppbar({super.key, required this.titleText, this.onTap});
+  // 末尾アイコン
+  final List<Widget>? actions;
+
+  const CustomAppbar({super.key, required this.titleText,this.leading, this.actions});
 
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      automaticallyImplyLeading: false,// 戻るアイコンの非表示
+      automaticallyImplyLeading: false,
+      // 戻るアイコンの非表示
       surfaceTintColor: Colors.transparent,
       floating: true,
       snap: true,
@@ -34,14 +38,9 @@ class CustomAppbar extends StatelessWidget {
         ),
       ),
 
-      // 関数が渡されてないならハンバーガーメニューを表示しない
-      leading: onTap != null
-          ? IconButton(
-              icon: Icon(Icons.menu,
-                  color: Theme.of(context).colorScheme.onSurface),
-              onPressed: onTap,
-            )
-          : null,
+      leading: leading,
+
+      actions: actions,
     );
   }
 }
