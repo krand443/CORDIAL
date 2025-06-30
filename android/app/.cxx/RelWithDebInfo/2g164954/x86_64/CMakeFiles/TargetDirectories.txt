@@ -1,0 +1,2 @@
+D:/production/CORDIAL/android/app/.cxx/RelWithDebInfo/2g164954/x86_64/CMakeFiles/edit_cache.dir
+D:/production/CORDIAL/android/app/.cxx/RelWithDebInfo/2g164954/x86_64/CMakeFiles/rebuild_cache.dir
