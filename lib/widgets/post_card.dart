@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:cordial/services/database_write.dart';
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
+import '../screens/report_page.dart';
 import '../utils/make_link_text.dart';
 import '../screens/post_page.dart';
 import '../data_models/post.dart';
 import 'package:cordial/navigation/page_transitions.dart';
 import 'package:cordial/screens/profile/profile_page.dart';
+import 'package:cordial/widgets/icon.dart';
 
 // 投稿のカードを生成するクラス
 class PostCard extends StatefulWidget {
@@ -58,7 +60,7 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
     return Card(
       elevation: 0.1,
       // 背景色をここで指定
-      color: Theme.of(context).colorScheme.primaryContainer,
+      color: Theme.of(context).colorScheme.primary,
       margin: EdgeInsets.zero,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
@@ -73,11 +75,13 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
           if (!_transition) return;
           // 投稿を押したときはその投稿の詳細ページに飛ぶ
           PageTransitions.fromRight(
-              targetWidget: PostPage(
-                post: _post,
-              ),
-              context: context,
-              onClose: () {setState(() {});},// この画面を閉じたとき再描画する(いいねを付けた時など用)
+            targetWidget: PostPage(
+              post: _post,
+            ),
+            context: context,
+            onClose: () {
+              setState(() {});
+            }, // この画面を閉じたとき再描画する(いいねを付けた時など用)
           );
         },
         child: Padding(
@@ -126,65 +130,19 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                     ),
 
                     // AIアイコン&返信(replyがtrue、つまり投稿への返信であれば描画しない)
-                    if (_post.response != '') aiResponse(), //関数は下で定義
+                    if (_post.response != '') _aiResponse(),
 
-                    // いいねアイコン
+                    // 下部ボタン
                     Align(
                       alignment: Alignment.centerRight,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          // いいね数を表示
-                          Text(_post.nice.toString()),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 20, left: 10),
-                            child: InkResponse(
-                              onTap: () {
-                                setState(() {
-                                  // いいねを切り替え
-                                  _post.isNice = !_post.isNice;
-                                  _post.nice += _post.isNice ? 1 : -1;
-                                });
-
-                                // 既存のタイマーがあればキャンセル（連打対策）
-                                _likeTimer?.cancel();
-
-                                // 連打してもDBに複数回アクセスしないように数秒待ってから実行する
-                                _likeTimer =
-                                    Timer(const Duration(seconds: 2), () async {
-                                  try {
-                                    if (_post.isNice) {
-                                      // いいね追加処理
-                                      DatabaseWrite.nice(_post.id,
-                                          parentId: _parentPostId ?? null);
-                                    } else {
-                                      // いいね削除処理
-                                      DatabaseWrite.unNice(_post.id,
-                                          parentId: _parentPostId ?? null);
-                                    }
-                                  } catch (e) {
-                                    print("アップロードエラー: $e");
-                                  }
-                                });
-                              },
-                              splashColor:
-                                  _post.isNice ? null : Colors.pink[100],
-                              // 波紋の色
-                              highlightColor: Colors.transparent,
-                              radius: 10,
-                              child: SizedBox(
-                                height: 25,
-                                width: 25,
-                                child: Transform.scale(
-                                  scale: 2, // 拡大倍率
-                                  child: RiveAnimation.asset(
-                                    'assets/animations/like.riv',
-                                    animations: [_post.isNice ? 'like' : 'dislike'],
-                                  ),
-                                ),
-                              ),
-                            ),
+                          _niceWidget(),
+                          const SizedBox(
+                            width: 10,
                           ),
+                          _reportWidget(),
                         ],
                       ),
                     ),
@@ -199,7 +157,7 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
   }
 
   //AIの返信を表示するウィジェット
-  Widget aiResponse() {
+  Widget _aiResponse() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -211,11 +169,13 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Align(
+                const SizedBox(height: 4),
+
+                Align(
                   alignment: Alignment.centerRight,
-                  child: CircleAvatar(
-                    radius: 15,
-                    backgroundImage: AssetImage('assets/AI_icon.webp'),
+                  child: AiIcon(
+                    selectedAiId: _post.selectedAiId,
+                    radius: 18,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -226,13 +186,92 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                   _post.response.replaceFirst(RegExp(r'(\n)$'), ''),
                   softWrap: true,
                   textAlign: TextAlign.start,
-                  style: const TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 14),
                 ),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  // いいねボタン
+  Widget _niceWidget() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        // いいね数を表示
+        Text(_post.nice.toString()),
+        Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: InkResponse(
+            onTap: () {
+              setState(() {
+                // いいねを切り替え
+                _post.isNice = !_post.isNice;
+                _post.nice += _post.isNice ? 1 : -1;
+              });
+
+              // 既存のタイマーがあればキャンセル（連打対策）
+              _likeTimer?.cancel();
+
+              // 連打してもDBに複数回アクセスしないように数秒待ってから実行する
+              _likeTimer = Timer(const Duration(seconds: 2), () async {
+                try {
+                  if (_post.isNice) {
+                    // いいね追加処理
+                    DatabaseWrite.nice(_post.id,
+                        parentId: _parentPostId ?? null);
+                  } else {
+                    // いいね削除処理
+                    DatabaseWrite.unNice(_post.id,
+                        parentId: _parentPostId ?? null);
+                  }
+                } catch (e) {
+                  print("アップロードエラー: $e");
+                }
+              });
+            },
+            splashColor: _post.isNice ? null : Colors.pink[100],
+            // 波紋の色
+            highlightColor: Colors.transparent,
+            radius: 10,
+            child: SizedBox(
+              height: 25,
+              width: 25,
+              child: Transform.scale(
+                scale: 2, // 拡大倍率
+                child: RiveAnimation.asset(
+                  'assets/animations/like.riv',
+                  animations: [_post.isNice ? 'like' : 'dislike'],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 通報ボタン
+  Widget _reportWidget() {
+    return InkResponse(
+      onTap: () {
+        PageTransitions.fromBottom(
+          targetWidget: ReportPage(postId:_post.id,),
+          context: context,
+        );
+      },
+      radius: 10,
+      child: SizedBox(
+        height: 25,
+        width: 25,
+        child: Transform.scale(
+          scale: 1, // 拡大倍率
+          child: const Icon(Icons.flag_rounded,color: Color(0xFFCACACA)),
+        ),
+      ),
     );
   }
 }

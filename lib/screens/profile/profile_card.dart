@@ -34,7 +34,7 @@ class ProfileCardState extends State<ProfileCard> {
   }
 
   // ユーザー名をDBから取得して返す
-  FutureBuilder<Profile?> userNameFuture() {
+  FutureBuilder<Profile?> _userNameFuture() {
     return FutureBuilder<Profile?>(
       future: _profileFuture,
       builder: (context, snapshot) {
@@ -93,10 +93,6 @@ class ProfileCardState extends State<ProfileCard> {
             // ============アイコン台紙＝＝＝＝＝＝＝＝＝＝＝
             decoration: BoxDecoration(
               shape: BoxShape.circle, // 丸型
-              border: Border.all(
-                color: Colors.white,
-                width: 3,
-              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.2),
@@ -119,7 +115,7 @@ class ProfileCardState extends State<ProfileCard> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // ユーザー名を関数から取得
-                  userNameFuture(),
+                  _userNameFuture(),
                   const SizedBox(height: 4),
                   // ユーザーID
                   Text(

@@ -56,36 +56,39 @@ class PostPageState extends State<PostPage> {
     // SwipeBackWrapperでスライドで前画面に戻る
     return Scaffold(
       extendBody: true,
-      body: Container(
-        color: Theme.of(context).colorScheme.surface,
-        // 再読込
-        child: RefreshIndicator(
-          onRefresh: reload,
-          color: Theme.of(context).colorScheme.tertiary,
+      body: RefreshIndicator(
+        onRefresh: reload,
+        color: Theme.of(context).colorScheme.tertiary,
 
-          // 投稿とその返信
-          child: CustomScrollView(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            // 投稿とその返信の位一覧
-            slivers: [
-              // オリジナルAppbarを追加
-              const CustomAppbar(titleText: "投稿"),
+        // 投稿とその返信
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          // 投稿とその返信の位一覧
+          slivers: [
+            // オリジナルAppbarを追加
+            CustomAppbar(
+              titleText: "投稿",
+              leading: IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.arrow_back_ios)),
+            ),
 
-              SliverToBoxAdapter(
-                child: PostCard(
-                  post: _post,
-                  transition: false,
-                ),
+            SliverToBoxAdapter(
+              child: PostCard(
+                post: _post,
+                transition: false,
               ),
+            ),
 
-              // 返信を挿入
-              TimelineWidget(
-                  key: _reloadKey, // 再読込用
-                  postId: _post.id,
-                  parentScrollController: _scrollController),
-            ],
-          ),
+            // 返信を挿入
+            TimelineWidget(
+                key: _reloadKey, // 再読込用
+                postId: _post.id,
+                parentScrollController: _scrollController),
+          ],
         ),
       ),
 

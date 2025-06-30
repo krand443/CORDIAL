@@ -189,8 +189,7 @@ class TimelineWidgetState extends State<TimelineWidget>
 
                   // 広告を挿入する位置かどうかを判定
                   if ((index + 1) % (adInterval + 1) == 0) {
-                    //return AdMob.getBannerAdUnit(); // 広告ウィジェット
-                    return Text('こうこーく');
+                    return AdMob.getBannerAdUnit(); // 広告ウィジェット
                   }
 
                   // 実際のポストのインデックスを算出

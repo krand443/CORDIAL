@@ -20,7 +20,8 @@ class MakePostPageState extends State<MakePostPage> {
 
   // 投稿ボタンを押したときに呼ばれる処理
   void _post() {
-    DatabaseWrite.addPost(_textController.text); // ポスト追加
+    DatabaseWrite.addPost(
+        _textController.text, _selectAiController.selectedItem); // ポスト追加
     Navigator.of(context).pop(); // 現在の画面を閉じる
   }
 
@@ -33,6 +34,7 @@ class MakePostPageState extends State<MakePostPage> {
     'assets/AI_icon3.webp',
   ];
   final int _selectedAiIndex = 0;
+
   // AI選択のコントローラーを作成
   late final InfiniteScrollController _selectAiController =
       InfiniteScrollController(initialItem: _selectedAiIndex);
@@ -116,7 +118,7 @@ class MakePostPageState extends State<MakePostPage> {
         padding: const EdgeInsets.only(top: 0),
         icon: const Icon(
           Icons.close,
-          size: 45,
+          size: 30,
           color: Colors.grey,
         ),
         onPressed: () {
@@ -128,8 +130,6 @@ class MakePostPageState extends State<MakePostPage> {
           padding: const EdgeInsets.only(top: 10, right: 20),
           child: TextButton(
             onPressed: () {
-              print(_selectAiController.selectedItem);
-
               // テキストが入力されていれば実行
               if (_textController.text.isNotEmpty) {
                 _post();
@@ -163,25 +163,34 @@ class MakePostPageState extends State<MakePostPage> {
         // アイコンをスワイプで選択
         InfiniteCarousel.builder(
           itemCount: images.length,
-          itemExtent: 250,
+          itemExtent: 220,
           loop: true,
           controller: _selectAiController,
+          onIndexChanged: (int index) {
+            setState(() {});
+          },
           itemBuilder: (context, itemIndex, realIndex) {
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              padding: const EdgeInsets.symmetric(horizontal: 5.0),
               child: GestureDetector(
-                  onTap: () {},
                   child: Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Theme.of(context).colorScheme.tertiary,
+                        // 今何を選択しているのかを分かりやすく
+                        color: _selectAiController.selectedItem == itemIndex
+                            ? Theme.of(context).colorScheme.tertiary
+                            : Colors.transparent,
                         width: 5,
                       ),
                     ),
-                    child: CircleAvatar(
-                      backgroundImage: AssetImage(images[itemIndex]),
-                      radius: 100, // Borderの内側に収める
+                    child: Transform.scale(
+                      scale: _selectAiController.selectedItem == itemIndex
+                          ? 1.0
+                          : 0.85, // 中央のアイテムは拡大
+                      child: CircleAvatar(
+                        backgroundImage: AssetImage(images[itemIndex]),
+                      ),
                     ),
                   )),
             );
@@ -193,15 +202,27 @@ class MakePostPageState extends State<MakePostPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(
-                Icons.chevron_left,
-                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
-                size: 70,
+              IconButton(
+                onPressed: () {
+                  _selectAiController.previousItem();
+                },
+                icon: Icon(
+                  Icons.chevron_left,
+                  color:
+                      Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
+                  size: 70,
+                ),
               ),
-              Icon(
-                Icons.chevron_right,
-                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
-                size: 70,
+              IconButton(
+                onPressed: () {
+                  _selectAiController.nextItem();
+                },
+                icon: Icon(
+                  Icons.chevron_right,
+                  color:
+                  Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
+                  size: 70,
+                ),
               ),
             ],
           ),

@@ -57,7 +57,7 @@ class UnderBar extends StatelessWidget {
                 PageTransitions.fromBottom(
                     targetWidget: const MakePostPage(), context: context);
               },
-              child: Icon(Icons.add),
+              child: const Icon(Icons.add),
             ),
           ),
         ],

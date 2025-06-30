@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cordial/services/database_read.dart';
 import 'package:cordial/data_models/user_summary_list.dart';
 import 'package:cordial/widgets/custom_appbar.dart';
-import 'package:cordial/widgets/user_summary_card.dart';
+import 'package:cordial/screens/profile/user_summary_card.dart';
 import 'package:rive/rive.dart';
 
 class FollowListPage extends StatefulWidget {

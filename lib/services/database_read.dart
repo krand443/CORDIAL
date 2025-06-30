@@ -14,6 +14,7 @@ class DatabaseRead {
     ├── postedAt: Timestamp
     ├── userid: String                       // 投稿者ID
     ├── text: String                         // 本文
+    ├── selectedAiId: int                    // 返答したAIid
     ├── response: String                     // AIからの返信
     ├── nice: int
     ├── /niceList
@@ -67,6 +68,7 @@ class DatabaseRead {
           userName: results[1]['name'],
           iconUrl: results[1]['iconUrl'],
           postText: doc['text'],
+          selectedAiId: doc['selectedAiId'],
           response: doc['response'],
           nice: doc['nice'],
           isNice: results[0].exists,
@@ -145,6 +147,7 @@ class DatabaseRead {
           userId: userId,
           userName: results[1]['name'],
           iconUrl: results[1]['iconUrl'],
+          selectedAiId: 0,
           postText: doc['text'],
           response: '',
           nice: doc['nice'],
@@ -385,6 +388,7 @@ class DatabaseRead {
 ├── postedAt: Timestamp
 ├── userid: String                       // 投稿者ID
 ├── text: String                         // 本文
+├── selectedAiId: int                    // 返答したAIid
 ├── response: String                     // AIからの返信
 ├── nice: int
 ├── /niceList

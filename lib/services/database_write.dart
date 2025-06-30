@@ -5,6 +5,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:ui';
 import 'package:http/http.dart' as http;
 
+// ==========================
+// DatabaseWrite - 関数一覧
+// ==========================
+//
+// ・setUser(name)                     - ユーザー初期登録（名前、国情報、アイコン）
+// ・addPost(text, selectedAiId)       - 投稿作成（AIへの問い合わせ付き）
+// ・addReply(postId, text)            - リプライ投稿
+// ・nice(postId, {parentId})          - いいね追加（投稿・返信）
+// ・unNice(postId, {parentId})        - いいね削除
+// ・follow(followeeId)                - ユーザーをフォロー
+// ・unFollow(followeeId)              - ユーザーのフォロー解除
+
+
 class DatabaseWrite {
   // ユーザーを追加
   static Future<void> setUser(String name) async {
@@ -51,7 +64,7 @@ class DatabaseWrite {
   }
 
   // 投稿するための関数
-  static Future<void> addPost(String text) async {
+  static Future<void> addPost(String text,int selectedAiId) async {
     /*
       await FirebaseFirestore.instance
           .collection('posts')
@@ -60,6 +73,7 @@ class DatabaseWrite {
             'postedAt':FieldValue.serverTimestamp(),
             'userid':FirebaseAuth.instance.currentUser?.uid,
             'text':text,
+            'selectedAiId':int
             'response' : "EXAMPLE()",
             'nice': 0
           });
@@ -80,6 +94,7 @@ class DatabaseWrite {
       },
       body: jsonEncode({
         'text': text,
+        'selectedAiId': selectedAiId,
       }),
     );
 
@@ -227,54 +242,174 @@ class DatabaseWrite {
   }
 
   // フォロー時の処理
-  static Future<void> follow(String id) async {
-    final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+  static Future<void> follow(String followeeId) async {
+    try {
+      final FirebaseFirestore db = FirebaseFirestore.instance;
 
-    final uri = Uri.parse(
-      'https://asia-northeast1-projectcordial-596bd.cloudfunctions.net/onFollow',
-    );
+      // すでにフォローしているか確認
+      final docSnap = await db
+          .collection("users")
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection("follows")
+          .doc(followeeId)
+          .get();
 
-    final response = await http.post(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer:$idToken', // ユーザーのトークンで認証
-      },
-      body: jsonEncode({
-        'followeeId': id,
-      }),
-    );
+      if (docSnap.exists) {
+        throw Exception("Already registered.");
+      }
 
-    if (response.statusCode == 200) {
-      print("成功: ${response.body}");
-    } else {
-      print("エラー (${response.statusCode}): ${response.body}");
+      // トランザクション開始
+      await db.runTransaction((transaction) async {
+        final now = FieldValue.serverTimestamp();
+
+        // 自分のfollowsコレクションに追加
+        final followRef = db
+            .collection("users")
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .collection("follows")
+            .doc(followeeId);
+        transaction.set(followRef, {
+          'followedAt': now,
+          'notify': true,
+        });
+
+        // 相手のfollowersコレクションに追加
+        final followerRef = db
+            .collection("users")
+            .doc(followeeId)
+            .collection("followers")
+            .doc(FirebaseAuth.instance.currentUser!.uid);
+        transaction.set(followerRef, {
+          'followedAt': now,
+        });
+
+        // フォロー数をインクリメント
+        final myProfileRef = db
+            .collection("users")
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .collection("profile")
+            .doc("profile");
+        transaction.set(myProfileRef, {
+          'followCount': FieldValue.increment(1),
+        }, SetOptions(merge: true));
+
+        // フォロワー数をインクリメント
+        final theirProfileRef = db
+            .collection("users")
+            .doc(followeeId)
+            .collection("profile")
+            .doc("profile");
+        transaction.set(theirProfileRef, {
+          'followerCount': FieldValue.increment(1),
+        }, SetOptions(merge: true));
+      });
+    }
+    catch(e)
+    {
+      print(e);
     }
   }
 
   // フォロー解除時の処理
-  static Future<void> unFollow(String id) async {
-    final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+  static Future<void> unFollow(String followeeId) async {
+    try {
+      final FirebaseFirestore db = FirebaseFirestore.instance;
+      final String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    final uri = Uri.parse(
-      'https://onunfollow-moq4fftydq-an.a.run.app',
-    );
+      // すでにフォローしているか確認
+      final docSnap = await db
+          .collection("users")
+          .doc(uid)
+          .collection("follows")
+          .doc(followeeId)
+          .get();
 
-    final response = await http.post(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer:$idToken', // ユーザーのトークンで認証
-      },
-      body: jsonEncode({
-        'followeeId': id,
-      }),
-    );
+      if (!docSnap.exists) {
+        throw Exception("Not yet registered.");
+      }
 
-    if (response.statusCode == 200) {
-      print("成功: ${response.body}");
-    } else {
-      print("エラー (${response.statusCode}): ${response.body}");
+      // トランザクション開始
+      await db.runTransaction((transaction) async {
+        // 自分のfollowsコレクションから削除
+        final followRef = db
+            .collection("users")
+            .doc(uid)
+            .collection("follows")
+            .doc(followeeId);
+        transaction.delete(followRef);
+
+        // 相手のfollowersコレクションから削除
+        final followerRef = db
+            .collection("users")
+            .doc(followeeId)
+            .collection("followers")
+            .doc(uid);
+        transaction.delete(followerRef);
+
+        // 自分の followCount を1減らす
+        final myProfileRef = db
+            .collection("users")
+            .doc(uid)
+            .collection("profile")
+            .doc("profile");
+        transaction.set(
+          myProfileRef,
+          {'followCount': FieldValue.increment(-1)},
+          SetOptions(merge: true),
+        );
+
+        // 相手の followerCount を1減らす
+        final theirProfileRef = db
+            .collection("users")
+            .doc(followeeId)
+            .collection("profile")
+            .doc("profile");
+        transaction.set(
+          theirProfileRef,
+          {'followerCount': FieldValue.increment(-1)},
+          SetOptions(merge: true),
+        );
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  // 通報内容を保存(投稿id,カテゴリー,通報内容)
+  static Future<void> report({
+    required String postId,
+    required String category,
+    required String text,
+  }) async{
+    try {
+      final FirebaseFirestore db = FirebaseFirestore.instance;
+      final String uid = FirebaseAuth.instance.currentUser!.uid;
+
+      // トランザクション開始
+      await db.runTransaction((transaction) async {
+        final now = FieldValue.serverTimestamp();
+
+        // レポート内容を追加
+        final reportRef = db
+            .collection("report")
+            .doc();
+        transaction.set(reportRef, {
+          'reportAt': now,
+          'reporterId' : uid,
+          'postId' : postId,
+          'category' : category,
+        });
+
+        // ポストに通報数を加算
+        final reportedPostId  = db
+            .collection("posts")
+            .doc(postId);
+        transaction.set(reportedPostId, {
+          'reportedCount' : FieldValue.increment(1)
+        },SetOptions(merge: true));
+      });
+    } catch (e) {
+      print(e);
     }
   }
 }

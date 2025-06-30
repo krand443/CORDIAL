@@ -20,7 +20,7 @@ Source: https://rive.app/marketplace/15550-29335-heartlike-click/\n
 
   static Future<void> show(BuildContext context) async {
     await showDialog(
-      barrierColor: Colors.grey.withOpacity(0.3), // ダイアログの周囲の色
+      barrierColor: Colors.grey.withOpacity(0.1), // ダイアログの周囲の色
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(

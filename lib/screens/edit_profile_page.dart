@@ -39,8 +39,129 @@ class EditProfilePageState extends State<EditProfilePage> {
   // 画像ピックで保存する変数
   File? _pickImage;
 
+  // デフォルトのアイコン
+  AssetImage defaultIcon = const AssetImage("assets/user_default_icon.png");
+
+  // 完了ボタンを押したらtrueになる。
+  bool waitForUpload = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: _appbar(),
+      body: SingleChildScrollView(
+        //キーボード表示で画面が崩れないようスクロールにする
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+
+              // 確定ボタン
+              Align(
+                alignment: Alignment.centerRight,
+                child: _applyButton(),
+              ),
+
+              const SizedBox(height: 10),
+
+              // アイコンプレビューを表示
+              _iconPreview(),
+
+              // ユーザ名入力フォーム
+              TextField(
+                controller: _textController,
+                textAlign: TextAlign.center,
+                autofocus: true,
+                // ウィジェット表示時に自動でフォーカス
+                keyboardType: TextInputType.multiline,
+                maxLength: 20,// ここで文字数を制限
+                style: const TextStyle(
+                  fontSize: 20, // ここで文字サイズを変更
+                ),
+                decoration: const InputDecoration(
+                  // 入力欄に表示するヒントメッセージを生成
+                  hintText: "ユーザー名を入力",
+                  contentPadding: EdgeInsets.only(top: 30),
+                  // 上に余白追加して表示位置を下げる
+                  border: InputBorder.none,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  AppBar _appbar(){
+    return AppBar(
+      backgroundColor:Colors.transparent,// アプリバーの色
+      automaticallyImplyLeading: false, // 戻るアイコンを非表示にする
+      leading: IconButton(
+        padding: const EdgeInsets.only(top: 0),
+        icon: const Icon(
+          Icons.close,
+          size: 30,
+          color: Colors.grey,
+        ),
+        onPressed: () {
+          Navigator.of(context).pop(); // 現在の画面を閉じる
+        },
+      ),
+      title: const Text(
+        'プロフィールを作成',
+        style: TextStyle(
+          fontFamily: 'Roboto', // モダンなフォント
+          fontWeight: FontWeight.w600, // 太めのフォントでモダンな印象
+        ),
+      ),
+      centerTitle: true,
+      elevation: 0, // アプリバーの影を消す
+    );
+  }
+
+  Widget _iconPreview(){
+    return Container(
+      width: 150,
+      height: 150,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Theme.of(context)
+              .colorScheme
+              .inversePrimary, // 枠線の色
+          width: 5, // 枠線の太さ
+        ),
+      ),
+
+      // アイコンのプレビュー表示
+      child: InkResponse(
+        onTap: _imagePick,
+        child: Stack(
+          children: [
+            _pickImage == null
+                ? const UserIcon(size: 70)
+                : CircleAvatar(
+              radius: 70,
+              backgroundImage: FileImage(_pickImage!),
+            ),
+            const CircleAvatar(
+              radius: 70,
+              backgroundColor: Colors.transparent,
+              backgroundImage:
+              AssetImage('assets/edit_icon.png'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ギャラリーから写真を選択
-  Future<void> imagePick() async {
+  Future<void> _imagePick() async {
     final ImagePicker _picker = ImagePicker();
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -50,14 +171,39 @@ class EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
-  // デフォルトのアイコン
-  AssetImage defaultIcon = const AssetImage("assets/user_default_icon.png");
+  // 確定ボタン
+  Widget _applyButton(){
+    return Stack(children: [
+      TextButton(
+        onPressed: () {
+          if (_textController.text.isNotEmpty && !waitForUpload) {
+            _pushEnter();
+          }
+        },
+        style: TextButton.styleFrom(
+          // テキストが入力されていないかアップロード待ちなら灰色表示する
+          backgroundColor: _textController.text.isEmpty || waitForUpload
+              ? Colors.grey
+              : Theme.of(context).colorScheme.tertiaryContainer, // 背景色
+          foregroundColor: Colors.white, // テキスト色
+          textStyle: const TextStyle(
+            fontSize: 18, // フォントサイズを指定
+          ),
+        ),
+        child: const Text('完了→'),
+      ),
 
-  // 完了ボタンを押したらtrueになる。
-  bool waitForUpload = false;
+      // アップロード待ちなら読み込みアニメーションを表示
+      if(waitForUpload)
+        const CircularProgressIndicator(
+          padding: EdgeInsets.only(left: 20,top: 5),
+          color: Colors.blue,
+        )
+    ]);
+  }
 
   // 確定が押されたとき
-  void pushEnter() async {
+  void _pushEnter() async {
     waitForUpload = true;
     setState(() {});// 画面更新
 
@@ -75,152 +221,6 @@ class EditProfilePageState extends State<EditProfilePage> {
     Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const RootPage(selectTab: 1)),
           (route) => false,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor:Colors.transparent,// アプリバーの色
-        automaticallyImplyLeading: false, // 戻るアイコンを非表示にする
-        leading: IconButton(
-          padding: const EdgeInsets.only(top: 0),
-          icon: const Icon(
-            Icons.close,
-            size: 45,
-            color: Colors.grey,
-          ),
-          onPressed: () {
-            Navigator.of(context).pop(); // 現在の画面を閉じる
-          },
-        ),
-        title: const Text(
-          'プロフィールを作成',
-          style: TextStyle(
-            fontFamily: 'Roboto', // モダンなフォント
-            fontWeight: FontWeight.w600, // 太めのフォントでモダンな印象
-          ),
-        ),
-        centerTitle: true,
-        elevation: 0, // アプリバーの影を消す
-      ),
-      body: LayoutBuilder(
-        // 画面全体の制約（最大幅・最大高さ）を取得するために使用
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            //キーボード表示で画面が崩れないようスクロールにする
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              // 親からもらえる最大の高さで表示
-              child: IntrinsicHeight(
-                //表示位置を上に寄せる
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 10),
-
-                      // 完了ボタン
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Stack(children: [
-                          TextButton(
-                            onPressed: () {
-                              if (_textController.text.isNotEmpty && !waitForUpload) {
-                                pushEnter();
-                              }
-                            },
-                            style: TextButton.styleFrom(
-                              // テキストが入力されていないかアップロード待ちなら灰色表示する
-                              backgroundColor: _textController.text.isEmpty || waitForUpload
-                                  ? Colors.grey
-                                  : Theme.of(context).colorScheme.tertiaryContainer, // 背景色
-                              foregroundColor: Colors.white, // テキスト色
-                              textStyle: const TextStyle(
-                                fontSize: 18, // フォントサイズを指定
-                              ),
-                            ),
-                            child: const Text('完了→'),
-                          ),
-
-                          // アップロード待ちなら読み込みアニメーションを表示
-                          if(waitForUpload)
-                            const CircularProgressIndicator(
-                            padding: EdgeInsets.only(left: 20,top: 5),
-                            color: Colors.blue,
-                          )
-                        ]),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      // アイコンを表示
-                      Container(
-                        width: 150,
-                        height: 150,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .inversePrimary, // 枠線の色
-                            width: 5, // 枠線の太さ
-                          ),
-                        ),
-
-                        // アイコンのプレビュー表示
-                        child: InkResponse(
-                          onTap: imagePick,
-                          child: Stack(
-                            children: [
-                              _pickImage == null
-                                  ? UserIcon(size: 70)
-                                  : CircleAvatar(
-                                      radius: 70,
-                                      backgroundImage: FileImage(_pickImage!),
-                                    ),
-                              const CircleAvatar(
-                                radius: 70,
-                                backgroundColor: Colors.transparent,
-                                backgroundImage:
-                                    AssetImage('assets/edit_icon.png'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      // ユーザ名入力フォーム
-                      TextField(
-                        controller: _textController,
-                        textAlign: TextAlign.center,
-                        autofocus: true,
-                        // ウィジェット表示時に自動でフォーカス
-                        keyboardType: TextInputType.multiline,
-                        maxLength: 20,
-                        // ここで文字数を制限
-                        style: const TextStyle(
-                          fontSize: 20, // ここで文字サイズを変更
-                        ),
-                        decoration: const InputDecoration(
-                          // 入力欄に表示するヒントメッセージを生成
-                          hintText: "ユーザー名を入力",
-                          contentPadding: EdgeInsets.only(top: 30),
-                          // 上に余白追加して表示位置を下げる
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
     );
   }
 }

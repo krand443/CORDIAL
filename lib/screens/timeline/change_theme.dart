@@ -34,17 +34,17 @@ class ChangeThemeState extends State<ChangeTheme> {
           ),
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.2), // 背景色をここに移動
+              color: Theme.of(context).colorScheme.secondaryContainer.withValues(alpha: 0.7), // 背景色
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(28), // 左上
                 topRight: Radius.circular(28), // 右上
               ), // 角丸の半径を指定
             ),
-            child: SizedBox(
+            child: SafeArea(
               child: Column(
                 children: [
                   const SizedBox(
-                    height: 22,
+                    height: 3,
                   ),
                   ListTile(
                     leading: Icon(

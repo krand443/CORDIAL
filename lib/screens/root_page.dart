@@ -67,7 +67,7 @@ class RootPageState extends State<RootPage> {
       // 下部バー
       bottomNavigationBar: SafeArea(
         child: SizedBox(
-          height: 45.0,
+          height: 40.0,
           child: UnderBar(currentIndex: currentTab, onTap: onTabSelected),
         ),
       ),

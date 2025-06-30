@@ -34,8 +34,15 @@ void showCustomDialog({
           child: Container(
             padding: EdgeInsets.all(0),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.secondary,
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
               borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.8), // 影の色
+                  spreadRadius: 1.5, // 影の広がり
+                  blurRadius: 3,   // ぼかしの強さ
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -49,7 +56,7 @@ void showCustomDialog({
                   },
                   child: Text(
                     text,
-                    style: TextStyle(color: Theme.of(context).colorScheme.tertiary),),
+                    style: TextStyle(color: Theme.of(context).colorScheme.error),),
                 ),
               ],
             ),

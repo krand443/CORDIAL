@@ -19,6 +19,9 @@ class Post
   // 投稿内容
   final String postText;
 
+  // 指定AI
+  final int selectedAiId;
+
   // AIの返信
   final String response;
 
@@ -35,6 +38,7 @@ class Post
     required this.iconUrl,
     required this.userId,
     required this.postText,
+    required this.selectedAiId,
     required this.response,
     required this.nice,
     required this.isNice,

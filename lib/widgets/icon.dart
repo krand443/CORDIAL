@@ -64,11 +64,24 @@ class UserIconState extends State<UserIcon> {
 
 // AIアイコンを返す
 class AiIcon extends StatelessWidget{
-  const AiIcon({super.key});
+  final int selectedAiId;
+  final double radius;
+
+  AiIcon({super.key, required this.selectedAiId, required this.radius});
+
+  // AIアイコンのリスト
+  final List<String> filePath = [
+    'assets/AI_icon.webp',
+    'assets/AI_icon2.webp',
+    'assets/AI_icon3.webp',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    throw UnimplementedError();
+    return CircleAvatar(
+      radius: radius,
+      backgroundImage: AssetImage(filePath[selectedAiId]),
+    );
   }
 
 }
