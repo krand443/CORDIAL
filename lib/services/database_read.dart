@@ -240,6 +240,7 @@ class DatabaseRead {
     ├── nationality: String                  // Japan
     ├── /profile
     │   ├── introduction: String             // 自己紹介(100文字程度)
+    │   ├── backgroundPath: String             // 背景
     │   ├── lastAction: Timestamp
     │   ├── followCount: int
     │   └── followerCount: int
@@ -263,6 +264,7 @@ class DatabaseRead {
           name: data?['name'] ?? 'null',
           iconUrl: data?['iconUrl'] ?? 'null',
           introduction: dataDeep?['introduction'] ?? 'null',
+          backgroundPath: dataDeep?['backgroundPath'] ?? 'null',
           followCount: dataDeep?['followCount'] ?? 0,
           followerCount: dataDeep?['followerCount'] ?? 0);
     } catch (e) {
@@ -371,6 +373,7 @@ class DatabaseRead {
 ├── nationality: String                  // Japan
 ├── /profile
 │   ├── introduction: String             // 自己紹介(100文字程度)
+│   ├── backgroundPath: String             // 背景
 │   ├── lastAction: Timestamp
 │   ├── followCount: int
 │   └── followerCount: int

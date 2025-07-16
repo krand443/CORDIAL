@@ -24,7 +24,7 @@ class PageTransitions {
     _basicTransitions(SwipeBackWrapper(onClose: onClose,direction: SwipeDirection.down,child: targetWidget,),context,const Offset(0.0, 1.0));
   }
 
-  // 遷移の基本関数(ローカル)
+  // 遷移の基本関数
   static _basicTransitions(Widget targetWidget,BuildContext context,Offset startPosition){
     Navigator.push(
       context,

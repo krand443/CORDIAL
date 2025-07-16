@@ -12,6 +12,9 @@ class Profile
   // 自己紹介文
   final String introduction;
 
+  // 背景画像のローカルパス
+  final String backgroundPath;
+
   // フォロー数
   final int followCount;
 
@@ -22,28 +25,8 @@ class Profile
     required this.name,
     required this.iconUrl,
     required this.introduction,
+    required this.backgroundPath,
     required this.followCount,
     required this.followerCount
   });
 }
-/*
-/users/{userId}                          // 例:user001
-├── username: String                     // 田中太郎
-├── iconUrl: String (URL)
-├── nationality: String                  // Japan
-├── /profile
-│   ├── introduction: String             // 自己紹介(100文字程度)
-│   ├── lastAction: Timestamp
-│   ├── followCount: int
-│   └── followerCount: int
-├── /hidden
-│   └── {hiddenUserId}: {}               // 非表示ユーザーリスト
-├── /follows
-│   ├─── {followsUserId}                // フォローしているユーザーのID
-│       ├── followedAt: Timestamp
-│       └── notify: boolean             // 通知の切り替え
-├─── /followers
-├─── {followerUserId}               // フォロワーのユーザーID
-└── followedAt: Timestamp
-
- */

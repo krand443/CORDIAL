@@ -1,4 +1,4 @@
-// Postを管理するためのデータ構造
+// 投稿一つ分のデータ構造
 class Post
 {
   // ポスト時間
@@ -44,23 +44,3 @@ class Post
     required this.isNice,
   });
 }
-
-// ポスト構造
-/*
-/posts/{postId}                          // 例:post001
-├── postedAt: Timestamp
-├── userid: String                       // 投稿者ID
-├── text: String                         // 本文
-├── response: String                     // AIからの返信
-├── nice: int
-├── /niceList
-│   └── {userId}: {}                     // いいねしたユーザー
-├─── /replies
-    ├─── {replyId}                       // reply001
-        ├── RepliedAt: Timestamp
-        ├── userid: String               // リプライ投稿者ID
-        ├── text: String
-        ├── nice: int
-        └── /niceList
-            └── {userId}: {}
- */

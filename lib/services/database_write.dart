@@ -20,7 +20,7 @@ import 'package:http/http.dart' as http;
 
 class DatabaseWrite {
   // ユーザーを追加
-  static Future<void> setUser(String name) async {
+  static Future<void> setUser(String name,String backgroundPath) async {
     /*
     /users/{userId}                          // 例:user001
     ├── name: String                         // 田中太郎
@@ -57,6 +57,7 @@ class DatabaseWrite {
           .doc('profile')
           .set({
         'lastAction': FieldValue.serverTimestamp(), // サーバー側の時刻セット
+        'backgroundPath': backgroundPath,
       }, SetOptions(merge: true)); // 他のフィールドはそのまま残す
     } catch (e) {
       print(e);
@@ -398,6 +399,7 @@ class DatabaseWrite {
           'reporterId' : uid,
           'postId' : postId,
           'category' : category,
+          'text' : text,
         });
 
         // ポストに通報数を加算

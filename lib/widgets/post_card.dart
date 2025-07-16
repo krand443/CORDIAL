@@ -97,12 +97,24 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                       targetWidget: ProfilePage(userId: _post.userId),
                       context: context);
                 },
-                child: CircleAvatar(
-                  radius: 20,
-                  backgroundImage: _post.iconUrl != "null"
-                      ? NetworkImage(_post.iconUrl) as ImageProvider
-                      : const AssetImage("assets/user_default_icon.png"),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 0.5,
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundImage: _post.iconUrl != "null"
+                        ? NetworkImage(_post.iconUrl) as ImageProvider
+                        : const AssetImage("assets/user_default_icon.png"),
+                  ),
                 ),
+
               ),
 
               const SizedBox(width: 12),

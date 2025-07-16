@@ -15,7 +15,7 @@ class UserSummaryCard extends StatefulWidget {
   });
 
   @override
-  UserSummaryCardState createState() => UserSummaryCardState();
+  State<UserSummaryCard> createState() => UserSummaryCardState();
 }
 
 class UserSummaryCardState extends State<UserSummaryCard> with AutomaticKeepAliveClientMixin {

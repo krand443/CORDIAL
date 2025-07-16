@@ -44,15 +44,6 @@ class TimelineMenu extends StatelessWidget {
                       Material(
                         color: Colors.transparent, // 背景色
                         child: ListTile(
-                          leading: const Icon(Icons.help_outline),
-                          title: const Text("ヘルプ"),
-                          onTap: () {
-                          },
-                        ),
-                      ),
-                      Material(
-                        color: Colors.transparent, // 背景色
-                        child: ListTile(
                           leading: const Icon(Icons.text_snippet_outlined),
                           title: const Text("ライセンス"),
                           onTap: () {

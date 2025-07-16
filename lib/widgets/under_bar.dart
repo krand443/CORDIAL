@@ -24,6 +24,7 @@ class UnderBar extends StatelessWidget {
             children: [
               IconButton(
                 padding: const EdgeInsets.only(left: 30, right: 30),
+                tooltip: 'HOME',
                 icon: Icon(
                   Icons.home,
                   size: 40,
@@ -36,6 +37,7 @@ class UnderBar extends StatelessWidget {
               const SizedBox(width: 10.0), // 中央余白
               IconButton(
                 padding: const EdgeInsets.only(left: 30, right: 30),
+                tooltip: 'PROFILE',
                 icon: Icon(
                   Icons.person,
                   size: 40,
@@ -51,7 +53,7 @@ class UnderBar extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 0),
             child: FloatingActionButton(
               backgroundColor: Theme.of(context).colorScheme.tertiary,
-              tooltip: '新しい投稿',
+              tooltip: '投稿を作成',
               onPressed: () {
                 // 下から投稿画面を表示
                 PageTransitions.fromBottom(

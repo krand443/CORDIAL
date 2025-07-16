@@ -1,13 +1,14 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../root_page.dart';
-import 'package:cordial/services/signin.dart';
-import 'package:cordial/screens/login/reset_password_page.dart';
 import 'package:cordial/navigation/page_transitions.dart';
-import '../../services/database_read.dart';
-import '../edit_profile_page.dart';
+import 'package:cordial/services/database_read.dart';
+import 'package:cordial/services/signin.dart';
+import 'package:cordial/screens/root_page.dart';
+import 'package:cordial/screens/login/reset_password_page.dart';
+import 'package:cordial/screens/edit_profile_page.dart';
 
+// ログイン画面、Googleまたはmailでログインできる
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -83,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // アカウント登録処理(メールアドレス&パスワード)
-  Future createAccount(String email, String passWord) async {
+  Future _createAccount(String email, String passWord) async {
     try {
       // アカウント登録
       UserCredential userCredential =
@@ -169,7 +170,7 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         // アカウントを作成する
-        createAccount(_mailController.text, _passwordController.text);
+        _createAccount(_mailController.text, _passwordController.text);
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green, // ボタンの色

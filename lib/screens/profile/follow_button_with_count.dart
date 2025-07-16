@@ -31,7 +31,7 @@ class FollowCountState extends State<FollowCount> {
     super.initState();
 
     // フォロー,フォロワー数を取得
-    setFollowCount();
+    _setFollowCount();
 
   }
 
@@ -39,7 +39,7 @@ class FollowCountState extends State<FollowCount> {
   Profile? _profile;
 
   // フォロー,フォロワー数を取得
-  Future setFollowCount() async {
+  Future _setFollowCount() async {
     // データ取得を待つ
     _profile = await widget.profileFuture;
 
@@ -49,15 +49,6 @@ class FollowCountState extends State<FollowCount> {
       follows = _profile?.followCount ?? 0;
       followers = _profile?.followerCount ?? 0;
     });
-  }
-
-  // 編集画面に飛ばす
-  void profileEdit() {
-    PageTransitions.fromBottom(
-        targetWidget: EditProfilePage(
-          existingName: _profile?.name,
-        ),
-        context: context);
   }
 
   // フォローボタンが押されたときに呼び出す
@@ -71,6 +62,7 @@ class FollowCountState extends State<FollowCount> {
 
   // フォロー解除ボタンが押されたときに呼び出す
   void onUnFollow() async {
+    if (!mounted) return;
     setState(() {
       // 見かけ上フォロワー数を一つ下げる(実際にも下がってる)
       followers = (followers ?? 0) - 1;
@@ -83,34 +75,7 @@ class FollowCountState extends State<FollowCount> {
       children: [
         // 通常フォローボタンを表示するが、自分自身のプロフィールの場合プロフィール編集ボタンを表示する
         widget.userId == FirebaseAuth.instance.currentUser?.uid
-            ? ElevatedButton(
-                onPressed: () {
-                  // 編集を押したときの動作
-                  profileEdit();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.black,
-                  foregroundColor: Colors.green[50],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  minimumSize: Size(0, 35),
-                ),
-                child: Row(
-                  children: [
-                    Text('編集'),
-                    Image.asset(
-                      "assets/edit_icon.png",
-                      width: 35,
-                      height: 35,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              )
-            // =====フォローボタンを表示=====
+            ? _editButton()
             : FollowButton(userId: widget.userId,onFollow: onFollow,onUnFollow: onUnFollow,),
 
         // フォロー数とフォロワー数を取得して表示
@@ -133,6 +98,42 @@ class FollowCountState extends State<FollowCount> {
           ),
         ),
       ],
+    );
+  }
+
+  // 編集ボタン
+  Widget _editButton(){
+    return ElevatedButton(
+      onPressed: () {
+        // 編集を押したときの動作
+        PageTransitions.fromBottom(
+            targetWidget: EditProfilePage(
+              existingName: _profile?.name,
+              backgroundPath: _profile?.backgroundPath,
+            ),
+            context: context);
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.black,
+        foregroundColor: Colors.green[50],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        minimumSize: Size(0, 35),
+      ),
+      child: Row(
+        children: [
+          Text('編集'),
+          Image.asset(
+            "assets/edit_icon.png",
+            width: 35,
+            height: 35,
+            color: Colors.white,
+          ),
+        ],
+      ),
     );
   }
 }

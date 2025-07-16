@@ -160,7 +160,7 @@ class ReportPageState extends State<ReportPage> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide:
-              const BorderSide(color: Colors.white), // フォーカス時のボーダー色を白に変更
+              BorderSide(color: Theme.of(context).colorScheme.onSecondary), // フォーカス時
         ),
         contentPadding:
             const EdgeInsets.symmetric(vertical: 12, horizontal: 16),

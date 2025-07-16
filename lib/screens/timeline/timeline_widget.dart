@@ -90,6 +90,8 @@ class TimelineWidgetState extends State<TimelineWidget>
 
     // タイムラインを更新
     if (_timeline != null) {
+      if (!mounted) return;
+
       // もともとのタイムラインが空だったらそのまま挿入、でなければ更新
       setState(() {
         if (timeline == null) {
@@ -188,7 +190,7 @@ class TimelineWidgetState extends State<TimelineWidget>
                   }
 
                   // 広告を挿入する位置かどうかを判定
-                  if ((index + 1) % (adInterval + 1) == 0) {
+                  if ((index + 1) % (adInterval + 1) == 0 && _userId == null) {
                     return AdMob.getBannerAdUnit(); // 広告ウィジェット
                   }
 

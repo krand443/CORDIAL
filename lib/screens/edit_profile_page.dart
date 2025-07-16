@@ -5,15 +5,17 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:cordial/services/firestore_storage.dart';
 import 'package:cordial/services/database_write.dart';
-import 'package:cordial/services/database_read.dart';
+import 'package:cordial/screens/select_background_page.dart';
 
 // プロフィール編集画面
 class EditProfilePage extends StatefulWidget {
-
   //　既存のユーザー名を受けとる(なくても可)
   final String? existingName;
 
-  const EditProfilePage({super.key, this.existingName});
+  // 既存の背景(なくても可)
+  final String? backgroundPath;
+
+  const EditProfilePage({super.key, this.existingName, this.backgroundPath});
 
   @override
   State<EditProfilePage> createState() => EditProfilePageState();
@@ -23,14 +25,23 @@ class EditProfilePageState extends State<EditProfilePage> {
   // 未入力を確認するためのコントローラー
   final TextEditingController _textController = TextEditingController();
 
+  // 背景画像ファイル名を格納しておく
+  String _backgroundPath = 'assets/background/00001.jpg';
+
   @override
   void initState() {
     super.initState();
 
     // 既存のユーザー名を格納
-    if(widget.existingName != null) {
+    if (widget.existingName != null) {
       _textController.text = widget.existingName!;
     }
+
+    // 既存の背景を格納
+    if (widget.backgroundPath != null) {
+      _backgroundPath = widget.backgroundPath!;
+    }
+
     _textController.addListener(() {
       setState(() {}); // 入力変更で再描画
     });
@@ -39,11 +50,8 @@ class EditProfilePageState extends State<EditProfilePage> {
   // 画像ピックで保存する変数
   File? _pickImage;
 
-  // デフォルトのアイコン
-  AssetImage defaultIcon = const AssetImage("assets/user_default_icon.png");
-
   // 完了ボタンを押したらtrueになる。
-  bool waitForUpload = false;
+  bool _waitForUpload = false;
 
   @override
   Widget build(BuildContext context) {
@@ -52,40 +60,70 @@ class EditProfilePageState extends State<EditProfilePage> {
       appBar: _appbar(),
       body: SingleChildScrollView(
         //キーボード表示で画面が崩れないようスクロールにする
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const SizedBox(height: 10),
+              Stack(
+                children: [
 
-              // 確定ボタン
-              Align(
-                alignment: Alignment.centerRight,
-                child: _applyButton(),
+                  //　背景画像
+                  Container(
+                    padding: const EdgeInsets.only(bottom: 30),
+                    height: 250,
+                    child: Ink.image(
+                      image: AssetImage(_backgroundPath), // 背景画像
+                      fit: BoxFit.cover,
+                      child: InkWell(
+                        // InkWellでタップジェスチャーと波紋を処理
+                        onTap: () async {
+                          // 背景画像選択画面へ
+                          String? selectedBackground = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const SelectBackgroundPage()),
+                          );
+                          if (selectedBackground == null) return;
+
+                          setState(() {
+                            // 背景画像を変更
+                            _backgroundPath = selectedBackground;
+                          });
+                        },
+                        child: Container(), // 波紋を表示するための透明なコンテナ
+                      ),
+                    ),
+                  ),
+
+                  // 完了アイコン
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 0, top: 10),
+                      child: _applyButton(),
+                    ),
+                  ),
+
+                  Positioned(left: 10.0, bottom: 5.0, child: _iconPreview()),
+                ],
               ),
-
-              const SizedBox(height: 10),
-
-              // アイコンプレビューを表示
-              _iconPreview(),
 
               // ユーザ名入力フォーム
               TextField(
                 controller: _textController,
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.left,
                 autofocus: true,
                 // ウィジェット表示時に自動でフォーカス
                 keyboardType: TextInputType.multiline,
-                maxLength: 20,// ここで文字数を制限
+                maxLength: 20,
+                // ここで文字数を制限
                 style: const TextStyle(
                   fontSize: 20, // ここで文字サイズを変更
                 ),
                 decoration: const InputDecoration(
-                  // 入力欄に表示するヒントメッセージを生成
                   hintText: "ユーザー名を入力",
-                  contentPadding: EdgeInsets.only(top: 30),
-                  // 上に余白追加して表示位置を下げる
+                  contentPadding: EdgeInsets.only(left: 20, right: 20),
                   border: InputBorder.none,
                 ),
               ),
@@ -96,10 +134,11 @@ class EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  AppBar _appbar(){
+  AppBar _appbar() {
     return AppBar(
-      backgroundColor:Colors.transparent,// アプリバーの色
-      automaticallyImplyLeading: false, // 戻るアイコンを非表示にする
+      // アプリバーの色
+      automaticallyImplyLeading: false,
+      // 戻るアイコンを非表示にする
       leading: IconButton(
         padding: const EdgeInsets.only(top: 0),
         icon: const Icon(
@@ -123,18 +162,19 @@ class EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Widget _iconPreview(){
+  Widget _iconPreview() {
     return Container(
-      width: 150,
-      height: 150,
+      width: 120,
+      height: 120,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: Theme.of(context)
-              .colorScheme
-              .inversePrimary, // 枠線の色
-          width: 5, // 枠線の太さ
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3), // 影の色と透明度
+            blurRadius: 10, // ぼかしの半径
+            offset: Offset(4, 4),
+          ),
+        ],
       ),
 
       // アイコンのプレビュー表示
@@ -145,14 +185,13 @@ class EditProfilePageState extends State<EditProfilePage> {
             _pickImage == null
                 ? const UserIcon(size: 70)
                 : CircleAvatar(
-              radius: 70,
-              backgroundImage: FileImage(_pickImage!),
-            ),
+                    radius: 70,
+                    backgroundImage: FileImage(_pickImage!),
+                  ),
             const CircleAvatar(
               radius: 70,
               backgroundColor: Colors.transparent,
-              backgroundImage:
-              AssetImage('assets/edit_icon.png'),
+              backgroundImage: AssetImage('assets/edit_icon.png'),
             ),
           ],
         ),
@@ -172,31 +211,63 @@ class EditProfilePageState extends State<EditProfilePage> {
   }
 
   // 確定ボタン
-  Widget _applyButton(){
+  Widget _applyButton() {
     return Stack(children: [
-      TextButton(
-        onPressed: () {
-          if (_textController.text.isNotEmpty && !waitForUpload) {
-            _pushEnter();
-          }
-        },
-        style: TextButton.styleFrom(
-          // テキストが入力されていないかアップロード待ちなら灰色表示する
-          backgroundColor: _textController.text.isEmpty || waitForUpload
-              ? Colors.grey
-              : Theme.of(context).colorScheme.tertiaryContainer, // 背景色
-          foregroundColor: Colors.white, // テキスト色
-          textStyle: const TextStyle(
-            fontSize: 18, // フォントサイズを指定
+      Material(
+        color: Colors.transparent, // 背景は透明にする（Containerに任せる）
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.zero,
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.zero,
+        ),
+        child: Container(
+          decoration: const BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black54,
+                blurRadius: 2,
+                offset: Offset(2, 2),
+              ),
+            ],
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.zero,
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.zero,
+            ),
+          ),
+          child: TextButton(
+            onPressed: () {
+              if (_textController.text.isNotEmpty && !_waitForUpload) {
+                _pushEnter();
+              }
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: _textController.text.isEmpty || _waitForUpload
+                  ? Colors.grey
+                  : Theme.of(context).colorScheme.tertiaryContainer,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+              textStyle: const TextStyle(fontSize: 18),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.zero,
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.zero,
+                ),
+              ),
+            ),
+            child: const Text('完了→'),
           ),
         ),
-        child: const Text('完了→'),
       ),
 
       // アップロード待ちなら読み込みアニメーションを表示
-      if(waitForUpload)
+      if (_waitForUpload)
         const CircularProgressIndicator(
-          padding: EdgeInsets.only(left: 20,top: 5),
+          padding: EdgeInsets.only(left: 20, top: 5),
           color: Colors.blue,
         )
     ]);
@@ -204,8 +275,8 @@ class EditProfilePageState extends State<EditProfilePage> {
 
   // 確定が押されたとき
   void _pushEnter() async {
-    waitForUpload = true;
-    setState(() {});// 画面更新
+    _waitForUpload = true;
+    setState(() {}); // 画面更新
 
     // 画像を追加(任意)
     try {
@@ -215,12 +286,12 @@ class EditProfilePageState extends State<EditProfilePage> {
     }
 
     // ユーザー情報を変更
-    await DatabaseWrite.setUser(_textController.text);
+    await DatabaseWrite.setUser(_textController.text, _backgroundPath);
 
-    // 画面遷移
+    // プロフィール画面へ遷移
     Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const RootPage(selectTab: 1)),
-          (route) => false,
+      (route) => false,
     );
   }
 }

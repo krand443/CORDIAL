@@ -5,6 +5,7 @@ import 'package:cordial/widgets/custom_appbar.dart';
 import 'package:cordial/screens/profile/user_summary_card.dart';
 import 'package:rive/rive.dart';
 
+// フォロー一覧とフォロワー一覧を表示するページ
 class FollowListPage extends StatefulWidget {
   final String userId;
 
@@ -44,7 +45,7 @@ class FollowListPageState extends State<FollowListPage> {
   }
 
   Widget followingPage() {
-    // 最後までスクロールをしたときに投稿を追加するためのコントローラー
+    // 最後までスクロールをしたときに要素を追加するためのコントローラー
     final ScrollController scrollController = ScrollController();
     return Container(
       key: _followingKey,
@@ -91,7 +92,7 @@ class FollowListPageState extends State<FollowListPage> {
   }
 
   Widget followerPage() {
-    // 最後までスクロールをしたときに投稿を追加するためのコントローラー
+    // 最後までスクロールをしたときに要素を追加するためのコントローラー
     final ScrollController scrollController = ScrollController();
 
     return Container(

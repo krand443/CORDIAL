@@ -1,11 +1,6 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../root_page.dart';
-import 'package:cordial/services/signin.dart';
-import '../../services/database_write.dart';
-import '../../services/database_read.dart';
-import '../edit_profile_page.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
