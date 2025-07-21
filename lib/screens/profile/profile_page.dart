@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cordial/screens/profile/profile_card.dart';
-import 'package:cordial/screens/timeline/timeline_widget.dart';
+import 'package:cordial/widgets/timeline_widget.dart';
 import 'package:cordial/services/database_read.dart';
 import 'package:cordial/data_models/profile.dart';
 

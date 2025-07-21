@@ -61,8 +61,7 @@ class _LoginPageState extends State<LoginPage> {
       final User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
         print("ログインしました　${currentUser.email} , ${currentUser.uid}");
-      }
-      else{
+      } else {
         // ログインできていないなら遷移させない
         return;
       }
@@ -83,12 +82,128 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    // ログイン画面のUI構築
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent, // アプリバーを透明にして背景を見せる
+        title: const Text(
+          'ログイン',
+          style: TextStyle(
+            fontFamily: 'Roboto', // モダンなフォント
+            fontWeight: FontWeight.w600, // 太めのフォントでモダンな印象
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0, // アプリバーの影を消す
+      ),
+      body: Stack(children: [
+
+        Align(
+          alignment: Alignment.center,
+          child: Transform.scale(
+            scale: 1.5,
+            child: Image.asset(
+              'assets/icon.png',
+              width: 500,
+              height: 500,
+            ),
+          ),
+        ),
+
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Card(
+                        color: Theme.of(context).colorScheme.secondaryContainer.withValues(alpha: 0.7),
+                        elevation: 10,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildTextField(
+                                controller: _mailController,
+                                label: 'メールアドレス',
+                                textColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
+                                labelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
+                              ),
+                              const SizedBox(height: 16),
+                              _buildTextField(
+                                controller: _passwordController,
+                                label: 'パスワード',
+                                obscureText: true,
+                                textColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
+                                labelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
+                              ),
+                              const SizedBox(height: 24),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    flex: 2,
+                                    child: _loginButton(),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    flex: 1,
+                                    child: _makeAccountLink(),
+                                  ),
+                                ],
+                              ),
+                              _buildForgotPasswordLink(),
+                              const SizedBox(height: 16),
+                              InkWell(
+                                borderRadius: BorderRadius.circular(30),
+                                onTap: _loginGoogle,
+                                child: Ink(
+                                  width: 180,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    image: const DecorationImage(
+                                      image: AssetImage(
+                                          'assets/google_logo.png'),
+                                      fit: BoxFit.contain,
+                                    ),
+                                    borderRadius:
+                                    BorderRadius.circular(30),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],),
+
+    );
+  }
+
+
   // アカウント登録処理(メールアドレス&パスワード)
   Future _createAccount(String email, String passWord) async {
     try {
       // アカウント登録
       UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: passWord,
       );
@@ -120,6 +235,7 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(16), // ボタンの角を丸く
         ),
         elevation: 5, // ボタンの影
+        shadowColor: Colors.black54, // 影の色
       ),
       child: const SizedBox(
         width: 200, // 幅を200に設定
@@ -140,11 +256,12 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildForgotPasswordLink() {
     return TextButton(
       onPressed: () {
-        PageTransitions.fromBottom(targetWidget: const ResetPasswordPage(), context: context);
+        PageTransitions.fromRight(
+            targetWidget: const ResetPasswordPage(), context: context);
       },
-      child: const Text(
+      child: Text(
         'パスワードを忘れた場合',
-        style: TextStyle(color: Colors.grey),
+        style: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.6)),
       ),
     );
   }
@@ -194,105 +311,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // ログイン画面のUI構築
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent, // アプリバーを透明にして背景を見せる
-        title: const Text(
-          'ログイン',
-          style: TextStyle(
-            fontFamily: 'Roboto', // モダンなフォント
-            fontWeight: FontWeight.w600, // 太めのフォントでモダンな印象
-          ),
-        ),
-        centerTitle: true,
-        elevation: 0, // アプリバーの影を消す
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Card(
-                      color: Theme.of(context).colorScheme.secondaryContainer,
-                      elevation: 10,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildTextField(
-                              controller: _mailController,
-                              label: 'メールアドレス',
-                              textColor:
-                                  Theme.of(context).colorScheme.onPrimary,
-                              labelColor: Colors.grey,
-                            ),
-                            const SizedBox(height: 16),
-                            _buildTextField(
-                              controller: _passwordController,
-                              label: 'パスワード',
-                              obscureText: true,
-                              textColor:
-                                  Theme.of(context).colorScheme.onPrimary,
-                              labelColor: Colors.grey,
-                            ),
-                            const SizedBox(height: 24),
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: _loginButton(),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  flex: 1,
-                                  child: _makeAccountLink(),
-                                ),
-                              ],
-                            ),
-                            _buildForgotPasswordLink(),
-                            const SizedBox(height: 16),
-                            InkWell(
-                              borderRadius: BorderRadius.circular(30),
-                              onTap: _loginGoogle,
-                              child: Ink(
-                                width: 180,
-                                height: 42,
-                                decoration: BoxDecoration(
-                                  image: const DecorationImage(
-                                    image: AssetImage('assets/google_logo.png'),
-                                    fit: BoxFit.contain,
-                                  ),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   // 入力フィールドのスタイル
   Widget _buildTextField({
     required TextEditingController controller,
@@ -315,7 +333,7 @@ class _LoginPageState extends State<LoginPage> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide:
-              const BorderSide(color: Colors.white), // フォーカス時のボーダー色を白に変更
+              BorderSide(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.6)), // フォーカス時のボーダー色
         ),
         contentPadding: const EdgeInsets.symmetric(
             vertical: 12, horizontal: 16), // 内側に余白を追加

@@ -1,0 +1,2 @@
+C:/Users/kouse/Desktop/CORDIAL/android/app/.cxx/Debug/z3o2p4f7/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/kouse/Desktop/CORDIAL/android/app/.cxx/Debug/z3o2p4f7/armeabi-v7a/CMakeFiles/rebuild_cache.dir

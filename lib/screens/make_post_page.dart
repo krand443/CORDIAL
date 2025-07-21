@@ -3,6 +3,7 @@ import 'package:cordial/services/database_write.dart';
 import 'dart:math' as math;
 import 'package:infinite_carousel/infinite_carousel.dart';
 import 'package:cordial/widgets/icon.dart';
+import 'package:cordial/utils/app_preferences.dart';
 import 'package:rive/rive.dart';
 import 'package:showcaseview/showcaseview.dart';
 
@@ -34,7 +35,7 @@ class MakePostPageState extends State<MakePostPage> {
     '初めまして。私はあなたの心に寄り添いたいと思っています。どんなことでも、お話ししてくださったら嬉しいです。',
   ];
 
-  int _selectedAiIndex = 0;
+  int _selectedAiIndex = int.parse(AppPreferences.load(Variable.selectedAi) ?? '0');
 
   @override
   void initState() {
@@ -150,7 +151,7 @@ class MakePostPageState extends State<MakePostPage> {
           padding: const EdgeInsets.only(top: 10, right: 20),
           child: Showcase(
             key: _showcaseKeys[3],
-            description: '最後にこのボタンで投稿します。\n※多くの人の目に触れるため、過度な表現はお控えください。',
+            description: '最後にこのボタンで投稿します。投稿内容によってはAIが多くのいいねをつけてくれます！\n※多くの人の目に触れるため、過度な表現はお控えください。',
             child: TextButton(
               onPressed: () {
                 // テキストが入力されていれば実行
@@ -220,7 +221,7 @@ class MakePostPageState extends State<MakePostPage> {
                     child: Transform.scale(
                       scale: _selectAiController.selectedItem == itemIndex
                           ? 1.0
-                          : 0.85, // 中央のアイテムは拡大
+                          : 0.85,// 中央のアイテムは拡大
                       child: CircleAvatar(
                         backgroundImage: AssetImage(images[itemIndex]),
                       ),
@@ -249,14 +250,14 @@ class MakePostPageState extends State<MakePostPage> {
                       color: Theme.of(context)
                           .colorScheme
                           .secondary
-                          .withOpacity(0.7), // 半透明
+                          .withOpacity(0.7),// 半透明
                       borderRadius: BorderRadius.circular(16), // 丸み
                       boxShadow: [
                         BoxShadow(
                           color: Theme.of(context)
                               .colorScheme
                               .onPrimary
-                              .withOpacity(0.1), // 影
+                              .withOpacity(0.1),// 影
                           blurRadius: 5,
                           offset: Offset(0, 0),
                         ),
@@ -320,6 +321,8 @@ class MakePostPageState extends State<MakePostPage> {
 
   // 投稿ボタンを押したときに呼ばれる処理
   void _post() {
+    AppPreferences.save(Variable.selectedAi,_selectedAiIndex.toString());
+
     Navigator.pop(context); // 先に画面を閉じる
     Future.microtask(() {
       // アニメーション・DBへ書き込み

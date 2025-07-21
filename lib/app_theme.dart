@@ -23,7 +23,7 @@ class AppTheme {
         onPrimaryContainer: Colors.black,
         secondary: const Color.fromARGB(255, 230, 230, 230),
         onSecondary: Colors.black,
-        secondaryContainer: const Color.fromARGB(255, 210, 210,210),
+        secondaryContainer: const Color.fromARGB(255, 230, 230,230),
         onSecondaryContainer: Colors.black,
         tertiary: commonColors.colorScheme.tertiary,
         onTertiary: Colors.black,

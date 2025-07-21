@@ -14,6 +14,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:cordial/services/version_info.dart';
+import 'package:cordial/widgets/admob_widgets.dart';
+import 'package:cordial/utils/app_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +27,15 @@ Future<void> main() async {
   // ThemeModelの初期化が完了するまで待つ
   final themeModelInstance = ThemeModel(); // ここでインスタンスを作成
   await themeModelInstance.initializationDone; // 初期化が完了するまで待機
+
+  // バージョン情報を得るクラスを初期化
+  await VersionInfo.initialize();
+
+  // 広告ウィジェットを初期化
+  AdMob.initializeAdPool();
+
+  // 端末変数管理クラスを初期化
+  AppPreferences.initialize();
 
   // ライセンスをセットする
   MyLicenseDialog.addCustomLicense();
@@ -80,9 +92,9 @@ class _MainState extends State<Main> {
       home: UpgradeAlert(
         // ここにUpgradeAlertウィジェットを追加
         upgrader: Upgrader(
-          debugDisplayAlways: true, // 開発中の確認用
+          debugDisplayAlways: false, // 開発中の確認用
           languageCode: 'ja',
-          minAppVersion: '1.0.0', // 実際のバージョンより常に高く設定
+          minAppVersion: VersionInfo.minVersion, // 最低バージョン(これを下回ると強制アップデート)
         ),
         child: StreamBuilder<List<ConnectivityResult>>(
           // Connectivity().onConnectivityChanged ストリームを監視

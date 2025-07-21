@@ -44,7 +44,7 @@ class RootPageState extends State<RootPage> {
     GlobalKey<NavigatorState>(debugLabel: 'PROFILE Tab'),
   ];
 
-  // 現在表示中のタブに対応する Navigator を取得
+  // 現在表示中のタブに対応する Navigatorを取得
   NavigatorState get currentNavigator =>
       navigatorKeys[currentTab].currentState!;
 
@@ -65,10 +65,13 @@ class RootPageState extends State<RootPage> {
     return Scaffold(
       extendBody: true, // UnderBarを透過させるため
       // 下部バー
-      bottomNavigationBar: SafeArea(
-        child: SizedBox(
-          height: 40.0,
-          child: UnderBar(currentIndex: currentTab, onTap: onTabSelected),
+      bottomNavigationBar: Container(
+        color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
+        child: SafeArea(
+          child: SizedBox(
+            height: 40.0,
+            child: UnderBar(currentIndex: currentTab, onTap: onTabSelected),
+          ),
         ),
       ),
 

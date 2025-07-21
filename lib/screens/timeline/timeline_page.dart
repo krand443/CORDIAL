@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cordial/screens/timeline/timeline_widget.dart';
+import 'package:cordial/widgets/timeline_widget.dart';
 import 'package:cordial/widgets/custom_appbar.dart';
 import 'package:cordial/screens/timeline/timeline_menu.dart';
 import 'package:cordial/navigation/page_transitions.dart';

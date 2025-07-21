@@ -12,12 +12,87 @@ class ResetPasswordPage extends StatefulWidget {
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final TextEditingController _mailController = TextEditingController();
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent, // アプリバーを透明にして背景を見せる
+        title: const Text(
+          'パスワード再設定',
+          style: TextStyle(
+            fontFamily: 'Roboto', // モダンなフォント
+            fontWeight: FontWeight.w600, // 太めのフォントでモダンな印象
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0, // アプリバーの影を消す
+      ),
+      body: Stack(children: [
+        Align(
+          alignment: Alignment.center,
+          child: Transform.scale(
+            scale: 1.5,
+            child: Image.asset(
+              'assets/icon.png',
+              width: 500,
+              height: 500,
+            ),
+          ),
+        ),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Card(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .secondaryContainer
+                            .withValues(alpha: 0.6),
+                        elevation: 10,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildTextField(
+                                controller: _mailController,
+                                label: 'メールアドレス',
+                                textColor:Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
+                                labelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
+                              ),
+                              const SizedBox(height: 24),
+                              _resetButton(),
+                              const SizedBox(height: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ]),
+    );
+  }
+
   // パスワード再設定用関数
-  Future resetPassword(String email) async {
+  Future _resetPassword(String email) async {
     try {
       // 再設定用メールを送信
-      await FirebaseAuth.instance
-          .sendPasswordResetEmail(email: email);
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('パスワード再設定用メールを送信しました！')),
@@ -36,7 +111,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   // リセットボタン
   Widget _resetButton() {
     return ElevatedButton(
-      onPressed: (){
+      onPressed: () {
         // メールアドレスかパスワードが入力されていないなら
         if (_mailController.text == "") {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -53,7 +128,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           return;
         }
 
-        resetPassword(_mailController.text);
+        _resetPassword(_mailController.text);
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green, // ボタンの色
@@ -74,68 +149,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           ),
           textAlign: TextAlign.center, // テキストを中央揃え
         ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // ログイン画面のUI構築
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent, // アプリバーを透明にして背景を見せる
-        title: const Text(
-          'パスワード再設定',
-          style: TextStyle(
-            fontFamily: 'Roboto', // モダンなフォント
-            fontWeight: FontWeight.w600, // 太めのフォントでモダンな印象
-          ),
-        ),
-        centerTitle: true,
-        elevation: 0, // アプリバーの影を消す
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Card(
-                      color: Theme.of(context).colorScheme.secondaryContainer,
-                      elevation: 10,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildTextField(
-                              controller: _mailController,
-                              label: 'メールアドレス',
-                              textColor:
-                                  Theme.of(context).colorScheme.onPrimary,
-                              labelColor: Colors.grey,
-                            ),
-                            const SizedBox(height: 24),
-                            _resetButton(),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
       ),
     );
   }
@@ -162,7 +175,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide:
-              const BorderSide(color: Colors.white), // フォーカス時のボーダー色を白に変更
+          BorderSide(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.6)), // フォーカス時のボーダー色
         ),
         contentPadding: const EdgeInsets.symmetric(
             vertical: 12, horizontal: 16), // 内側に余白を追加

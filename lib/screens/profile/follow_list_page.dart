@@ -64,6 +64,11 @@ class FollowListPageState extends State<FollowListPage> {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             CustomAppbar(
+              leading: IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.arrow_back_ios)),
               titleText: "フォロー",
               actions: [
                 IconButton(

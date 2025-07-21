@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cordial/widgets/post_card.dart';
 import 'package:cordial/data_models/post.dart';
 import 'package:cordial/services/database_write.dart';
-import 'package:cordial/screens/timeline/timeline_widget.dart';
+import 'package:cordial/widgets/timeline_widget.dart';
 import 'package:cordial/widgets/custom_appbar.dart';
 
 // 投稿詳細を閲覧するためのページ

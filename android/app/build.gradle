@@ -73,4 +73,5 @@ flutter {
 dependencies {
     implementation platform('com.google.firebase:firebase-bom:32.8.0')
     implementation 'com.google.android.gms:play-services-ads:24.3.0'
+    implementation "org.bouncycastle:bcprov-jdk18on:1.71"
 }

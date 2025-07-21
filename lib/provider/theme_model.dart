@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cordial/utils/app_preferences.dart';
 
 enum AppThemeMode  {
   dark,
@@ -68,8 +68,7 @@ class ThemeModel extends ChangeNotifier {
 
   // テーマをロードして変数を更新する
   Future _loadAppThemeMode() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? savedData = prefs.getString('appThemeMode'); // 保存された文字列を読み込む
+    final String? savedData = await AppPreferences.load(Variable.appThemeMode);// 保存された文字列を読み込む
 
     if (savedData == null) {
       appThemeMode = AppThemeMode.terminal;
@@ -79,8 +78,6 @@ class ThemeModel extends ChangeNotifier {
     appThemeMode = AppThemeMode.values.firstWhere(
           (mode) => mode.name == savedData, // 列挙子の名前が保存された文字列と一致するかどうか
       orElse: () {
-        // 予期しない文字列が保存されていた場合
-        print('Warning: Unknown theme mode saved in SharedPreferences: $savedData. Falling back to default.');
         return AppThemeMode.terminal; // デフォルト値
       },
     );
@@ -88,11 +85,9 @@ class ThemeModel extends ChangeNotifier {
 
   // 端末にテーマ情報を保存しておく
   void _saveAppThemeMode() async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
     // enumのnameプロパティを直接使う
     final String saveData = appThemeMode.name;
 
-    await prefs.setString('appThemeMode', saveData);
+    await AppPreferences.save(Variable.appThemeMode, saveData);
   }
 }
