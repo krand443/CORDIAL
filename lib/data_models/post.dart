@@ -14,7 +14,7 @@ class Post
   final String userName;
 
   // アイコンのURL
-  final String iconUrl;
+  final String? iconUrl;
 
   // 投稿内容
   final String postText;

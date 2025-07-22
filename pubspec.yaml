@@ -48,7 +48,7 @@ dependencies:
   crypto: ^3.0.6
   http: ^1.4.0
   connectivity_plus: ^6.1.4
-  google_mobile_ads: ^6.0.0
+  google_mobile_ads: ^4.0.0
   email_validator: ^3.0.0
   rive: ^0.13.20
   flutter_launcher_icons: ^0.14.4

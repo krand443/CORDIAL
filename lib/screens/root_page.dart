@@ -90,7 +90,7 @@ class RootPageState extends State<RootPage> {
                   return const TimelinePage(); // タブ0のとき
                 case 1:
                   return ProfilePage(
-                    userId: FirebaseAuth.instance.currentUser!.uid,
+                    userId: FirebaseAuth.instance.currentUser?.uid,
                   ); // タブ1のとき
                 default:
                   return const TimelinePage(); // 万が一

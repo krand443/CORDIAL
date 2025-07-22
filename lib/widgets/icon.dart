@@ -47,7 +47,7 @@ class UserIconState extends State<UserIcon> {
           );
         }
         // もし応答がnullならデフォルトのアイコンを表示
-        if (snapshot.data?.iconUrl == "null") {
+        if (snapshot.data?.iconUrl == null) {
           return CircleAvatar(
             radius: _size,
             backgroundImage: const AssetImage("assets/user_default_icon.png"),
@@ -55,7 +55,7 @@ class UserIconState extends State<UserIcon> {
         }
         return CircleAvatar(
           radius: _size,
-          backgroundImage: NetworkImage(snapshot.data!.iconUrl), // 画像を取得して表示
+          backgroundImage: NetworkImage(snapshot.data!.iconUrl!), // 画像を取得して表示
         );
       },
     );

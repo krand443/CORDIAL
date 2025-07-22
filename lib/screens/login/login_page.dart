@@ -7,6 +7,7 @@ import 'package:cordial/services/signin.dart';
 import 'package:cordial/screens/root_page.dart';
 import 'package:cordial/screens/login/reset_password_page.dart';
 import 'package:cordial/screens/edit_profile_page.dart';
+import 'package:cordial/screens/login/wait_mail_authentication.dart';
 
 // ログイン画面、Googleまたはmailでログインできる
 class LoginPage extends StatefulWidget {
@@ -33,6 +34,16 @@ class _LoginPageState extends State<LoginPage> {
       if (currentUser != null)
         print("ログインしました　${currentUser.email} , ${currentUser.uid}");
 
+      // メールアドレス認証がまだなら認証画面へ
+      if(currentUser!.emailVerified == false){
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const WaitMailAuthentication()),
+        );
+
+        return;
+      }
+
       bool isUserName = await DatabaseRead.isUserName();
 
       // 画面遷移
@@ -41,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(
             builder: (context) => isUserName
                 ? const RootPage()
-                : const EditProfilePage()), // ログイン後にホーム画面に遷移
+                : const EditProfilePage(disableCloseIcon: true,)), // ログイン後にホーム画面に遷移
       );
     } catch (e) {
       print(e);
@@ -73,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(
             builder: (context) => isUserName
                 ? const RootPage() // 既にアカウントが存在するならメインページに飛ばす
-                : const EditProfilePage()), // ログイン後にホーム画面に遷移
+                : const EditProfilePage(disableCloseIcon: true,)), // ログイン後にホーム画面に遷移
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -197,33 +208,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-
-  // アカウント登録処理(メールアドレス&パスワード)
-  Future _createAccount(String email, String passWord) async {
-    try {
-      // アカウント登録
-      UserCredential userCredential =
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: passWord,
-      );
-
-      // 認証メールを送信
-      if (!userCredential.user!.emailVerified) {
-        await userCredential.user!.sendEmailVerification();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('認証メールを送信しました。メールを確認してください。')),
-        );
-      }
-    } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('アカウントの作成に失敗しました。')),
-      );
-    }
-  }
-
   // ログインボタン
   Widget _loginButton() {
     return ElevatedButton(
@@ -266,10 +250,11 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  bool _notWaitMakeAccount = true;
   // 新規作成
   Widget _makeAccountLink() {
     return ElevatedButton(
-      onPressed: () {
+      onPressed: _notWaitMakeAccount ?() async {
         // メールアドレスかパスワードが入力されていないなら
         if (_mailController.text == "" || _passwordController.text == "") {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -286,9 +271,23 @@ class _LoginPageState extends State<LoginPage> {
           return;
         }
 
+        setState(() {
+          _notWaitMakeAccount = false;
+        });
+
         // アカウントを作成する
-        _createAccount(_mailController.text, _passwordController.text);
-      },
+        await _createAccount(_mailController.text, _passwordController.text);
+
+        setState(() {
+          _notWaitMakeAccount = true;
+        });
+
+        //認証画面へ
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const WaitMailAuthentication()),
+        );
+      }:null,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green, // ボタンの色
         padding: const EdgeInsets.symmetric(vertical: 13), // ボタンの高さを調整
@@ -309,6 +308,37 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  // アカウント登録処理(メールアドレス&パスワード)
+  Future _createAccount(String email, String passWord) async {
+    try {
+      // アカウント登録
+      UserCredential userCredential =
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: passWord,
+      );
+
+      // 認証メールを送信
+      if (!userCredential.user!.emailVerified) {
+        await userCredential.user!.sendEmailVerification();
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const WaitMailAuthentication()),
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('認証メールを送信しました。メールを確認してください。')),
+        );
+      }
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('アカウントの作成に失敗しました。')),
+      );
+    }
   }
 
   // 入力フィールドのスタイル

@@ -1,5 +1,3 @@
-import 'post.dart';
-
 // Profileのデータ構造
 class Profile
 {
@@ -7,13 +5,13 @@ class Profile
   final String name;
 
   // アイコンのURL
-  final String iconUrl;
+  final String? iconUrl;
 
   // 自己紹介文
   final String introduction;
 
   // 背景画像のローカルパス
-  final String backgroundPath;
+  final String? backgroundPath;
 
   // フォロー数
   final int followCount;

@@ -7,7 +7,7 @@ import 'package:cordial/data_models/profile.dart';
 // プロフィール画面
 class ProfilePage extends StatefulWidget {
   // プロフィールを取得するためのユーザーID
-  final String userId;
+  final String? userId;
 
   const ProfilePage({super.key, required this.userId});
 
@@ -16,7 +16,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class ProfilePageState extends State<ProfilePage> {
-  late String _userId;
+  late String? _userId;
   // プロフィールを取得する非同期変数
   Future<Profile?>? _profileFuture;
 
@@ -27,8 +27,10 @@ class ProfilePageState extends State<ProfilePage> {
     // widgetから変数を受け取る
     _userId = widget.userId;
 
+    if(_userId == null)return;
+
     // プロフィールデータをDBから取得
-    _profileFuture = DatabaseRead.profile(_userId);
+    _profileFuture = DatabaseRead.profile(_userId!);
   }
 
   // 最後までスクロールをしたときに投稿を追加するためのコントローラー
@@ -48,6 +50,8 @@ class ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    if(_userId==null)return const SizedBox();
+
     return Scaffold(
       // メインのスクロールビュー（カスタムスクロールでSliverを組み合わせてUIを構築）
       body: RefreshIndicator(
@@ -78,7 +82,7 @@ class ProfilePageState extends State<ProfilePage> {
                   padding: EdgeInsets.only(top: 5),
                   child: ProfileCard(
                     profileFuture: _profileFuture,
-                    userId: _userId,
+                    userId: _userId!,
                   ),
                 ),
               ),
@@ -137,11 +141,8 @@ class ProfilePageState extends State<ProfilePage> {
         } else if (!snapshot.hasData || snapshot.data == null) {
           return const Center(child: Text('プロフィールが見つかりません'));
         } else {
-          final profile = snapshot.data!;
           // 画像パスなどプロフィールに応じて動的に決定できる
-          String imagePath = profile.backgroundPath;
-
-          if(imagePath=='null')imagePath = 'assets/background/00001.jpg';
+          String imagePath = snapshot.data?.backgroundPath ?? 'assets/background/00001.jpg';
 
           return Image.asset(
             imagePath,

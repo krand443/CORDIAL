@@ -3,6 +3,7 @@ import 'package:cordial/screens/login/login_page.dart';
 import 'package:cordial/screens/edit_profile_page.dart';
 import 'package:cordial/screens/license_page.dart';
 import 'package:cordial/app_theme.dart';
+import 'package:cordial/screens/login/wait_mail_authentication.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rive/rive.dart';
@@ -13,7 +14,6 @@ import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cordial/services/version_info.dart';
 import 'package:cordial/widgets/admob_widgets.dart';
 import 'package:cordial/utils/app_preferences.dart';
@@ -24,6 +24,9 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // 端末変数管理クラスを初期化
+  await AppPreferences.initialize();
+
   // ThemeModelの初期化が完了するまで待つ
   final themeModelInstance = ThemeModel(); // ここでインスタンスを作成
   await themeModelInstance.initializationDone; // 初期化が完了するまで待機
@@ -33,9 +36,6 @@ Future<void> main() async {
 
   // 広告ウィジェットを初期化
   AdMob.initializeAdPool();
-
-  // 端末変数管理クラスを初期化
-  AppPreferences.initialize();
 
   // ライセンスをセットする
   MyLicenseDialog.addCustomLicense();
@@ -96,69 +96,44 @@ class _MainState extends State<Main> {
           languageCode: 'ja',
           minAppVersion: VersionInfo.minVersion, // 最低バージョン(これを下回ると強制アップデート)
         ),
-        child: StreamBuilder<List<ConnectivityResult>>(
-          // Connectivity().onConnectivityChanged ストリームを監視
-          stream: Connectivity().onConnectivityChanged,
-          builder: (context, connectivitySnapshot) {
-            // 接続状態の確認中
-            if (connectivitySnapshot.connectionState ==
-                    ConnectionState.waiting ||
-                !connectivitySnapshot.hasData) {
+        child: FutureBuilder<User?>(
+          future: Future.value(FirebaseAuth.instance.currentUser),
+          builder: (context, authSnapshot) {
+            if (authSnapshot.connectionState == ConnectionState.waiting) {
+              // 認証状態の確認中
               return _loadAnimation(context);
             }
 
-            final connectivityResult = connectivitySnapshot.data!;
+            // ユーザがログインしている場合
+            if (authSnapshot.hasData) {
+              return FutureBuilder<bool>(
+                future: DatabaseRead.isUserName(),
+                builder: (context, userNameSnapshot) {
+                  if (userNameSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    // ユーザー名の確認中
+                    return _loadAnimation(context);
+                  }
 
-            return StreamBuilder<User?>(
-              stream: FirebaseAuth.instance.authStateChanges(),
-              builder: (context, authSnapshot) {
-                if (authSnapshot.connectionState == ConnectionState.waiting) {
-                  // 認証状態の確認中
-                  return _loadAnimation(context);
-                }
+                  // メール認証を終えてないならログイン画面へ
+                  if(FirebaseAuth.instance.currentUser!.emailVerified == false){
+                    return const LoginPage();
+                  }
 
-                // ユーザがログインしている場合
-                if (authSnapshot.hasData) {
-                  return FutureBuilder<bool>(
-                    future: DatabaseRead.isUserName(),
-                    builder: (context, userNameSnapshot) {
-                      if (userNameSnapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        // ユーザー名の確認中
-                        return _loadAnimation(context);
-                      }
-
-                      // ユーザー名が存在するならそのままログイン
-                      if (userNameSnapshot.data == true) {
-                        return const RootPage();
-                      } else {
-                        // インターネット接続があるか確認
-                        if (connectivityResult
-                                .contains(ConnectivityResult.mobile) ||
-                            connectivityResult
-                                .contains(ConnectivityResult.wifi)) {
-                          // ユーザー名未登録ならプロフィール作成
-                          return const EditProfilePage();
-                        } else {
-                          // インターネット接続がない場合、NotInterNetウィジェットを表示
-                          return const NotInterNet();
-                        }
-                      }
-                    },
-                  );
-                }
-
-                // インターネット接続があるか確認
-                if (connectivityResult.contains(ConnectivityResult.mobile) ||
-                    connectivityResult.contains(ConnectivityResult.wifi)) {
-                  // 全て該当しないならログインページへ行く
-                  return const LoginPage();
-                } else {
-                  // インターネット接続がない場合、NotInterNetウィジェットを表示
-                  return const NotInterNet();
-                }
-              },
-            );
+                  // ユーザー名が存在するならそのままログイン
+                  if (userNameSnapshot.data == true) {
+                    return const RootPage();
+                  } else {
+                    // ユーザー名未登録ならプロフィール作成
+                    return const EditProfilePage(
+                      disableCloseIcon: true,
+                    );
+                  }
+                },
+              );
+            }
+            // 全て該当しないならログインページへ行く
+            return const LoginPage();
           },
         ),
       ),
@@ -167,7 +142,7 @@ class _MainState extends State<Main> {
 }
 
 // クラゲが泳ぐアニメーションウィジェット
-Widget _loadAnimation(BuildContext context){
+Widget _loadAnimation(BuildContext context) {
   return Container(
     color: Theme.of(context).scaffoldBackgroundColor,
     child: const Center(
@@ -181,41 +156,4 @@ Widget _loadAnimation(BuildContext context){
       ),
     ),
   );
-}
-
-// インターネット接続なし
-class NotInterNet extends StatelessWidget {
-  const NotInterNet({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      home: Builder(
-        builder: (context) {
-          return Scaffold(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            body: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'インターネット接続を確認してください。\n※接続が確認でき次第自動で画面遷移します。',
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.none,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
 }

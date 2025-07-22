@@ -57,13 +57,11 @@ class TimelineMenu extends StatelessWidget {
                           leading: const Icon(Icons.logout, color: Colors.red),
                           title: const Text("ログアウト"),
                           onTap: () async {
-                            await FirebaseAuth.instance.signOut();
                             if (!context.mounted) return;
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginPage(),
-                              ),
+                            await FirebaseAuth.instance.signOut();
+                            Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (_) => const LoginPage()),
+                                  (route) => false,
                             );
                           },
                         ),

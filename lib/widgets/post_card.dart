@@ -92,10 +92,12 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
               // プロフィールアイコン
               InkResponse(
                 onTap: () {
+
                   // アイコンがタップされたらプロフィールに飛ぶ
-                  PageTransitions.fromRight(
-                      targetWidget: ProfilePage(userId: _post.userId),
-                      context: context);
+                  _post.userId != null
+                      ? PageTransitions.fromRight(
+                      targetWidget: ProfilePage(userId: _post.userId!),
+                      context: context): null;
                 },
                 child: Container(
                   decoration: BoxDecoration(
@@ -109,8 +111,8 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                   ),
                   child: CircleAvatar(
                     radius: 20,
-                    backgroundImage: _post.iconUrl != "null"
-                        ? NetworkImage(_post.iconUrl) as ImageProvider
+                    backgroundImage: _post.iconUrl != null
+                        ? NetworkImage(_post.iconUrl!) as ImageProvider
                         : const AssetImage("assets/user_default_icon.png"),
                   ),
                 ),
@@ -195,7 +197,7 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                 // AIからの応答
                 Text(
                   // レスポンス最後の改行を消す
-                  _post.response.replaceFirst(RegExp(r'(\n)$'), ''),
+                  _post.response?.replaceFirst(RegExp(r'(\n)$'), '') ?? '',
                   softWrap: true,
                   textAlign: TextAlign.start,
                   style: const TextStyle(fontSize: 14),
@@ -234,11 +236,11 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                   if (_post.isNice) {
                     // いいね追加処理
                     DatabaseWrite.nice(_post.id,
-                        parentId: _parentPostId ?? null);
+                        parentId: _parentPostId);
                   } else {
                     // いいね削除処理
                     DatabaseWrite.unNice(_post.id,
-                        parentId: _parentPostId ?? null);
+                        parentId: _parentPostId);
                   }
                 } catch (e) {
                   print("アップロードエラー: $e");

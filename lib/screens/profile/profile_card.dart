@@ -116,12 +116,8 @@ class ProfileCardState extends State<ProfileCard> {
             !snapshot.hasData) {
           result = "..........";
         }
-        // もし応答がnullなら
-        else if (snapshot.data?.name == "null") {
-          result = "unknown";
-        } else {
-          result = snapshot.data!.name;
-        }
+
+        result = snapshot.data?.name ?? 'unknown';
 
         // ユーザー名を返す（長くても横スクロールで対応）
         return Text(

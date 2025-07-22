@@ -9,13 +9,15 @@ import 'package:cordial/screens/select_background_page.dart';
 
 // プロフィール編集画面
 class EditProfilePage extends StatefulWidget {
+  final bool? disableCloseIcon;
+
   //　既存のユーザー名を受けとる(なくても可)
   final String? existingName;
 
   // 既存の背景(なくても可)
   final String? backgroundPath;
 
-  const EditProfilePage({super.key, this.existingName, this.backgroundPath});
+  const EditProfilePage({super.key, this.existingName, this.backgroundPath, this.disableCloseIcon = false});
 
   @override
   State<EditProfilePage> createState() => EditProfilePageState();
@@ -138,8 +140,8 @@ class EditProfilePageState extends State<EditProfilePage> {
     return AppBar(
       // アプリバーの色
       automaticallyImplyLeading: false,
-      // 戻るアイコンを非表示にする
-      leading: IconButton(
+      // 戻るアイコン
+      leading: widget.disableCloseIcon == false ? IconButton(
         padding: const EdgeInsets.only(top: 0),
         icon: const Icon(
           Icons.close,
@@ -149,7 +151,7 @@ class EditProfilePageState extends State<EditProfilePage> {
         onPressed: () {
           Navigator.of(context).pop(); // 現在の画面を閉じる
         },
-      ),
+      ) : null,
       title: const Text(
         'プロフィールを作成',
         style: TextStyle(

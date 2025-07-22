@@ -68,7 +68,7 @@ class ThemeModel extends ChangeNotifier {
 
   // テーマをロードして変数を更新する
   Future _loadAppThemeMode() async {
-    final String? savedData = await AppPreferences.load(Variable.appThemeMode);// 保存された文字列を読み込む
+    final String? savedData = AppPreferences.load(Variable.appThemeMode);// 保存された文字列を読み込む
 
     if (savedData == null) {
       appThemeMode = AppThemeMode.terminal;

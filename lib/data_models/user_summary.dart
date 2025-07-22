@@ -8,7 +8,7 @@ class UserSummary
   final String userName;
 
   // アイコンのURL
-  final String iconUrl;
+  final String? iconUrl;
 
   // 時間
   final String time;

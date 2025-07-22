@@ -52,8 +52,8 @@ class UserSummaryCardState extends State<UserSummaryCard> with AutomaticKeepAliv
               // プロフィールアイコン
               CircleAvatar(
                 radius: 25,
-                backgroundImage: widget.userSummary.iconUrl != "null"
-                    ? NetworkImage(widget.userSummary.iconUrl) as ImageProvider
+                backgroundImage: widget.userSummary.iconUrl != null
+                    ? NetworkImage(widget.userSummary.iconUrl!) as ImageProvider
                     : const AssetImage("assets/user_default_icon.png"),
               ),
 

@@ -65,13 +65,13 @@ class DatabaseRead {
           postedAt: _timeAgoFromTimestamp(doc['postedAt'] as Timestamp),
           id: postId,
           userId: userId,
-          userName: results[1]['name'],
+          userName: results[1]['name'] ?? 'unknown',
           iconUrl: results[1]['iconUrl'],
-          postText: doc['text'],
-          selectedAiId: doc['selectedAiId'],
-          response: doc['response'],
-          nice: doc['nice'],
-          isNice: results[0].exists,
+          postText: doc['text'] ?? '',
+          selectedAiId: doc['selectedAiId'] ?? 0,
+          response: doc['response'] ?? '',
+          nice: doc['nice'] ?? 0,
+          isNice: results[0].exists
         );
       }).toList();
 
@@ -145,12 +145,12 @@ class DatabaseRead {
           postedAt: _timeAgoFromTimestamp(doc['repliedAt'] as Timestamp),
           id: replyId,
           userId: userId,
-          userName: results[1]['name'],
+          userName: results[1]['name'] ?? 'unknown',
           iconUrl: results[1]['iconUrl'],
           selectedAiId: 0,
-          postText: doc['text'],
+          postText: doc['text'] ?? '',
           response: '',
-          nice: doc['nice'],
+          nice: doc['nice'] ?? 0,
           isNice: results[0].exists,
         );
       }).toList();
@@ -261,10 +261,10 @@ class DatabaseRead {
       var dataDeep = resultDeep.data();
 
       return Profile(
-          name: data?['name'] ?? 'null',
-          iconUrl: data?['iconUrl'] ?? 'null',
+          name: data?['name'] ?? 'unknown',
+          iconUrl: data?['iconUrl'] as String?,
           introduction: dataDeep?['introduction'] ?? 'null',
-          backgroundPath: dataDeep?['backgroundPath'] ?? 'null',
+          backgroundPath: dataDeep?['backgroundPath'] as String?,
           followCount: dataDeep?['followCount'] ?? 0,
           followerCount: dataDeep?['followerCount'] ?? 0);
     } catch (e) {
