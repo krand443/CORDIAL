@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cordial/screens/edit_profile_page.dart';
+import 'package:cordial/screens/edit_profile/edit_profile_page.dart';
 
 class WaitMailAuthentication extends StatefulWidget {
   const WaitMailAuthentication({super.key});
@@ -28,6 +28,14 @@ class _WaitMailAuthenticationState extends State<WaitMailAuthentication> {
 
     // 一定時間ごとに認証確認
     _checkVerifiedTimer = Timer.periodic(const Duration(seconds: 1), (_) => checkEmailVerified());
+  }
+
+  @override
+  void dispose() {
+    // Widgetが削除されるときにタイマーをキャンセル
+    _cooldownTimer?.cancel();
+    _checkVerifiedTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -103,6 +111,7 @@ class _WaitMailAuthenticationState extends State<WaitMailAuthentication> {
       });
 
       // 認証されたのでログイン状態へ遷移
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const EditProfilePage(disableCloseIcon: true)),

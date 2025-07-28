@@ -50,7 +50,7 @@ class ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    if(_userId==null)return const SizedBox();
+    if(_userId==null)return const SizedBox();// _userIdをnullableにするため
 
     return Scaffold(
       // メインのスクロールビュー（カスタムスクロールでSliverを組み合わせてUIを構築）

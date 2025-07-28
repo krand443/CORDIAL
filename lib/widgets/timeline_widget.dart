@@ -3,6 +3,7 @@ import 'package:cordial/widgets/post_card.dart';
 import 'package:cordial/services/database_read.dart';
 import 'package:cordial/data_models/timeline.dart';
 import 'package:cordial/widgets/admob_widgets.dart';
+import 'package:cordial/utils/network_status.dart';
 import 'package:rive/rive.dart';
 
 // タイムラインを表示するクラス
@@ -146,7 +147,8 @@ class TimelineWidgetState extends State<TimelineWidget>
       return timeline == null
           ? SliverToBoxAdapter(
               child: Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.only(top: 100),
+                child: _noContentMessage(),
               ),
             )
           : SliverList(
@@ -162,7 +164,7 @@ class TimelineWidgetState extends State<TimelineWidget>
                   final postCount = timeline!.posts.length;
 
                   // 投稿と広告の総アイテム数を計算
-                  final adInterval = 7;// ADを数投稿ごとに挟む
+                  const adInterval = 7; // ADを数投稿ごとに挟む
                   final adCount = (postCount / adInterval).floor();
                   final totalItemCount = postCount + adCount + 2; // +2 は読み込み＋余白
 
@@ -201,11 +203,52 @@ class TimelineWidgetState extends State<TimelineWidget>
                   return PostCard(
                     post: timeline!.posts[postIndex],
                     transition: _postId != null ? false : true, // 返信用なら遷移を禁止
-                    parentPostId: _postId ?? null, //返信用なら親ポストIDをカードに渡す
+                    parentPostId: _postId, //返信用なら親ポストIDをカードに渡す
                   );
                 },
               ),
             );
     }
+  }
+
+  // タイムラインが取得できなかった場合に使用するメッセージ
+  Widget _noContentMessage() {
+    // 共通で使用する色
+    Color textColor = Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.4);
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FutureBuilder<bool>(
+            future: NetworkStatus.check(),// ネットワーク接続状況で分岐
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                // データ待ち（ローディング中）
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                // エラー発生時
+                return const Center(child: Text('エラーが発生しました'));
+              } else if (snapshot.hasData && snapshot.data == true) {
+                // 接続あり
+                return Text(
+                  _postId != null
+                      ? 'まだ返信はありません\n最初の返信者になりましょう!'
+                      : 'まだ投稿がありません。\n下の+マークから投稿してみましょう!',
+                  style: TextStyle(fontSize: 18,color:textColor),
+                );
+              } else {
+                // 接続なし
+                return Text(
+                  'インターネット接続が確認できませんでした。',
+                  style: TextStyle(fontSize: 18,color:textColor),
+                );
+              }
+            },
+          ),
+          Icon(Icons.arrow_downward_sharp,color: textColor,),
+        ],
+      ),
+    );
   }
 }

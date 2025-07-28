@@ -27,7 +27,8 @@ if (flutterVersionName == null) {
 
 android {
     namespace "ruten.cordial.cordial"
-    compileSdk flutter.compileSdkVersion
+    //compileSdk flutter.compileSdkVersion
+    compileSdkVersion 35
     ndkVersion "26.3.11579264"
 
     compileOptions {
@@ -49,9 +50,10 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 23
-        //minSdkVersion flutter.minSdkVersion←変更前です
+        //minSdkVersion flutter.minSdkVersion
 
-        targetSdkVersion flutter.targetSdkVersion
+        //targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -71,6 +73,7 @@ flutter {
 }
 
 dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation platform('com.google.firebase:firebase-bom:32.8.0')
     implementation 'com.google.android.gms:play-services-ads:22.3.0'
 }

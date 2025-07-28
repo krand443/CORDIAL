@@ -6,7 +6,7 @@ import 'package:cordial/services/database_read.dart';
 import 'package:cordial/services/signin.dart';
 import 'package:cordial/screens/root_page.dart';
 import 'package:cordial/screens/login/reset_password_page.dart';
-import 'package:cordial/screens/edit_profile_page.dart';
+import 'package:cordial/screens/edit_profile/edit_profile_page.dart';
 import 'package:cordial/screens/login/wait_mail_authentication.dart';
 
 // ログイン画面、Googleまたはmailでログインできる
@@ -79,6 +79,7 @@ class _LoginPageState extends State<LoginPage> {
 
       bool isUserName = await DatabaseRead.isUserName();
       // 画面遷移
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -87,6 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                 : const EditProfilePage(disableCloseIcon: true,)), // ログイン後にホーム画面に遷移
       );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('ログインに失敗しました')),
       );
@@ -102,8 +104,8 @@ class _LoginPageState extends State<LoginPage> {
         title: const Text(
           'ログイン',
           style: TextStyle(
-            fontFamily: 'Roboto', // モダンなフォント
-            fontWeight: FontWeight.w600, // 太めのフォントでモダンな印象
+            fontFamily: 'Roboto', // フォント
+            fontWeight: FontWeight.w600, // 太めのフォント
           ),
         ),
         centerTitle: true,
@@ -144,6 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              // メールアドレス入力欄
                               _buildTextField(
                                 controller: _mailController,
                                 label: 'メールアドレス',
@@ -151,6 +154,8 @@ class _LoginPageState extends State<LoginPage> {
                                 labelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
                               ),
                               const SizedBox(height: 16),
+
+                              // パスワード入力欄
                               _buildTextField(
                                 controller: _passwordController,
                                 label: 'パスワード',
@@ -159,6 +164,8 @@ class _LoginPageState extends State<LoginPage> {
                                 labelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
                               ),
                               const SizedBox(height: 24),
+
+                              // ログインボタンと新規作成ボタン
                               Row(
                                 children: [
                                   Expanded(
@@ -172,8 +179,12 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                 ],
                               ),
+
+                              // パスワードを忘れた際のリンク
                               _buildForgotPasswordLink(),
                               const SizedBox(height: 16),
+
+                              // Googleでのログイン
                               InkWell(
                                 borderRadius: BorderRadius.circular(30),
                                 onTap: _loginGoogle,
@@ -324,17 +335,15 @@ class _LoginPageState extends State<LoginPage> {
       if (!userCredential.user!.emailVerified) {
         await userCredential.user!.sendEmailVerification();
 
+        if (!mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const WaitMailAuthentication()),
         );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('認証メールを送信しました。メールを確認してください。')),
-        );
       }
     } catch (e) {
       print(e);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('アカウントの作成に失敗しました。')),
       );

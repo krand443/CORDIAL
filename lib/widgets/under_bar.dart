@@ -53,7 +53,7 @@ class UnderBar extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 0),
             child: FloatingActionButton(
               backgroundColor: Theme.of(context).colorScheme.tertiary,
-              tooltip: '投稿を作成',
+              tooltip: 'POST',
               onPressed: () {
                 // 下から投稿画面を表示
                 PageTransitions.fromBottom(

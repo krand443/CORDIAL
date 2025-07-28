@@ -1,9 +1,8 @@
 import 'package:cordial/provider/theme_model.dart';
 import 'package:cordial/screens/login/login_page.dart';
-import 'package:cordial/screens/edit_profile_page.dart';
+import 'package:cordial/screens/edit_profile/edit_profile_page.dart';
 import 'package:cordial/screens/license_page.dart';
 import 'package:cordial/app_theme.dart';
-import 'package:cordial/screens/login/wait_mail_authentication.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rive/rive.dart';
@@ -81,6 +80,7 @@ class _MainState extends State<Main> {
 
     // ThemeModelの変更を監視し、その変更があったときに自動的にUIを再構築
     return MaterialApp(
+      debugShowCheckedModeBanner: false,// デバッグラベル非表示
       // ライトテーマ
       theme: AppTheme.lightTheme,
       // ダークテーマ

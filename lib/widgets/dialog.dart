@@ -32,7 +32,6 @@ void showCustomDialog({
           left: offset.dx,
           top: offset.dy,
           child: Container(
-            padding: EdgeInsets.all(0),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
               borderRadius: BorderRadius.circular(20),

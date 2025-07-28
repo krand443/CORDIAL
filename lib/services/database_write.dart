@@ -46,7 +46,7 @@ class DatabaseWrite {
           .doc(FirebaseAuth.instance.currentUser?.uid) // ドキュメントID
           .set({
         'name': name,
-        'iconUrl': icon ?? null,
+        'iconUrl': icon,
         'nationality': locale.countryCode, // 日本ならJP
       });
       // ラストアクション時間を保存

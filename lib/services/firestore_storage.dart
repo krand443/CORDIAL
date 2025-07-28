@@ -5,19 +5,17 @@ import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:cordial/services/signin.dart';
-import 'package:http/http.dart' as http;
 
 class FirestoreStorage {
 
   // ギャラリーから画像を選択して、リサイズ後、Firebaseにアップロード
   static Future<int> upload(File originalFile, String fileName,
-      [int _width = 300, int _height = 300]) async {
+      [int width = 300, int height = 300]) async {
     try {
       // クロップしてからリサイズ
       final img.Image square =
-          await _cropToSquare(originalFile, _width, _height) as img.Image;
-      final resized = img.copyResize(square, width: _width, height: _height);
+          await _cropToSquare(originalFile, width, height) as img.Image;
+      final resized = img.copyResize(square, width: width, height: height);
 
       // PNG形式でバイトデータにエンコード
       final Uint8List resizedBytes = Uint8List.fromList(img.encodePng(resized));
@@ -60,14 +58,14 @@ class FirestoreStorage {
 
   // 元画像の中央を基準にクロップする関数(デフォルトは正方形に切り取る)
   static Future<img.Image?> _cropToSquare(File originalFile,
-      [int _width = 1, int _height = 1]) async {
+      [int width = 1, int height = 1]) async {
     // バイトデータに変換
     final Uint8List imageBytes = await originalFile.readAsBytes();
     // Dartのimageパッケージで画像をデコード
     final image = img.decodeImage(imageBytes);
     if (image != null) {
       final double imageRatio = image.width / image.height;
-      final double targetRatio = _width / _height;
+      final double targetRatio = width / height;
 
       // 新規画像サイズ
       int xSize, ySize;

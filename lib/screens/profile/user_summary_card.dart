@@ -66,12 +66,11 @@ class UserSummaryCardState extends State<UserSummaryCard> with AutomaticKeepAliv
                   // ユーザー名（仮で固定）
                   Text(
                     widget.userSummary.userName,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 16),
                   ),
                   Text(
                     widget.userSummary.time,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 9),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ],
               ),

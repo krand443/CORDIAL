@@ -261,7 +261,7 @@ class DatabaseRead {
       var dataDeep = resultDeep.data();
 
       return Profile(
-          name: data?['name'] ?? 'unknown',
+          name: data?['name'] ?? '・・・・',
           iconUrl: data?['iconUrl'] as String?,
           introduction: dataDeep?['introduction'] ?? 'null',
           backgroundPath: dataDeep?['backgroundPath'] as String?,

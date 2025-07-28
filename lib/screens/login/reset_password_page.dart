@@ -94,6 +94,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       // 再設定用メールを送信
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('パスワード再設定用メールを送信しました！')),
       );

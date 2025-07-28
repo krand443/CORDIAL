@@ -94,15 +94,14 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                 onTap: () {
 
                   // アイコンがタップされたらプロフィールに飛ぶ
-                  _post.userId != null
-                      ? PageTransitions.fromRight(
-                      targetWidget: ProfilePage(userId: _post.userId!),
-                      context: context): null;
+                  PageTransitions.fromRight(
+                      targetWidget: ProfilePage(userId: _post.userId),
+                      context: context);
                 },
                 child: Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
                         color: Colors.black26,
                         blurRadius: 0.5,
@@ -197,7 +196,7 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                 // AIからの応答
                 Text(
                   // レスポンス最後の改行を消す
-                  _post.response?.replaceFirst(RegExp(r'(\n)$'), '') ?? '',
+                  _post.response.replaceFirst(RegExp(r'(\n)$'), ''),
                   softWrap: true,
                   textAlign: TextAlign.start,
                   style: const TextStyle(fontSize: 14),

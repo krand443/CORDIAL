@@ -205,7 +205,7 @@ class MakePostPageState extends State<MakePostPage> {
             },
             itemBuilder: (context, itemIndex, realIndex) {
               return Padding(
-                padding: EdgeInsets.only(right: 20, left: 20, bottom: 20),
+                padding: const EdgeInsets.only(right: 20, left: 20, bottom: 20),
                 child: GestureDetector(
                   child: Container(
                     decoration: BoxDecoration(
@@ -259,7 +259,6 @@ class MakePostPageState extends State<MakePostPage> {
                               .onPrimary
                               .withOpacity(0.1),// 影
                           blurRadius: 5,
-                          offset: Offset(0, 0),
                         ),
                       ],
                     ),

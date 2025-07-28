@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cordial/data_models/profile.dart';
 import 'package:cordial/screens/profile/follow_list_page.dart';
-import 'package:cordial/screens/edit_profile_page.dart';
+import 'package:cordial/screens/edit_profile/edit_profile_page.dart';
 import 'package:cordial/navigation/page_transitions.dart';
 import 'package:cordial/widgets/follow_button.dart';
 
