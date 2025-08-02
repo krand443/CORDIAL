@@ -4,7 +4,7 @@ import 'package:cordial/widgets/custom_appbar.dart';
 import 'package:cordial/screens/timeline/timeline_menu.dart';
 import 'package:cordial/navigation/page_transitions.dart';
 
-// 投稿のタイムラインを表示するウィジェット
+// 投稿のタイムラインを表示する画面
 class TimelinePage extends StatefulWidget {
   const TimelinePage({super.key});
 
@@ -31,9 +31,8 @@ class TimelinePageState extends State<TimelinePage> {
   // 画面を描画するbuildメソッド（Flutterフレームワークが呼び出す）
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      // 投稿一覧（縦スクロール可能なListViewで構成）
+      // 投稿一覧
       body: RefreshIndicator(
         color: Theme.of(context).colorScheme.tertiary,
         onRefresh: reload,
@@ -48,13 +47,17 @@ class TimelinePageState extends State<TimelinePage> {
                     color: Theme.of(context).colorScheme.onSurface),
                 onPressed: () {
                   PageTransitions.fromLeft(
-                      targetWidget: const TimelineMenu(), context: context);
+                      onUnderBar: true,targetWidget: const TimelineMenu(), context: context);
                 },
               ),
             ),
 
             // タイムラインをリストで取得する
             TimelineWidget(parentScrollController: _scrollController),
+
+            const SliverToBoxAdapter(
+              child: SafeArea(child: SizedBox()),
+            ),
           ],
         ),
       ),

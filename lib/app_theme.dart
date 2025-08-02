@@ -46,7 +46,7 @@ class AppTheme {
         inversePrimary: Colors.black,
       ),
 
-      // にカーソルの色を追加
+      // カーソルの色を追加
       textSelectionTheme: const TextSelectionThemeData(
         cursorColor: Colors.black87, // カーソルを設定
         selectionHandleColor: Colors.grey, // 選択ハンドルの色

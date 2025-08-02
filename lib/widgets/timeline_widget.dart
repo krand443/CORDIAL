@@ -125,6 +125,18 @@ class TimelineWidgetState extends State<TimelineWidget>
     isLoading = false;
   }
 
+  // 変数を初期化し、再読込するための関数
+  Future<void> reload() async {
+    // 状態を初期化
+    setState(() {
+      timeline = null;
+      isLoading = false;
+      isShowAll = false;
+    });
+
+    await timelineAdd();
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context); // AutomaticKeepAliveClientMixin有効化のため
@@ -156,7 +168,7 @@ class TimelineWidgetState extends State<TimelineWidget>
                 childCount: (() {
                   final postCount = timeline!.posts.length;
                   final adCount = (postCount / 7).floor();
-                  return postCount + adCount + 2; // +2: ローディング + 余白
+                  return postCount + adCount + 1; // +1: ローディング
                 })(),
                 // 最後にローディング用ウィジェットを1つ追加
                 (BuildContext context, int index) {
@@ -166,9 +178,9 @@ class TimelineWidgetState extends State<TimelineWidget>
                   // 投稿と広告の総アイテム数を計算
                   const adInterval = 7; // ADを数投稿ごとに挟む
                   final adCount = (postCount / adInterval).floor();
-                  final totalItemCount = postCount + adCount + 2; // +2 は読み込み＋余白
+                  final totalItemCount = postCount + adCount + 1; // +1 ローディング
 
-                  if (index == totalItemCount - 2) {
+                  if (index == totalItemCount - 1) {
                     // 最後に読み込みを追加する
                     return Center(
                       child: Padding(
@@ -184,15 +196,11 @@ class TimelineWidgetState extends State<TimelineWidget>
                     );
                   }
 
-                  // 末端に余白を追加する
-                  if (index == totalItemCount - 1) {
-                    return const SizedBox(
-                      height: 90,
-                    );
-                  }
-
                   // 広告を挿入する位置かどうかを判定
-                  if ((index + 1) % (adInterval + 1) == 0 && _userId == null) {
+                  if ((index + 1) % (adInterval + 1) == 0) {
+
+                    if(_userId != null)return null;
+
                     return AdMob.getBannerAdUnit(); // 広告ウィジェット
                   }
 

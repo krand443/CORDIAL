@@ -1,15 +1,16 @@
 import 'dart:async';
-
 import 'package:cordial/services/database_write.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
-import '../screens/report_page.dart';
-import '../utils/make_link_text.dart';
-import '../screens/post_page.dart';
-import '../data_models/post.dart';
+import 'package:cordial/screens/report_page.dart';
+import 'package:cordial/utils/make_link_text.dart';
+import 'package:cordial/screens/post_page.dart';
+import 'package:cordial/data_models/post.dart';
 import 'package:cordial/navigation/page_transitions.dart';
 import 'package:cordial/screens/profile/profile_page.dart';
 import 'package:cordial/widgets/icon.dart';
+import 'package:cordial/widgets/dialog.dart';
 
 // 投稿のカードを生成するクラス
 class PostCard extends StatefulWidget {
@@ -53,9 +54,38 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
   @override // スクロールしても状態を保持
   bool get wantKeepAlive => true;
 
+  // 削除アイコン用のキー
+  final GlobalKey deleteIconKey = GlobalKey();
+
+  // この投稿が削除されたらtrueになり、表示を変更する
+  bool isDeleted = false;
+
   @override
   Widget build(BuildContext context) {
     super.build(context); //スクロールしても状態を保持
+
+    // 投稿が削除されたらこのウィジェットを返す
+    if(isDeleted) {
+      return Card(
+      color: Colors.grey[200],
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(Icons.delete_outline, color: Colors.grey),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'この投稿は削除されました',
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    }
 
     return Card(
       elevation: 0.1,
@@ -92,7 +122,6 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
               // プロフィールアイコン
               InkResponse(
                 onTap: () {
-
                   // アイコンがタップされたらプロフィールに飛ぶ
                   PageTransitions.fromRight(
                       targetWidget: ProfilePage(userId: _post.userId),
@@ -115,7 +144,6 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                         : const AssetImage("assets/user_default_icon.png"),
                   ),
                 ),
-
               ),
 
               const SizedBox(width: 12),
@@ -125,16 +153,57 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ユーザー名（仮で固定）
-                    Text(
-                      _post.userName,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          children: [
+                            // ユーザー名（仮で固定）
+                            Text(
+                              _post.userName,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              _post.postedAt,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 9),
+                            ),
+                          ],
+                        ),
+
+                        // 自分の投稿なら削除UIを表示
+                        _post.userId == FirebaseAuth.instance.currentUser!.uid
+                            ? IconButton(
+                                key: deleteIconKey,
+                                onPressed: () {
+                                  final RenderBox renderBox = deleteIconKey
+                                      .currentContext!
+                                      .findRenderObject() as RenderBox;
+                                  final Offset offset = renderBox
+                                      .localToGlobal(Offset.zero); // 画面上の位置
+
+                                  showCustomDialog(
+                                      context: context,
+                                      onTap: () async{
+                                        DatabaseWrite.deletePost(_post.id);
+
+                                        setState(() {
+                                          isDeleted = true;
+                                        });
+                                      },
+                                      offset: offset + const Offset(-150, 15),
+                                      text: 'この投稿を削除しますか？\n削除後は復元できません\n※タップで確定');
+                                },
+                                icon: const Icon(
+                                  Icons.delete_forever_sharp,
+                                  color: Colors.red,
+                                ),
+                              )
+                            : const SizedBox(),
+                      ],
                     ),
-                    Text(
-                      _post.postedAt,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 9),
-                    ),
+
                     const SizedBox(height: 4),
 
                     // 投稿内容
@@ -234,12 +303,10 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                 try {
                   if (_post.isNice) {
                     // いいね追加処理
-                    DatabaseWrite.nice(_post.id,
-                        parentId: _parentPostId);
+                    DatabaseWrite.nice(_post.id, parentId: _parentPostId);
                   } else {
                     // いいね削除処理
-                    DatabaseWrite.unNice(_post.id,
-                        parentId: _parentPostId);
+                    DatabaseWrite.unNice(_post.id, parentId: _parentPostId);
                   }
                 } catch (e) {
                   print("アップロードエラー: $e");
@@ -272,7 +339,9 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
     return InkResponse(
       onTap: () {
         PageTransitions.fromBottom(
-          targetWidget: ReportPage(postId:_post.id,),
+          targetWidget: ReportPage(
+            postId: _post.id,
+          ),
           context: context,
         );
       },
@@ -282,7 +351,7 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
         width: 25,
         child: Transform.scale(
           scale: 1, // 拡大倍率
-          child: const Icon(Icons.flag_rounded,color: Color(0xFFCACACA)),
+          child: const Icon(Icons.flag_rounded, color: Color(0xFFCACACA)),
         ),
       ),
     );

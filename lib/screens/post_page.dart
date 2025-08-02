@@ -21,6 +21,9 @@ class PostPageState extends State<PostPage> {
   // テキスト管理用
   final TextEditingController _textController = TextEditingController();
 
+  // テキスト入力に応じて送信ボタンを押せるようにする
+  final ValueNotifier<String> _textValue = ValueNotifier('');
+
   @override
   void initState() {
     super.initState();
@@ -28,7 +31,8 @@ class PostPageState extends State<PostPage> {
     _post = widget.post;
 
     _textController.addListener(() {
-      setState(() {}); // 入力変更で再描画
+      // 入力変更で再描画
+      _textValue.value = _textController.text;
     });
   }
 
@@ -88,6 +92,10 @@ class PostPageState extends State<PostPage> {
                 key: _reloadKey, // 再読込用
                 postId: _post.id,
                 parentScrollController: _scrollController),
+
+            const SliverToBoxAdapter(
+              child: SafeArea(child: SizedBox()),
+            ),
           ],
         ),
       ),
@@ -109,6 +117,15 @@ class PostPageState extends State<PostPage> {
                     ),
                     child: TextField(
                       controller: _textController,
+                      maxLength: 200,
+                      buildCounter: (
+                          BuildContext context, {
+                            required int currentLength,
+                            required bool isFocused,
+                            required int? maxLength,
+                          }) {
+                        return null; // カウンターを非表示にする
+                      },
                       decoration: InputDecoration(
                         hintText: 'メッセージを入力...',
                         hintStyle:
@@ -129,41 +146,49 @@ class PostPageState extends State<PostPage> {
                   ),
                 ),
                 const SizedBox(width: 10), // 送信ボタンとの間にスペースを追加
-                Container(
-                  decoration: BoxDecoration(
-                    color: _textController.text.isNotEmpty
-                        ? Theme.of(context).colorScheme.tertiary
-                        : Colors.grey, // ボタンの背景色
-                    shape: BoxShape.circle, // 丸い形状
-                  ),
-                  child: Material(
-                    // Materialウィジェットでラップして波紋エフェクトを有効にする
-                    color: Colors.transparent, // Materialの背景色を透明にする
-                    child: InkWell(
-                      // InkWellでタップ可能にし、波紋エフェクトを追加
-                      borderRadius: BorderRadius.circular(25),
-                      onTap: () {
-                        // リプライを追加
-                        if (_textController.text.isNotEmpty) {
-                          addReply(_textController.text);
-                          // キーボードを閉じる
-                          FocusScope.of(context).unfocus();
-                          // テキストをクリア
-                          _textController.text = "";
-                        }
-                      },
-                      child: const Padding(
-                        // アイコンにパディングを追加
-                        padding: EdgeInsets.all(12),
-                        child: Icon(
-                          Icons.send,
-                          color: Colors.white,
-                          size: 20,
+
+                // テキストの入力状況に応じて変更
+                ValueListenableBuilder<String>(
+                  valueListenable: _textValue,
+                  builder: (context, value, child) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: value.isNotEmpty
+                            ? Theme.of(context).colorScheme.tertiary
+                            : Colors.grey, // ボタンの背景色
+                        shape: BoxShape.circle, // 丸い形状
+                      ),
+                      child: Material(
+                        // Materialウィジェットでラップして波紋エフェクトを有効にする
+                        color: Colors.transparent, // Materialの背景色を透明にする
+                        child: InkWell(
+                          // InkWellでタップ可能にし、波紋エフェクトを追加
+                          borderRadius: BorderRadius.circular(25),
+                          onTap: () {
+                            // リプライを追加
+                            if (_textController.text.isNotEmpty) {
+                              addReply(_textController.text);
+                              // キーボードを閉じる
+                              FocusScope.of(context).unfocus();
+                              // テキストをクリア
+                              _textController.text = "";
+                            }
+                          },
+                          child: const Padding(
+                            // アイコンにパディングを追加
+                            padding: EdgeInsets.all(12),
+                            child: Icon(
+                              Icons.send,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
+
               ],
             ),
           ),

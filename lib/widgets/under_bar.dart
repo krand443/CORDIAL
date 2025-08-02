@@ -20,32 +20,62 @@ class UnderBar extends StatelessWidget {
         alignment: Alignment.bottomCenter,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              IconButton(
-                padding: const EdgeInsets.only(left: 30, right: 30),
-                tooltip: 'HOME',
-                icon: Icon(
-                  Icons.home,
-                  size: 40,
-                  color: currentIndex == 0
-                      ? Theme.of(context).colorScheme.tertiaryContainer
-                      : Theme.of(context).colorScheme.onSurface,
+              // 左側のHOMEボタン
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                      tooltip: 'HOME',
+                      icon: Icon(
+                        Icons.home,
+                        size: 40,
+                        color: currentIndex == 0
+                            ? Theme.of(context).colorScheme.tertiaryContainer
+                            : Theme.of(context).colorScheme.onSurface,
+                      ),
+                      onPressed: () => onTap(0),
+                    ),
+                  ],
                 ),
-                onPressed: () => onTap(0),
               ),
-              const SizedBox(width: 10.0), // 中央余白
-              IconButton(
-                padding: const EdgeInsets.only(left: 30, right: 30),
-                tooltip: 'PROFILE',
-                icon: Icon(
-                  Icons.person,
-                  size: 40,
-                  color: currentIndex == 1
-                      ? Theme.of(context).colorScheme.tertiaryContainer
-                      : Theme.of(context).colorScheme.onSurface,
+
+              // 中央のスペース
+              const SizedBox(width: 60),
+
+              // 右側のGROUPとPROFILEボタン
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 17),
+                      tooltip: 'GROUP',
+                      icon: Icon(
+                        Icons.group,
+                        size: 35,
+                        color: currentIndex == 1
+                            ? Theme.of(context).colorScheme.tertiaryContainer
+                            : Theme.of(context).colorScheme.onSurface,
+                      ),
+                      onPressed: () => onTap(1),
+                    ),
+                    IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 17),
+                      tooltip: 'PROFILE',
+                      icon: Icon(
+                        Icons.person,
+                        size: 35,
+                        color: currentIndex == 2
+                            ? Theme.of(context).colorScheme.tertiaryContainer
+                            : Theme.of(context).colorScheme.onSurface,
+                      ),
+                      onPressed: () => onTap(2),
+                    ),
+                  ],
                 ),
-                onPressed: () => onTap(1),
               ),
             ],
           ),

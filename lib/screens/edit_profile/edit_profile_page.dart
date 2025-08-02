@@ -241,12 +241,12 @@ class EditProfilePageState extends State<EditProfilePage> {
           ),
           child: TextButton(
             onPressed: () {
-              if (_textController.text.isNotEmpty && !_waitForUpload) {
+              if (_textController.text.trim().isNotEmpty && !_waitForUpload) {
                 _pushEnter();
               }
             },
             style: TextButton.styleFrom(
-              backgroundColor: _textController.text.isEmpty || _waitForUpload
+              backgroundColor: _textController.text.trim().isEmpty || _waitForUpload
                   ? Colors.grey
                   : Theme.of(context).colorScheme.tertiaryContainer,
               foregroundColor: Colors.white,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:navigator_scope/navigator_scope.dart';
 import 'package:cordial/screens/timeline/timeline_page.dart';
 import 'package:cordial/screens/profile/profile_page.dart';
+import 'package:cordial/screens/group_page/group_page.dart';
 import 'package:cordial/widgets/under_bar.dart';
 
 // ログイン後の画面を管理するクラス。複数画面にここから遷移する
@@ -16,7 +17,7 @@ class RootPage extends StatefulWidget {
 }
 
 class RootPageState extends State<RootPage> {
-  // 現在選択されているタブのインデックス（0: home, 1: profile）
+  // 現在選択されているタブのインデックス（0: home,1: group, 2: profile）
   late int currentTab;
 
   @override
@@ -25,22 +26,11 @@ class RootPageState extends State<RootPage> {
     currentTab = widget.selectTab; // ここで受け取る
   }
 
-  // ナビゲーションバーに表示するタブの情報
-  final tabs = const [
-    NavigationDestination(
-      icon: Icon(Icons.home),
-      label: 'HOME', // タブのラベル
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.person),
-      label: 'PROFILE', // タブのラベル
-    ),
-  ];
-
   // 各タブに対応する Navigator のキー
   // これにより、各タブが独立したナビゲーションスタックを持てるようになる。
   final navigatorKeys = [
     GlobalKey<NavigatorState>(debugLabel: 'HOME Tab'),
+    GlobalKey<NavigatorState>(debugLabel: 'GROUP Tab'),
     GlobalKey<NavigatorState>(debugLabel: 'PROFILE Tab'),
   ];
 
@@ -78,7 +68,7 @@ class RootPageState extends State<RootPage> {
       // ボディ部に選択されたタブの内容（NavigatorScope）を表示
       body: NavigatorScope(
         currentDestination: currentTab, // どのタブが選ばれているかを通知
-        destinationCount: tabs.length, // タブの総数（ここでは2つ：Search と Cart）
+        destinationCount: 3, // タブの総数
         destinationBuilder: (context, index) {
           // 各タブに NestedNavigator（内部専用ナビゲーター）を構築
           return NestedNavigator(
@@ -87,11 +77,13 @@ class RootPageState extends State<RootPage> {
             builder: (context) {
               switch (index) {
                 case 0:
-                  return const TimelinePage(); // タブ0のとき
+                  return const TimelinePage();
                 case 1:
+                  return const GroupPage();
+                case 2:
                   return ProfilePage(
                     userId: FirebaseAuth.instance.currentUser?.uid,
-                  ); // タブ1のとき
+                  );
                 default:
                   return const TimelinePage(); // 万が一
               }

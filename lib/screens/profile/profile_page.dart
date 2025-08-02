@@ -71,6 +71,10 @@ class ProfilePageState extends State<ProfilePage> {
                 TimelineWidget(
                     parentScrollController: _scrollController,
                     userId: _userId),
+
+                const SliverToBoxAdapter(
+                  child: SafeArea(child: SizedBox()),
+                ),
               ],
             ),
 

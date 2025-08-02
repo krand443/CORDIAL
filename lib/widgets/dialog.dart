@@ -31,33 +31,40 @@ void showCustomDialog({
           // 位置を調整
           left: offset.dx,
           top: offset.dy,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.8), // 影の色
-                  spreadRadius: 1.5, // 影の広がり
-                  blurRadius: 3,   // ぼかしの強さ
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    // 関数を実行し、閉じる
-                    onTap?.call();
-                    _dialogEntry?.remove();
-                    _dialogEntry = null;
-                  },
-                  child: Text(
-                    text,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),),
-                ),
-              ],
+          child: SafeArea(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .secondary
+                        .withOpacity(0.8), // 影の色
+                    spreadRadius: 1.5, // 影の広がり
+                    blurRadius: 3, // ぼかしの強さ
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      // 関数を実行し、閉じる
+                      onTap?.call();
+                      _dialogEntry?.remove();
+                      _dialogEntry = null;
+                    },
+                    child: Text(
+                      text,
+                      style:
+                          TextStyle(color: Theme.of(context).colorScheme.error),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -65,5 +72,5 @@ void showCustomDialog({
     ),
   );
 
-  Overlay.of(context,rootOverlay: true).insert(_dialogEntry!);
+  Overlay.of(context, rootOverlay: true).insert(_dialogEntry!);
 }

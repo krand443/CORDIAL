@@ -5,39 +5,55 @@ import 'package:cordial/data_models/post.dart';
 import 'package:cordial/data_models/timeline.dart';
 import 'package:cordial/data_models/user_summary.dart';
 import 'package:cordial/data_models/user_summary_list.dart';
+import 'package:cordial/data_models/group.dart';
+import 'package:cordial/utils/change_format.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class DatabaseRead {
   // タイムラインを取得<以前の最後のドキュメントを参照し返す>
-  static Future<Timeline?> timeline([String? userId , DocumentSnapshot? lastVisible]) async {
-    /*
-    /posts/{postId}                          // 例:post001
-    ├── postedAt: Timestamp
-    ├── userid: String                       // 投稿者ID
-    ├── text: String                         // 本文
-    ├── selectedAiId: int                    // 返答したAIid
-    ├── response: String                     // AIからの返信
-    ├── nice: int
-    ├── /niceList
-    │   └── {userId}: {}                     // いいねしたユーザー
-     */
+  static Future<Timeline?> timeline(
+      [String? userId, DocumentSnapshot? lastVisible]) async {
+
+    // ルートに配置した投稿を参照
+    CollectionReference query = FirebaseFirestore.instance
+        .collection('posts');
+
+    return await _commonTimeline(query,userId,lastVisible);
+  }
+
+  // グループの投稿を取得
+  static Future<Timeline?> groupTimeline(String groupId,
+      [DocumentSnapshot? lastVisible]) async {
+
+    // グループに配置した投稿を参照
+    CollectionReference query = FirebaseFirestore.instance
+        .collection('groups')
+        .doc(groupId)
+        .collection('posts');
+
+    return await _commonTimeline(query,null,lastVisible);
+  }
+
+  // 上二つで使用する共通部分
+  static Future<Timeline?> _commonTimeline(CollectionReference query,
+      [String? userId, DocumentSnapshot? lastVisible]) async{
     try {
       // ポスト時間でソート
-      var query = FirebaseFirestore.instance
-          .collection('posts') // コレクションID
-          .orderBy('postedAt', descending: true);
+      var newQuery = query.orderBy('postedAt', descending: true);
 
       // ドキュメントが渡されていたらその次のドキュメントから取得する
       if (lastVisible != null) {
-        query = query.startAfterDocument(lastVisible);
+        newQuery = newQuery.startAfterDocument(lastVisible);
       }
 
       // ユーザーIDが渡されてるならそのユーザーで絞り込む
       if (userId != null) {
-        query = query.where('userid', isEqualTo: userId);
+        newQuery = newQuery.where('userid', isEqualTo: userId);
       }
 
       // タイムラインを取得
-      final result = await query.limit(10).get();
+      final result = await newQuery.limit(10).get();
 
       if (result.docs.isEmpty) {
         return null;
@@ -56,23 +72,23 @@ class DatabaseRead {
             .get();
 
         final userFuture =
-            FirebaseFirestore.instance.collection('users').doc(userId).get();
+        FirebaseFirestore.instance.collection('users').doc(userId).get();
 
         // 二つの要素を待つ
         final results = await Future.wait([niceFuture, userFuture]);
 
         return Post(
-          postedAt: _timeAgoFromTimestamp(doc['postedAt'] as Timestamp),
-          id: postId,
-          userId: userId,
-          userName: results[1]['name'] ?? 'unknown',
-          iconUrl: results[1]['iconUrl'],
-          postText: doc['text'] ?? '',
-          selectedAiId: doc['selectedAiId'] ?? 0,
-          response: doc['response'] ?? '',
-          nice: doc['nice'] ?? 0,
-          isNice: results[0].exists
-        );
+            postedAt:
+            ChangeFormat.timeAgoFromTimestamp(doc['postedAt'] as Timestamp),
+            id: postId,
+            userId: userId,
+            userName: results[1]['name'] ?? 'unknown',
+            iconUrl: results[1]['iconUrl'],
+            postText: doc['text'] ?? '',
+            selectedAiId: doc['selectedAiId'] ?? 0,
+            response: doc['response'] ?? '',
+            nice: doc['nice'] ?? 0,
+            isNice: results[0].exists);
       }).toList();
 
       // 取得を待つ
@@ -81,13 +97,14 @@ class DatabaseRead {
       // タイムラインを最後のDocumentSnapshotと返す。
       return Timeline(posts: posts, lastVisible: result.docs.last);
     } catch (e) {
-      print(e);
+      print('\x1B[31m$e\x1B[0m');
+      return null;
     }
-    return null;
   }
 
   // 投稿の返信を取得する
-  static Future<Timeline?> replyTimeline(String postId,[DocumentSnapshot? lastVisible]) async{
+  static Future<Timeline?> replyTimeline(String postId,
+      [DocumentSnapshot? lastVisible]) async {
     /*
     /posts/{postId}                // いいねしたユーザー
           ├─── /replies
@@ -136,13 +153,14 @@ class DatabaseRead {
             .get();
 
         final userFuture =
-        FirebaseFirestore.instance.collection('users').doc(userId).get();
+            FirebaseFirestore.instance.collection('users').doc(userId).get();
 
         // 二つの要素を待つ
         final results = await Future.wait([niceFuture, userFuture]);
 
         return Post(
-          postedAt: _timeAgoFromTimestamp(doc['repliedAt'] as Timestamp),
+          postedAt:
+              ChangeFormat.timeAgoFromTimestamp(doc['repliedAt'] as Timestamp),
           id: replyId,
           userId: userId,
           userName: results[1]['name'] ?? 'unknown',
@@ -161,31 +179,26 @@ class DatabaseRead {
       // タイムラインを最後のDocumentSnapshotと返す。
       return Timeline(posts: posts, lastVisible: result.docs.last);
     } catch (e) {
-      print(e);
+      print('\x1B[31m$e\x1B[0m');
+      return null;
     }
-
-    return null;
   }
 
   // フォローやフォロワーリストを返す。
-  static Future<UserSummaryList?> followerList({required String userId}) => followList(userId :userId,follower : true);
-  static Future<UserSummaryList?> followList({required String userId,DocumentSnapshot? lastVisible,bool? follower}) async {
-    /*
-    /users/{userId}                          // 例:user001
-    ├── /follows
-    │   ├─── {followsUserId}                // フォローしているユーザーのID
-    │       └── followedAt: Timestamp
-    ├─── /followers
-        ├─── {followerUserId}               // フォロワーのユーザーID
-            └── followedAt: Timestamp
-     */
+  static Future<UserSummaryList?> followerList({required String userId}) =>
+      followList(userId: userId, follower: true);
+
+  static Future<UserSummaryList?> followList(
+      {required String userId,
+      DocumentSnapshot? lastVisible,
+      bool? follower}) async {
 
     try {
       // フォロー時間でソート
       var query = FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
-          .collection(follower  == true ? 'followers' : 'follows')
+          .collection(follower == true ? 'followers' : 'follows')
           .orderBy('followedAt', descending: true);
 
       // ドキュメントが渡されていたらその次のドキュメントから取得する
@@ -206,7 +219,7 @@ class DatabaseRead {
         final userId = doc.id;
 
         final userFuture =
-        FirebaseFirestore.instance.collection('users').doc(userId).get();
+            FirebaseFirestore.instance.collection('users').doc(userId).get();
 
         // 二つの要素を待つ
         final results = await Future.wait([userFuture]);
@@ -215,17 +228,18 @@ class DatabaseRead {
             userName: results[0]['name'],
             iconUrl: results[0]['iconUrl'],
             userId: userId,
-            time: _timeAgoFromTimestamp(followedAt as Timestamp)
-        );
+            time: ChangeFormat.timeAgoFromTimestamp(followedAt as Timestamp));
       }).toList();
 
       // 取得を待つ
       final userSummaries = await Future.wait(futures);
 
       // タイムラインを最後のDocumentSnapshotと返す。
-      return UserSummaryList(userSummaries: userSummaries, lastVisible: result.docs.last);
+      return UserSummaryList(
+          userSummaries: userSummaries, lastVisible: result.docs.last);
     } catch (e) {
-      print(e);
+      print('\x1B[31m$e\x1B[0m');
+      print('\x1B[31m$e\x1B[0m');
     }
 
     return null;
@@ -233,18 +247,6 @@ class DatabaseRead {
 
   // プロフィールを取得
   static Future<Profile?> profile(String userid) async {
-    /*
-    /users/{userId}                          // 例:user001
-    ├── name: String                         // 田中太郎
-    ├── iconUrl: String (URL)
-    ├── nationality: String                  // Japan
-    ├── /profile
-    │   ├── introduction: String             // 自己紹介(100文字程度)
-    │   ├── backgroundPath: String             // 背景
-    │   ├── lastAction: Timestamp
-    │   ├── followCount: int
-    │   └── followerCount: int
-    */
     try {
       var result = await FirebaseFirestore.instance
           .collection('users') // コレクションID
@@ -268,7 +270,67 @@ class DatabaseRead {
           followCount: dataDeep?['followCount'] ?? 0,
           followerCount: dataDeep?['followerCount'] ?? 0);
     } catch (e) {
-      print(e);
+      print('\x1B[31m$e\x1B[0m');
+      return null;
+    }
+  }
+
+  // 所属グループを返す
+  static Future<List<Group>?> joinedGroups() async {
+    try {
+
+      var result = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection('groups')
+          .limit(30)
+          .get();
+
+      List<Group> groups = [];
+
+      // 並列で group ドキュメントを取得
+      List<Future<DocumentSnapshot>> futures = result.docs.map((data) {
+        return FirebaseFirestore.instance
+            .collection('groups')
+            .doc(data.id)
+            .get();
+      }).toList();
+
+      List<DocumentSnapshot> groupInfos = await Future.wait(futures);
+
+      for (int i = 0; i < groupInfos.length; i++) {
+        var groupInfo = groupInfos[i];
+        var data = result.docs[i];
+
+        if (groupInfo['name'] == null || groupInfo['numPeople'] == null) continue;
+
+        groups.add(
+          Group(
+            id: data.id,
+            name: groupInfo['name'],
+            icon: IconData(
+              (groupInfo['icon'] as int?) ?? Icons.star.codePoint,
+              fontFamily: 'MaterialIcons',
+            ),
+            backgroundColor: Color(
+              (groupInfo['backgroundColor'] as int?) ?? Colors.red.shade600.value,
+            ),
+            numPeople: groupInfo['numPeople'],
+            lastAction: (groupInfo['lastAction'] as Timestamp?),
+          ),
+        );
+      }
+
+      groups.sort((a, b) {
+        if (a.lastAction == null && b.lastAction == null) return 0;
+        if (a.lastAction == null) return 1; // nullは後ろに
+        if (b.lastAction == null) return -1;
+        return b.lastAction!.compareTo(a.lastAction!); // 新しい順（降順）
+      });
+      
+      return groups;
+    } catch (e) {
+      print('\x1B[31m$e\x1B[0m');
       return null;
     }
   }
@@ -278,7 +340,7 @@ class DatabaseRead {
     try {
       var result = await FirebaseFirestore.instance
           .collection('users') // コレクションID
-          .doc(userid ?? FirebaseAuth.instance.currentUser?.uid)
+          .doc(userid ?? FirebaseAuth.instance.currentUser!.uid)
           .get(); // ドキュメントID
 
       var data = result.data();
@@ -304,6 +366,7 @@ class DatabaseRead {
 
       return isUser;
     } catch (e) {
+      print('\x1B[31m$e\x1B[0m');
       return false;
     }
   }
@@ -320,48 +383,29 @@ class DatabaseRead {
 
       return data?['name'];
     } catch (e) {
+      print('\x1B[31m$e\x1B[0m');
       return null;
     }
   }
 
   // 相手をフォローしているかを確認する
-  static Future<bool> isFollowing(String followeeId) async{
+  static Future<bool> isFollowing(String followeeId) async {
     try {
-      var result = await FirebaseFirestore.instance.collection("users")
+      var result = await FirebaseFirestore.instance
+          .collection("users")
           .doc(FirebaseAuth.instance.currentUser?.uid)
           .collection("follows")
           .doc(followeeId)
           .get();
       // 存在するならtrueを返す
-      if(result.exists){
+      if (result.exists) {
         return true;
       }
-    }catch(e){
+    } catch (e) {
+      print('\x1B[31m$e\x1B[0m');
       return false;
     }
     return false;
-  }
-
-  // タイムスタンプで相対時間を返す
-  static String _timeAgoFromTimestamp(Timestamp timestamp) {
-    final now = DateTime.now();
-    final time = timestamp.toDate();
-    final difference = now.difference(time);
-
-    if (difference.inSeconds < 60) {
-      return 'たった今';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}分前';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}時間前';
-    } else if (difference.inDays == 1) {
-      return '昨日';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}日前';
-    } else {
-      // 7日以上前は日付表示（例: 2025/5/19）
-      return '${time.year}/${time.month}/${time.day}';
-    }
   }
 }
 

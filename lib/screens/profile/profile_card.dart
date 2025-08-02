@@ -117,7 +117,7 @@ class ProfileCardState extends State<ProfileCard> {
           result = "..........";
         }
 
-        result = snapshot.data?.name ?? 'unknown';
+        result = snapshot.data?.name ?? '・・・・';
 
         // ユーザー名を返す（長くても横スクロールで対応）
         return Text(

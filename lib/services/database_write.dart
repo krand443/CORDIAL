@@ -2,37 +2,13 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cordial/services/firestore_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:http/http.dart' as http;
-
-// ==========================
-// DatabaseWrite - 関数一覧
-// ==========================
-//
-// ・setUser(name)                     - ユーザー初期登録（名前、国情報、アイコン）
-// ・addPost(text, selectedAiId)       - 投稿作成（AIへの問い合わせ付き）
-// ・addReply(postId, text)            - リプライ投稿
-// ・nice(postId, {parentId})          - いいね追加（投稿・返信）
-// ・unNice(postId, {parentId})        - いいね削除
-// ・follow(followeeId)                - ユーザーをフォロー
-// ・unFollow(followeeId)              - ユーザーのフォロー解除
-
 
 class DatabaseWrite {
   // ユーザーを追加
   static Future<void> setUser(String name,String backgroundPath) async {
-    /*
-    /users/{userId}                          // 例:user001
-    ├── name: String                         // 田中太郎
-    ├── iconUrl: String (URL)
-    ├── nationality: String                  // Japan
-    ├── /profile
-    │   ├── introduction: String             // 自己紹介(100文字程度)
-    │   ├── lastAction: Timestamp
-    │   ├── followCount: int
-    │   └── followerCount: int
-     */
-
     // アイコンURLを取得
     final icon = await FirestoreStorage.myIcon();
 
@@ -49,7 +25,7 @@ class DatabaseWrite {
         'iconUrl': icon,
         'nationality': locale.countryCode, // 日本ならJP
       });
-      // ラストアクション時間を保存
+      // ラストアクション時間と背景画像
       await FirebaseFirestore.instance
           .collection('users')
           .doc(FirebaseAuth.instance.currentUser?.uid)
@@ -60,26 +36,12 @@ class DatabaseWrite {
         'backgroundPath': backgroundPath,
       }, SetOptions(merge: true)); // 他のフィールドはそのまま残す
     } catch (e) {
-      print(e);
+      print('\x1B[31m$e\x1B[0m');
     }
   }
 
   // 投稿するための関数
   static Future<void> addPost(String text,int selectedAiId) async {
-    /*
-      await FirebaseFirestore.instance
-          .collection('posts')
-          .doc()
-          .set({
-            'postedAt':FieldValue.serverTimestamp(),
-            'userid':FirebaseAuth.instance.currentUser?.uid,
-            'text':text,
-            'selectedAiId':int
-            'response' : "EXAMPLE()",
-            'nice': 0
-          });
-       */
-
     // firebaseFunctionを使用して投稿をDBに入れると同時にAIからの返答も受け取る
     final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
 
@@ -106,6 +68,65 @@ class DatabaseWrite {
     }
   }
 
+  // 投稿削除関数
+  static Future<void> deletePost(String postId) async{
+    try {
+      // ドキュメント削除
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .delete();
+
+    } catch (e) {
+      print('\x1B[31m$e\x1B[0m');
+    }
+  }
+
+  // グループでの投稿を追加
+  static Future<void> addGroupPost(String groupId,String text,int selectedAiId) async {
+    // firebaseFunctionを使用して投稿をDBに入れると同時にAIからの返答も受け取る
+    final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+
+    final uri = Uri.parse(
+      'https://asia-northeast1-projectcordial-596bd.cloudfunctions.net/postGroupMessage',
+    );
+
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer:$idToken', // ユーザーのトークンで認証
+      },
+      body: jsonEncode({
+        'groupId' : groupId,
+        'text': text,
+        'selectedAiId': selectedAiId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("成功: ${response.body}");
+    } else {
+      print("エラー (${response.statusCode}): ${response.body}");
+    }
+  }
+
+  // 投稿削除関数
+  static Future<void> deleteGroupPost(String groupId,String postId) async{
+    try {
+      // ドキュメント削除
+      await FirebaseFirestore.instance
+          .collection('groups')
+          .doc(groupId)
+          .collection('posts')
+          .doc(postId)
+          .delete();
+
+    } catch (e) {
+      print('\x1B[31m$e\x1B[0m');
+    }
+  }
+
   // 返信を投稿する
   static Future<void> addReply(String postId, String text) async {
     await FirebaseFirestore.instance
@@ -123,24 +144,6 @@ class DatabaseWrite {
 
   // いいねを追加
   static Future<void> nice(String postId, {String? parentId}) async {
-    /*
-    /posts/{postId}                          // 例:post001
-           ├── postedAt: Timestamp
-           ├── userid: String                       // 投稿者ID
-           ├── text: String                         // 本文
-           ├── response: String                     // AIからの返信
-           ├── nice: int
-           ├── /niceList
-           │   └── {userId}: {}
-           ├─── /replies
-                ├─── {replyId}                       // reply001
-                      ├── repliedAt: Timestamp
-                      ├── userid: String               // リプライ投稿者ID
-                      ├── text: String
-                      ├── nice: int
-                      └── /niceList
-                          └── {userId}: {}             // リプライにいいねしたユーザー
-    */
 
     // ドキュメント参照用
     DocumentReference postDocRef;
@@ -188,22 +191,13 @@ class DatabaseWrite {
         },
       );
     } catch (e) {
-      print(e);
+      print('\x1B[31m$e\x1B[0m');
     }
   }
 
   // いいねを削除
   static Future<void> unNice(String postId, {String? parentId}) async {
-    /*
-    /posts/{postId}                          // 例:post001
-           ├── postedAt: Timestamp
-           ├── userid: String                       // 投稿者ID
-           ├── text: String                         // 本文
-           ├── response: String                     // AIからの返信
-           ├── nice: int
-           ├── /niceList
-           │   └── {userId}: {}
-    */
+
     // ドキュメント参照用
     DocumentReference postDocRef;
 
@@ -240,6 +234,53 @@ class DatabaseWrite {
         }
       },
     );
+  }
+
+
+  // グループを作成する
+  static Future<void> makeGroup(String name,IconData icon,Color backgroundColor) async{
+    try {
+
+      final FirebaseFirestore db = FirebaseFirestore.instance;
+
+      DocumentReference newGroupRef = await db
+          .collection('groups')
+          .add({
+        'leaderId': FirebaseAuth.instance.currentUser!.uid,
+        'name': name,
+        'icon': icon.codePoint, // codePointを保存、フォントファミリーはデフォルトのアイコンしか使用してないので保存しない
+        'backgroundColor': backgroundColor.value,
+        'numPeople': 1,
+        'lastAction': FieldValue.serverTimestamp(),
+      });
+
+      String newGroupId = newGroupRef.id;
+
+      await db.runTransaction((transaction) async {
+
+        // グループへユーザーを追加
+        final addUserToGroup = db
+            .collection('groups')
+            .doc(newGroupId)
+            .collection('members')
+            .doc(FirebaseAuth.instance.currentUser!.uid);
+        transaction.set(addUserToGroup, {
+          'joinedAt':FieldValue.serverTimestamp(),
+        });
+
+        // ユーザーにグループ情報を追加
+        final addGroupToUser = db
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .collection('groups')
+            .doc(newGroupId);
+        transaction.set(addGroupToUser, {
+          'joinedAt':FieldValue.serverTimestamp(),
+        });
+      });
+    } catch (e) {
+      print('\x1B[31m$e\x1B[0m');
+    }
   }
 
   // フォロー時の処理
@@ -307,7 +348,7 @@ class DatabaseWrite {
     }
     catch(e)
     {
-      print(e);
+      print('\x1B[31m$e\x1B[0m');
     }
   }
 
@@ -372,7 +413,7 @@ class DatabaseWrite {
         );
       });
     } catch (e) {
-      print(e);
+      print('\x1B[31m$e\x1B[0m');
     }
   }
 
@@ -411,7 +452,7 @@ class DatabaseWrite {
         },SetOptions(merge: true));
       });
     } catch (e) {
-      print(e);
+      print('\x1B[31m$e\x1B[0m');
     }
   }
 }
