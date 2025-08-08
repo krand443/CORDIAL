@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cordial/services/database_read.dart';
 import 'package:cordial/data_models/user_summary_list.dart';
 import 'package:cordial/widgets/custom_appbar.dart';
-import 'package:cordial/screens/profile/user_summary_card.dart';
+import 'package:cordial/widgets/user_summary_card.dart';
 import 'package:rive/rive.dart';
 
 // フォロー一覧とフォロワー一覧を表示するページ
@@ -200,7 +200,6 @@ class FollowersWidgetState extends State<FollowersWidget>
 
     // 下の方までまでスクロールをしたとき更新
     _scrollController.addListener(() {
-      print(_scrollController.position.pixels);
       if (_scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent -
                   300 // 画面の縦の高さは: 783.2727272727273
@@ -221,8 +220,8 @@ class FollowersWidgetState extends State<FollowersWidget>
     _isLoading = true;
 
     UserSummaryList? _userSummaryList = _isFollowing == true
-        ? await DatabaseRead.followList(userId: _userId!)
-        : await DatabaseRead.followerList(userId: _userId!);
+        ? await DatabaseRead.followList(userId: _userId!,lastVisible: userSummaryList?.lastVisible)
+        : await DatabaseRead.followerList(userId: _userId!,lastVisible: userSummaryList?.lastVisible);
 
     // タイムラインを更新
     if (_userSummaryList != null) {
@@ -325,11 +324,10 @@ class FollowersWidgetState extends State<FollowersWidget>
 
                   // 広告を挿入する位置かどうかを判定
                   if ((index + 1) % (adInterval + 1) == 0) {
-                    //return AdMob.getBannerAdUnit(); // 広告ウィジェット
-                    return Text('こうこーく');
+                    return null;
                   }
 
-                  // 実際のポストのインデックスを算出
+                  // 実際のインデックスを算出
                   final adsBefore = (index / (adInterval + 1)).floor();
                   final cardIndex = index - adsBefore;
 

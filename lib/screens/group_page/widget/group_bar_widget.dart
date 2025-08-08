@@ -5,19 +5,26 @@ import 'package:cordial/screens/group_page/group_chat_page.dart';
 
 // グループのタイトルウィジェットを返すクラス
 class GroupBarWidget extends StatefulWidget {
-
   final Group groupInfo;
 
   // 画面遷移のon,off
   final bool translation;
 
-  const GroupBarWidget({super.key, required this.groupInfo,this.translation = true});
+  // 画面遷移し、閉じたときに実行する
+  final VoidCallback? onClose;
+
+  const GroupBarWidget(
+      {super.key,
+      required this.groupInfo,
+      this.translation = true,
+      this.onClose});
 
   @override
   State<GroupBarWidget> createState() => GroupBarWidgetState();
 }
 
-class GroupBarWidgetState extends State<GroupBarWidget> with AutomaticKeepAliveClientMixin {
+class GroupBarWidgetState extends State<GroupBarWidget>
+    with AutomaticKeepAliveClientMixin {
   @override // スクロールしても状態を保持
   bool get wantKeepAlive => true;
 
@@ -48,11 +55,21 @@ class GroupBarWidgetState extends State<GroupBarWidget> with AutomaticKeepAliveC
             ),
             padding: EdgeInsets.zero,
           ),
-          onPressed: () {
-            if(!widget.translation)return;
+          onPressed: () async {
+            if (!widget.translation) return;
 
             // タップされたらチャットページへ遷移
-            PageTransitions.fromRight(onUnderBar: true,targetWidget: GroupChatPage(groupInfo: _groupInfo,), context: context);
+            await PageTransitions.fromRight(
+                onUnderBar: true,
+                targetWidget: GroupChatPage(
+                  groupInfo: _groupInfo,
+                ),
+                context: context);
+
+            //コールバックを呼び出し
+            if (widget.onClose != null) {
+              widget.onClose!();
+            }
           },
           child: Row(
             children: [
@@ -80,8 +97,7 @@ class GroupBarWidgetState extends State<GroupBarWidget> with AutomaticKeepAliveC
                 style: const TextStyle(
                     fontSize: 13,
                     //color: Theme.of(context).colorScheme.onPrimary,
-                    color: Colors.white
-                ),
+                    color: Colors.white),
               ),
               const SizedBox(
                 width: 10,
@@ -92,5 +108,4 @@ class GroupBarWidgetState extends State<GroupBarWidget> with AutomaticKeepAliveC
       ),
     );
   }
-
 }

@@ -25,6 +25,7 @@ class MakeGroupPageState extends State<MakeGroupPage> {
     _group = Group(
       id: '',
       name: '新しいグループ',
+      leaderId: '',
       icon: Icons.star,
       backgroundColor: Colors.red.shade600,
       numPeople: 1,
@@ -219,11 +220,11 @@ class MakeGroupPageState extends State<MakeGroupPage> {
               _screenLockController.hide();
               Navigator.of(context).pop(_group);// 画面を閉じる
             },
-            child: Text(
+            child: const Text(
               '確定',
               style: TextStyle(
                 fontSize: 16,
-                color: Theme.of(context).colorScheme.onPrimary,
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),

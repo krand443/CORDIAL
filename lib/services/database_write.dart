@@ -236,48 +236,44 @@ class DatabaseWrite {
     );
   }
 
-
   // グループを作成する
-  static Future<void> makeGroup(String name,IconData icon,Color backgroundColor) async{
+  static Future<void> makeGroup(String name, IconData icon, Color backgroundColor) async {
     try {
-
       final FirebaseFirestore db = FirebaseFirestore.instance;
+      final String uid = FirebaseAuth.instance.currentUser!.uid;
 
-      DocumentReference newGroupRef = await db
-          .collection('groups')
-          .add({
-        'leaderId': FirebaseAuth.instance.currentUser!.uid,
-        'name': name,
-        'icon': icon.codePoint, // codePointを保存、フォントファミリーはデフォルトのアイコンしか使用してないので保存しない
-        'backgroundColor': backgroundColor.value,
-        'numPeople': 1,
-        'lastAction': FieldValue.serverTimestamp(),
-      });
-
+      // 先に group のドキュメントID を自前で作る
+      DocumentReference newGroupRef = db.collection('groups').doc();
       String newGroupId = newGroupRef.id;
 
       await db.runTransaction((transaction) async {
-
-        // グループへユーザーを追加
-        final addUserToGroup = db
-            .collection('groups')
-            .doc(newGroupId)
-            .collection('members')
-            .doc(FirebaseAuth.instance.currentUser!.uid);
-        transaction.set(addUserToGroup, {
-          'joinedAt':FieldValue.serverTimestamp(),
+        // グループ本体の作成
+        transaction.set(newGroupRef, {
+          'leaderId': uid,
+          'name': name,
+          'icon': icon.codePoint,
+          'backgroundColor': backgroundColor.value,
+          'numPeople': 1,
+          'lastAction': FieldValue.serverTimestamp(),
         });
 
-        // ユーザーにグループ情報を追加
+        // グループ側にメンバーとして追加
+        final addUserToGroup = newGroupRef.collection('members').doc(uid);
+        transaction.set(addUserToGroup, {
+          'joinedAt': FieldValue.serverTimestamp(),
+        });
+
+        // ユーザー側にもグループ情報を追加
         final addGroupToUser = db
             .collection('users')
-            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .doc(uid)
             .collection('groups')
             .doc(newGroupId);
         transaction.set(addGroupToUser, {
-          'joinedAt':FieldValue.serverTimestamp(),
+          'joinedAt': FieldValue.serverTimestamp(),
         });
       });
+
     } catch (e) {
       print('\x1B[31m$e\x1B[0m');
     }
@@ -285,13 +281,14 @@ class DatabaseWrite {
 
   // フォロー時の処理
   static Future<void> follow(String followeeId) async {
+    final String uid = FirebaseAuth.instance.currentUser!.uid;
     try {
       final FirebaseFirestore db = FirebaseFirestore.instance;
 
       // すでにフォローしているか確認
       final docSnap = await db
           .collection("users")
-          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .doc(uid)
           .collection("follows")
           .doc(followeeId)
           .get();
@@ -307,7 +304,7 @@ class DatabaseWrite {
         // 自分のfollowsコレクションに追加
         final followRef = db
             .collection("users")
-            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .doc(uid)
             .collection("follows")
             .doc(followeeId);
         transaction.set(followRef, {
@@ -320,7 +317,7 @@ class DatabaseWrite {
             .collection("users")
             .doc(followeeId)
             .collection("followers")
-            .doc(FirebaseAuth.instance.currentUser!.uid);
+            .doc(uid);
         transaction.set(followerRef, {
           'followedAt': now,
         });
@@ -328,7 +325,7 @@ class DatabaseWrite {
         // フォロー数をインクリメント
         final myProfileRef = db
             .collection("users")
-            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .doc(uid)
             .collection("profile")
             .doc("profile");
         transaction.set(myProfileRef, {

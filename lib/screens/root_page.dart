@@ -5,6 +5,7 @@ import 'package:cordial/screens/timeline/timeline_page.dart';
 import 'package:cordial/screens/profile/profile_page.dart';
 import 'package:cordial/screens/group_page/group_page.dart';
 import 'package:cordial/widgets/under_bar.dart';
+import 'package:cordial/screens/ranking_page.dart';
 
 // ログイン後の画面を管理するクラス。複数画面にここから遷移する
 class RootPage extends StatefulWidget {
@@ -17,7 +18,7 @@ class RootPage extends StatefulWidget {
 }
 
 class RootPageState extends State<RootPage> {
-  // 現在選択されているタブのインデックス（0: home,1: group, 2: profile）
+  // 現在選択されているタブのインデックス（0: home,1: ranking, 2: group ,3: profile）
   late int currentTab;
 
   @override
@@ -30,6 +31,7 @@ class RootPageState extends State<RootPage> {
   // これにより、各タブが独立したナビゲーションスタックを持てるようになる。
   final navigatorKeys = [
     GlobalKey<NavigatorState>(debugLabel: 'HOME Tab'),
+    GlobalKey<NavigatorState>(debugLabel: 'RANKING Tab'),
     GlobalKey<NavigatorState>(debugLabel: 'GROUP Tab'),
     GlobalKey<NavigatorState>(debugLabel: 'PROFILE Tab'),
   ];
@@ -68,7 +70,7 @@ class RootPageState extends State<RootPage> {
       // ボディ部に選択されたタブの内容（NavigatorScope）を表示
       body: NavigatorScope(
         currentDestination: currentTab, // どのタブが選ばれているかを通知
-        destinationCount: 3, // タブの総数
+        destinationCount: 4, // タブの総数
         destinationBuilder: (context, index) {
           // 各タブに NestedNavigator（内部専用ナビゲーター）を構築
           return NestedNavigator(
@@ -79,8 +81,10 @@ class RootPageState extends State<RootPage> {
                 case 0:
                   return const TimelinePage();
                 case 1:
-                  return const GroupPage();
+                  return const RankingPage();
                 case 2:
+                  return const GroupPage();
+                case 3:
                   return ProfilePage(
                     userId: FirebaseAuth.instance.currentUser?.uid,
                   );

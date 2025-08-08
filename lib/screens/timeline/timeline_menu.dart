@@ -24,7 +24,7 @@ class TimelineMenu extends StatelessWidget {
               color: Theme.of(context).colorScheme.surface,
               child: CustomScrollView(
                 slivers: [
-                  const CustomAppbar(titleText: "メニュー"),
+                  const CustomAppbar(titleText: 'メニュー'),
                   SliverList(
                     delegate: SliverChildListDelegate([
                       const SizedBox(height: 50),
@@ -33,7 +33,7 @@ class TimelineMenu extends StatelessWidget {
                         color: Colors.transparent, // 背景色
                         child: ListTile(
                           leading: const Icon(Icons.color_lens_outlined),
-                          title: const Text("テーマ設定"),
+                          title: const Text('テーマ設定'),
                           onTap: () {
                             PageTransitions.fromBottom(
                                 targetWidget: const ChangeTheme(),
@@ -45,7 +45,7 @@ class TimelineMenu extends StatelessWidget {
                         color: Colors.transparent, // 背景色
                         child: ListTile(
                           leading: const Icon(Icons.text_snippet_outlined),
-                          title: const Text("ライセンス"),
+                          title: const Text('ライセンス'),
                           onTap: () {
                             MyLicenseDialog.show(context);
                           },
@@ -55,7 +55,7 @@ class TimelineMenu extends StatelessWidget {
                         color: Colors.transparent, // 背景色
                         child: ListTile(
                           leading: const Icon(Icons.logout, color: Colors.red),
-                          title: const Text("ログアウト"),
+                          title: const Text('ログアウト'),
                           onTap: () async {
                             if (!context.mounted) return;
                             await FirebaseAuth.instance.signOut();

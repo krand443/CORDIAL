@@ -12,11 +12,13 @@ import 'package:cordial/utils/change_format.dart';
 
 // グループチャットのタイムラインを表示するクラス
 class GroupChatTimeline extends StatefulWidget {
-
   // グループidを受け取る
   final String groupId;
 
-  const GroupChatTimeline({super.key, required this.groupId,});
+  const GroupChatTimeline({
+    super.key,
+    required this.groupId,
+  });
 
   @override
   State<GroupChatTimeline> createState() => GroupChatTimelineState();
@@ -43,12 +45,12 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
   List<Post> newPosts = [];
 
   // 変更を監視するためのスナップショット
-  late final StreamSubscription<QuerySnapshot> _chatSubscription;// 監視用
-  late final Stream<QuerySnapshot> chatStream;// スナップショットのストリーム
+  late final StreamSubscription<QuerySnapshot> _chatSubscription; // 監視用
+  late final Stream<QuerySnapshot> chatStream; // スナップショットのストリーム
   bool _chatStreamIsFirst = true;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
 
     _initializeTimeline();
@@ -74,7 +76,7 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
   }
 
   // タイムラインの初期化
-  Future<void> _initializeTimeline() async{
+  Future<void> _initializeTimeline() async {
     await _timelineAdd(); // 初回表示時にタイムラインを更新
 
     // 新しい投稿を監視する
@@ -107,7 +109,7 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
   }
 
   // 新しい投稿を画面に追加する関数
-  Future<void> _newPostAdd(DocumentChange<Object?> change) async{
+  Future<void> _newPostAdd(DocumentChange<Object?> change) async {
     final data = change.doc.data() as Map<String, dynamic>;
     print('新しい投稿: ${data['text']}');
 
@@ -115,13 +117,14 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
     final userId = data['userid'];
 
     final userFuture =
-    FirebaseFirestore.instance.collection('users').doc(userId).get();
+        FirebaseFirestore.instance.collection('users').doc(userId).get();
 
     final results = await Future.wait([userFuture]);
 
     // Postオブジェクトを作成して返す
     final post = Post(
-      postedAt: ChangeFormat.timeAgoFromTimestamp(data['postedAt'] as Timestamp),
+      postedAt:
+          ChangeFormat.timeAgoFromTimestamp(data['postedAt'] as Timestamp),
       id: postId,
       userId: userId,
       userName: results[0]['name'] ?? 'unknown',
@@ -141,12 +144,12 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
     // スクロールを一番下へ
     if (_scrollController.hasClients) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollController.animateTo(
-        _scrollController.position.minScrollExtent,
-        duration: const Duration(milliseconds: 1000),
-        curve: Curves.easeOut,
-      );
-    });
+        _scrollController.animateTo(
+          _scrollController.position.minScrollExtent,
+          duration: const Duration(milliseconds: 1000),
+          curve: Curves.easeOut,
+        );
+      });
     }
 
     return;
@@ -159,7 +162,7 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
 
     // タイムラインを取得
     Timeline? _timeline =
-        await DatabaseRead.groupTimeline(widget.groupId,timeline?.lastVisible);
+        await DatabaseRead.groupTimeline(widget.groupId, timeline?.lastVisible);
 
     // タイムラインを更新
     if (_timeline != null) {
@@ -214,7 +217,7 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
         ),
       );
     } else {
-      return timeline == null
+      return timeline == null && newPosts.isEmpty
           ? Container(
               padding: const EdgeInsets.only(top: 100),
               child: _noContentMessage(),
@@ -227,12 +230,16 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-
                   // 新規投稿
-                  ...newPosts.map((post) => SliverToBoxAdapter(
-                    key: ValueKey(post.id),
-                    child: GroupPostCard(post: post),
-                  )),
+                  ...newPosts.map(
+                    (post) => SliverToBoxAdapter(
+                      key: ValueKey(post.id),
+                      child: GroupPostCard(
+                        groupId: widget.groupId,
+                        post: post,
+                      ),
+                    ),
+                  ),
 
                   // タイムラインを取得する
                   _groupTimeline(),
@@ -246,7 +253,9 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
     }
   }
 
-  Widget _groupTimeline(){
+  Widget _groupTimeline() {
+    if(timeline == null)return const SliverToBoxAdapter(child: SizedBox());
+
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         childCount: (() {
@@ -255,15 +264,14 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
           return postCount + adCount + 1; // +1: ローディング
         })(),
         // 最後にローディング用ウィジェットを1つ追加
-            (BuildContext context, int index) {
+        (BuildContext context, int index) {
           // 表示する投稿数
           final postCount = timeline!.posts.length;
 
           // 投稿と広告の総アイテム数を計算
           const adInterval = 7; // ADを数投稿ごとに挟む
           final adCount = (postCount / adInterval).floor();
-          final totalItemCount =
-              postCount + adCount + 1; // +1 ローディング
+          final totalItemCount = postCount + adCount + 1; // +1 ローディング
 
           if (index == totalItemCount - 1) {
             // 最後に読み込みを追加する
@@ -271,11 +279,11 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
               child: Padding(
                 padding: const EdgeInsets.only(top: 5),
                 child: !isShowAll
-                // 読み込みアニメーション
+                    // 読み込みアニメーション
                     ? const CircularProgressIndicator(
-                  color: Colors.blue,
-                  backgroundColor: Colors.transparent,
-                )
+                        color: Colors.blue,
+                        backgroundColor: Colors.transparent,
+                      )
                     : const SizedBox.shrink(), // falseのときは何も表示しない
               ),
             );
@@ -291,7 +299,7 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
           final postIndex = index - adsBefore;
 
           return GroupPostCard(
-            post: timeline!.posts[postIndex]);
+              groupId: widget.groupId, post: timeline!.posts[postIndex]);
         },
       ),
     );

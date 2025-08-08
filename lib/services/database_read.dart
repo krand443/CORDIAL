@@ -9,6 +9,8 @@ import 'package:cordial/data_models/group.dart';
 import 'package:cordial/utils/change_format.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:cordial/enums/ranking_type.dart';
+
 
 class DatabaseRead {
   // タイムラインを取得<以前の最後のドキュメントを参照し返す>
@@ -19,7 +21,18 @@ class DatabaseRead {
     CollectionReference query = FirebaseFirestore.instance
         .collection('posts');
 
-    return await _commonTimeline(query,userId,lastVisible);
+    return await _commonTimeline(query,userId: userId,lastVisible: lastVisible);
+  }
+
+  // ランキング表示用
+  static Future<Timeline?> rankingTimeline(RankingType rankingType,
+      [ DocumentSnapshot? lastVisible,int? limit]) async {
+
+    // ルートに配置した投稿を参照
+    CollectionReference query = FirebaseFirestore.instance
+        .collection('posts');
+
+    return await _commonTimeline(query,rankingType: rankingType,lastVisible: lastVisible,limit: limit);
   }
 
   // グループの投稿を取得
@@ -32,15 +45,33 @@ class DatabaseRead {
         .doc(groupId)
         .collection('posts');
 
-    return await _commonTimeline(query,null,lastVisible);
+    return await _commonTimeline(query,lastVisible: lastVisible);
   }
 
   // 上二つで使用する共通部分
-  static Future<Timeline?> _commonTimeline(CollectionReference query,
-      [String? userId, DocumentSnapshot? lastVisible]) async{
+  static Future<Timeline?>  _commonTimeline(
+      CollectionReference query, {
+        String? userId,
+        RankingType? rankingType,
+        DocumentSnapshot? lastVisible,
+        int? limit,
+      }) async{
     try {
-      // ポスト時間でソート
-      var newQuery = query.orderBy('postedAt', descending: true);
+      Query<Object?> newQuery;
+
+      switch (rankingType) {
+        case RankingType.weekly://週間ランキング
+          final DateTime now = DateTime.now();
+          final DateTime oneWeekAgo = now.subtract(const Duration(days: 7));
+          newQuery = query.where('postedAt', isGreaterThanOrEqualTo: oneWeekAgo)
+              .orderBy('nice', descending: true); // いいね数順
+          break;
+        case RankingType.total://総合ランキング
+          newQuery = query.orderBy('nice', descending: true); // いいね数順
+          break;
+        default:// デフォルトはポスト時間でソート
+          newQuery = query.orderBy('postedAt', descending: true);
+      }
 
       // ドキュメントが渡されていたらその次のドキュメントから取得する
       if (lastVisible != null) {
@@ -53,7 +84,7 @@ class DatabaseRead {
       }
 
       // タイムラインを取得
-      final result = await newQuery.limit(10).get();
+      final result = await newQuery.limit(limit ?? 10).get();
 
       if (result.docs.isEmpty) {
         return null;
@@ -105,17 +136,6 @@ class DatabaseRead {
   // 投稿の返信を取得する
   static Future<Timeline?> replyTimeline(String postId,
       [DocumentSnapshot? lastVisible]) async {
-    /*
-    /posts/{postId}                // いいねしたユーザー
-          ├─── /replies
-          ├─── {replyId}                       // reply001
-               ├── repliedAt: Timestamp
-               ├── userid: String               // リプライ投稿者ID
-               ├── text: String
-               ├── nice: int
-               └── /niceList
-                   └── {userId}: {}             // リプライにいいねしたユーザー
-     */
 
     try {
       // ポスト時間でソート
@@ -185,8 +205,8 @@ class DatabaseRead {
   }
 
   // フォローやフォロワーリストを返す。
-  static Future<UserSummaryList?> followerList({required String userId}) =>
-      followList(userId: userId, follower: true);
+  static Future<UserSummaryList?> followerList({required String userId,DocumentSnapshot? lastVisible,}) =>
+      followList(userId: userId,lastVisible:lastVisible, follower: true,);
 
   static Future<UserSummaryList?> followList(
       {required String userId,
@@ -207,7 +227,7 @@ class DatabaseRead {
       }
 
       // データを個数制限をつけ取得
-      final result = await query.limit(10).get();
+      final result = await query.limit(20).get();
 
       if (result.docs.isEmpty) {
         return null;
@@ -229,6 +249,63 @@ class DatabaseRead {
             iconUrl: results[0]['iconUrl'],
             userId: userId,
             time: ChangeFormat.timeAgoFromTimestamp(followedAt as Timestamp));
+      }).toList();
+
+      // 取得を待つ
+      final userSummaries = await Future.wait(futures);
+
+      // タイムラインを最後のDocumentSnapshotと返す。
+      return UserSummaryList(
+          userSummaries: userSummaries, lastVisible: result.docs.last);
+    } catch (e) {
+      print('\x1B[31m$e\x1B[0m');
+      print('\x1B[31m$e\x1B[0m');
+    }
+
+    return null;
+  }
+
+  // グループのメンバーを返す
+  static Future<UserSummaryList?> groupMemberList(
+      {required String groupId,
+        DocumentSnapshot? lastVisible,}) async {
+
+    try {
+      // 参加時間でソート
+      var query = FirebaseFirestore.instance
+          .collection('groups')
+          .doc(groupId)
+          .collection('members')
+          .orderBy('joinedAt', descending: false);
+
+      // ドキュメントが渡されていたらその次のドキュメントから取得する
+      if (lastVisible != null) {
+        query = query.startAfterDocument(lastVisible);
+      }
+
+      // データを個数制限をつけ取得
+      final result = await query.limit(20).get();
+
+      if (result.docs.isEmpty) {
+        return null;
+      }
+
+      // 取得したドキュメントをリスト<List>UserSummaryにするためのデータ取得(並列実行)
+      final futures = result.docs.map((doc) async {
+        final joinedAt = doc['joinedAt'];
+        final userId = doc.id;
+
+        final userFuture =
+        FirebaseFirestore.instance.collection('users').doc(userId).get();
+
+        // 二つの要素を待つ
+        final results = await Future.wait([userFuture]);
+
+        return UserSummary(
+            userName: results[0]['name'],
+            iconUrl: results[0]['iconUrl'],
+            userId: userId,
+            time: ChangeFormat.timeAgoFromTimestamp(joinedAt as Timestamp));
       }).toList();
 
       // 取得を待つ
@@ -308,6 +385,7 @@ class DatabaseRead {
           Group(
             id: data.id,
             name: groupInfo['name'],
+            leaderId: groupInfo['leaderId'] ?? '',
             icon: IconData(
               (groupInfo['icon'] as int?) ?? Icons.star.codePoint,
               fontFamily: 'MaterialIcons',

@@ -71,18 +71,26 @@ class FollowButtonState extends State<FollowButton> {
     });
   }
 
+  final GlobalKey _buttonKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: (TapDownDetails details) {
+      onTap: () {
         if (isFollow == null) return;
 
-        final globalPosition = details.globalPosition;
+        final RenderBox renderBox =
+        _buttonKey.currentContext!.findRenderObject() as RenderBox;
+
+        final Offset widgetPosition =
+        renderBox.localToGlobal(Offset.zero); // ウィジェットの画面上の位置
+
+        final Offset dialogOffset = widgetPosition + const Offset(-120, 20); // ずらす
 
         if (isFollow!) {
           showCustomDialog(
             context: context,
-            offset: globalPosition + const Offset(-120, 15),
+            offset: dialogOffset,
             text: "フォロー解除しますか？",
             onTap: () {
               onUnFollow();
@@ -94,6 +102,7 @@ class FollowButtonState extends State<FollowButton> {
       },
       child: AbsorbPointer(// onPressed を無効化
         child: ElevatedButton(
+          key: _buttonKey,
           style: ElevatedButton.styleFrom(
             shadowColor: Colors.black,
             foregroundColor: Colors.green[50],

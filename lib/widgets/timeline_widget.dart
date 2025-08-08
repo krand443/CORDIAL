@@ -5,14 +5,18 @@ import 'package:cordial/data_models/timeline.dart';
 import 'package:cordial/widgets/admob_widgets.dart';
 import 'package:cordial/utils/network_status.dart';
 import 'package:rive/rive.dart';
+import 'package:cordial/enums/ranking_type.dart';
 
 // タイムラインを表示するクラス
 class TimelineWidget extends StatefulWidget {
   // 任意でポストidを受け取る(受け取ったらそのリプライを返す)
   final String? postId;
 
-  // 任意でユーザーidを受け取る
+  // 任意でユーザーidを受け取る(受け取ったらそのユーザの投稿のみ返す)
   final String? userId;
+
+  // 任意でランキングタイプを受け取る。(受け取ったらその「いいね」ランキングを返す)
+  final RankingType? rankingType;
 
   // 親のスクロールコントローラーを受け取る
   final ScrollController parentScrollController;
@@ -22,6 +26,7 @@ class TimelineWidget extends StatefulWidget {
     this.userId,
     this.postId,
     required this.parentScrollController,
+    this.rankingType,
   });
 
   @override
@@ -48,6 +53,9 @@ class TimelineWidgetState extends State<TimelineWidget>
   // タイムライン生成で使用するユーザーId
   String? _userId;
 
+  // ランキングタイプを親から受け取る
+  late final RankingType? _rankingType;
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +63,8 @@ class TimelineWidgetState extends State<TimelineWidget>
     // ウィジェットから値を受け取る
     _userId = widget.userId;
     _postId = widget.postId;
+    _rankingType = widget.rankingType;
+
 
     // コントローラーを親ウィジットから受け取る。
     _scrollController = widget.parentScrollController;
@@ -83,11 +93,19 @@ class TimelineWidgetState extends State<TimelineWidget>
     isLoading = true;
 
     // タイムラインを取得
-    Timeline? _timeline = _postId != null
-        // ポストidが渡されているなら返信を取得する
-        ? await DatabaseRead.replyTimeline(_postId!, timeline?.lastVisible)
-        // 渡されてないなら通常のタイムラインを取得する
-        : await DatabaseRead.timeline(_userId, timeline?.lastVisible);
+    Timeline? _timeline;
+
+    // ランキング要求
+    if(_rankingType != null){
+      _timeline = await DatabaseRead.rankingTimeline(_rankingType,timeline?.lastVisible);
+    }
+    else{
+      _timeline = _postId != null
+      // ポストidが渡されているなら返信を取得する
+          ? await DatabaseRead.replyTimeline(_postId!, timeline?.lastVisible)
+      // 渡されてないなら通常のタイムラインを取得する
+          : await DatabaseRead.timeline(_userId, timeline?.lastVisible);
+    }
 
     // タイムラインを更新
     if (_timeline != null) {
@@ -98,7 +116,7 @@ class TimelineWidgetState extends State<TimelineWidget>
         if (timeline == null) {
           timeline = _timeline;
         } else {
-          timeline!.posts.addAll(_timeline.posts);
+          timeline!.posts.addAll(_timeline!.posts);
           timeline!.lastVisible = _timeline.lastVisible;
         }
       });
@@ -198,8 +216,7 @@ class TimelineWidgetState extends State<TimelineWidget>
 
                   // 広告を挿入する位置かどうかを判定
                   if ((index + 1) % (adInterval + 1) == 0) {
-
-                    if(_userId != null)return null;
+                    if (_userId != null) return null;
 
                     return AdMob.getBannerAdUnit(); // 広告ウィジェット
                   }
@@ -222,14 +239,15 @@ class TimelineWidgetState extends State<TimelineWidget>
   // タイムラインが取得できなかった場合に使用するメッセージ
   Widget _noContentMessage() {
     // 共通で使用する色
-    Color textColor = Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.4);
+    Color textColor =
+        Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.4);
 
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FutureBuilder<bool>(
-            future: NetworkStatus.check(),// ネットワーク接続状況で分岐
+            future: NetworkStatus.check(), // ネットワーク接続状況で分岐
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 // データ待ち（ローディング中）
@@ -243,18 +261,21 @@ class TimelineWidgetState extends State<TimelineWidget>
                   _postId != null
                       ? 'まだ返信はありません\n最初の返信者になりましょう!'
                       : 'まだ投稿がありません。\n下の+マークから投稿してみましょう!',
-                  style: TextStyle(fontSize: 18,color:textColor),
+                  style: TextStyle(fontSize: 18, color: textColor),
                 );
               } else {
                 // 接続なし
                 return Text(
                   'インターネット接続が確認できませんでした。',
-                  style: TextStyle(fontSize: 18,color:textColor),
+                  style: TextStyle(fontSize: 18, color: textColor),
                 );
               }
             },
           ),
-          Icon(Icons.arrow_downward_sharp,color: textColor,),
+          Icon(
+            Icons.arrow_downward_sharp,
+            color: textColor,
+          ),
         ],
       ),
     );

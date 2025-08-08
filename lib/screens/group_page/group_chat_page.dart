@@ -1,9 +1,12 @@
+import 'package:cordial/screens/group_page/widget/invitation_dialog.dart';
 import 'package:cordial/services/database_write.dart';
 import 'package:flutter/material.dart';
 import 'package:cordial/screens/group_page/widget/group_chat_timeline.dart';
+import 'package:cordial/screens/group_page/widget/group_menu.dart';
 import 'package:cordial/widgets/icon.dart';
 import 'package:vibration/vibration.dart';
 import 'package:cordial/data_models/group.dart';
+import 'package:cordial/navigation/page_transitions.dart';
 
 // グループチャットのページ
 class GroupChatPage extends StatefulWidget {
@@ -36,6 +39,9 @@ class GroupChatPageState extends State<GroupChatPage> {
   // 使用するAI
   int selectedAi = 0;
 
+  // メッセージを送信中か否か
+  bool isSendingNow = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,9 +53,37 @@ class GroupChatPageState extends State<GroupChatPage> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,color: Colors.white,),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.person_add,
+              color: Colors.white,
+            ),
+            onPressed: () async {
+              await invitationDialog(context, widget.groupInfo.id);
+            },
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.list_outlined,
+              color: Colors.white,
+            ),
+            onPressed: () async {
+              await PageTransitions.fromRight(
+                  onUnderBar: true,
+                  targetWidget: GroupMenu(
+                    groupInfo: widget.groupInfo,
+                  ),
+                  context: context);
+            },
+          ),
+        ],
         backgroundColor: widget.groupInfo.backgroundColor,
         elevation: 0,
         centerTitle: true,
@@ -74,6 +108,7 @@ class GroupChatPageState extends State<GroupChatPage> {
                     borderRadius: BorderRadius.circular(25), // 角を丸くする
                   ),
                   child: TextField(
+                    enabled: !isSendingNow,
                     controller: _textController,
                     maxLength: 200,
                     buildCounter: (
@@ -150,26 +185,43 @@ class GroupChatPageState extends State<GroupChatPage> {
                       child: InkWell(
                         // InkWellでタップ可能にし、波紋エフェクトを追加
                         borderRadius: BorderRadius.circular(25),
-                        onTap: () {
+                        onTap: () async {
+                          // 現在送信中なら無視
+                          if (isSendingNow) return;
+
                           // 投稿を追加
                           if (_textController.text.isNotEmpty) {
                             // キーボードを閉じる
                             FocusScope.of(context).unfocus();
+                            setState(() {
+                              isSendingNow = true;
+                            });
                             // 投稿を追加
-                            DatabaseWrite.addGroupPost(widget.groupInfo.id, _textController.text, selectedAi);
+                            await DatabaseWrite.addGroupPost(
+                                widget.groupInfo.id,
+                                _textController.text,
+                                selectedAi);
+                            setState(() {
+                              isSendingNow = false;
+                            });
                             // テキストをクリア
                             _textController.text = "";
                           }
                         },
-                        child: const Padding(
-                          // アイコンにパディングを追加
-                          padding: EdgeInsets.all(12),
-                          child: Icon(
-                            Icons.send,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
+                        // 送信中ならロードアニメーション
+                        child: isSendingNow
+                            ? CircularProgressIndicator(
+                                color: Colors.white70,
+                                strokeWidth: 2.5,
+                              )
+                            : const Padding(
+                                padding: EdgeInsets.all(12),
+                                child: Icon(
+                                  Icons.send,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
                       ),
                     ),
                   );

@@ -10,6 +10,9 @@ class Group
   // グループ名
   String name;
 
+  // リーダーのid
+  String leaderId;
+
   // アイコン(flutterのIconを使用する)
   IconData icon;
 
@@ -25,6 +28,7 @@ class Group
   Group({
     required this.id,
     required this.name,
+    required this.leaderId,
     required this.icon,
     required this.backgroundColor,
     required this.numPeople,

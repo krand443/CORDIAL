@@ -11,7 +11,10 @@ class CustomAppbar extends StatelessWidget {
   // 末尾アイコン
   final List<Widget>? actions;
 
-  const CustomAppbar({super.key, required this.titleText,this.leading, this.actions});
+  // タイトルを押した場合の関数
+  final VoidCallback? onTap;
+
+  const CustomAppbar({super.key, required this.titleText,this.leading, this.actions, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +32,15 @@ class CustomAppbar extends StatelessWidget {
           bottom: Radius.circular(0),
         ),
       ),
-      title: Text(
-        titleText,
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.onSurface,
+      title: GestureDetector(
+        onTap: onTap,
+        child: Text(
+          titleText,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
       ),
 

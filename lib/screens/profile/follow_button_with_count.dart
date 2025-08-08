@@ -121,11 +121,11 @@ class FollowCountState extends State<FollowCount> {
           borderRadius: BorderRadius.circular(20),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        minimumSize: Size(0, 35),
+        minimumSize: const Size(0, 35),
       ),
       child: Row(
         children: [
-          Text('編集'),
+          const Text('編集'),
           Image.asset(
             "assets/edit_icon.png",
             width: 35,

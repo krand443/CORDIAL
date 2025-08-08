@@ -17,7 +17,7 @@ class TimelinePageState extends State<TimelinePage> {
   final ScrollController _scrollController = ScrollController();
 
   // 画面をリロード
-  Future reload() async {
+  Future _reload() async {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
@@ -35,12 +35,19 @@ class TimelinePageState extends State<TimelinePage> {
       // 投稿一覧
       body: RefreshIndicator(
         color: Theme.of(context).colorScheme.tertiary,
-        onRefresh: reload,
+        onRefresh: _reload,
         child: CustomScrollView(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             CustomAppbar(
+              onTap: () {
+                _scrollController.animateTo(
+                  0.0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                );
+              },
               titleText: "タイムライン",
               leading: IconButton(
                 icon: Icon(Icons.menu,

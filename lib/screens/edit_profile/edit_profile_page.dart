@@ -68,7 +68,6 @@ class EditProfilePageState extends State<EditProfilePage> {
             children: [
               Stack(
                 children: [
-
                   //　背景画像
                   Container(
                     padding: const EdgeInsets.only(bottom: 30),
@@ -293,7 +292,7 @@ class EditProfilePageState extends State<EditProfilePage> {
     // プロフィール画面へ遷移
     if (!mounted) return;
     Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const RootPage(selectTab: 1)),
+      MaterialPageRoute(builder: (context) => const RootPage(selectTab: 3)),
       (route) => false,
     );
   }

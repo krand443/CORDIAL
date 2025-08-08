@@ -27,16 +27,28 @@ class UnderBar extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                      padding: const EdgeInsets.symmetric(horizontal: 17),
                       tooltip: 'HOME',
                       icon: Icon(
                         Icons.home,
-                        size: 40,
+                        size: 35,
                         color: currentIndex == 0
                             ? Theme.of(context).colorScheme.tertiaryContainer
                             : Theme.of(context).colorScheme.onSurface,
                       ),
                       onPressed: () => onTap(0),
+                    ),
+                    IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 17),
+                      tooltip: 'GROUP',
+                      icon: Icon(
+                        Icons.emoji_events,
+                        size: 35,
+                        color: currentIndex == 1
+                            ? Theme.of(context).colorScheme.tertiaryContainer
+                            : Theme.of(context).colorScheme.onSurface,
+                      ),
+                      onPressed: () => onTap(1),
                     ),
                   ],
                 ),
@@ -56,11 +68,11 @@ class UnderBar extends StatelessWidget {
                       icon: Icon(
                         Icons.group,
                         size: 35,
-                        color: currentIndex == 1
+                        color: currentIndex == 2
                             ? Theme.of(context).colorScheme.tertiaryContainer
                             : Theme.of(context).colorScheme.onSurface,
                       ),
-                      onPressed: () => onTap(1),
+                      onPressed: () => onTap(2),
                     ),
                     IconButton(
                       padding: const EdgeInsets.symmetric(horizontal: 17),
@@ -68,11 +80,11 @@ class UnderBar extends StatelessWidget {
                       icon: Icon(
                         Icons.person,
                         size: 35,
-                        color: currentIndex == 2
+                        color: currentIndex == 3
                             ? Theme.of(context).colorScheme.tertiaryContainer
                             : Theme.of(context).colorScheme.onSurface,
                       ),
-                      onPressed: () => onTap(2),
+                      onPressed: () => onTap(3),
                     ),
                   ],
                 ),
