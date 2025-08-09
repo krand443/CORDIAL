@@ -1,16 +1,47 @@
-# cordial
+# Project CORDIAL
 
-A new Flutter project.
+## 概要
+Project CORDIALは、AIとの対話を通してユーザーが自分自身を表現しやすくするSNSプラットフォームです。  
+自己表現が苦手な方や、誰かにちょっと話したいことがある時に、  
+「AIと会話する」という環境を提供します。投稿には必ずAIが応答し、その様子は他のユーザーも閲覧することができます。
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 作成動機
+開発者はかつてDiscord Bot「エレメイ」を開発・運用し、ユーザーがAIとの会話を通じて、  
 
-A few resources to get you started if this is your first Flutter project:
+- 日常の報告  
+- 好きなものの紹介  
+- 悩みの共有  
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+など、気軽に自分を表現していることに着目しました。  
+直接人に伝えるほどではないことも、「AIとの会話」を建前に安心して共有でき、  
+AIの存在が自己開示の心理的ハードルを下げていると感じました。
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+この仕組みをSNSに応用することで、  
+- 一人で悩みを抱えがちな人  
+- 自己表現が苦手な人  
+
+にも優しいコミュニケーションの場を提供したいと考えています。
+
+---
+
+## 特徴
+- AIが必ず一つ返信することで、ユーザーの「発信」に安心感を持たせます
+- ユーザーの投稿は全ユーザーが閲覧可能な公開スレッドとして表示されます
+- 会話の形式は「AIに話しかける」ことで他者にも自然に自己表現できる形です
+
+---
+
+## AI応答の種類
+- **共感・受容型AI** : 一緒に悩みや気持ちに寄り添います  
+- **厳しいアドバイス型AI** : 客観的かつ厳しめな意見をくれます  
+- **ポジティブ応援型AI** : 楽しい話やうれしい報告を全力で肯定します  
+
+---
+
+## システム構成
+- 投稿ごとにAIから1つ返信が必ず返ります
+- スレッド（投稿）形式のコミュニケーション
+- シンプルな画面遷移
+
