@@ -63,7 +63,9 @@ class GroupMenuState extends State<GroupMenu> {
                               color: Colors.red,
                             ),
                             title: const Text('グループを削除する'),
-                            onTap: () {},
+                            onTap: () {
+                              _leaveGroupDialog(true);
+                            },
                           ),
                         )
                       : const SizedBox(),
@@ -76,7 +78,7 @@ class GroupMenuState extends State<GroupMenu> {
                       ),
                       title: const Text('グループを脱退する'),
                       onTap: () {
-                        leaveGroupDialog();
+                        _leaveGroupDialog();
                       },
                     ),
                   ),
@@ -105,8 +107,8 @@ class GroupMenuState extends State<GroupMenu> {
     );
   }
 
-  // グループ退会ダイアログ
-  Future<void> leaveGroupDialog() async {
+  // グループ退会ダイアログ(boolでdeleteがtrueなら退会ボタンへ)
+  Future<void> _leaveGroupDialog([bool delete = false]) async {
     await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -118,16 +120,19 @@ class GroupMenuState extends State<GroupMenu> {
                 borderRadius: BorderRadius.circular(20.0),
               ),
               // タイトル
-              title: const Text(
-                'グループ退会',
+              title: Text(
+                delete ? 'グループ削除' : 'グループ退会',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20),
+                style: const TextStyle(fontSize: 20),
               ),
               // コンテンツ（テキストフィールドとキャンセルボタン）
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('グループを退会します。よろしいですか？※再入会するには招待をしてもらう必要がります。'),
+                  delete
+                      ? const Text('グループを削除します。よろしいですか？※一度削除したグループは二度と復元できません。')
+                      : const Text(
+                          'グループを退会します。よろしいですか？※再入会するには招待をしてもらう必要がります。'),
                   const SizedBox(
                     height: 30,
                   ),
@@ -138,7 +143,12 @@ class GroupMenuState extends State<GroupMenu> {
                         onPressed: () async {
                           // 画面操作を無効
                           _screenLockController.show();
-                          await _leaveGroup();
+                          if(delete){
+                            await _deleteGroup();
+                          }
+                          else{
+                            await _leaveGroup();
+                          }
                           _screenLockController.hide();
 
                           // グループ一覧に戻る
@@ -185,7 +195,20 @@ class GroupMenuState extends State<GroupMenu> {
       DocumentReference groupRef =
           db.collection('groups').doc(widget.groupInfo.id);
 
+      // もし、メンバーが自分だけだったらグループごと削除する
+      final countSnap = await groupRef.collection('members').count().get();
+      if(countSnap.count == 1){
+        await _deleteGroup();
+        return;
+      }
+
       await db.runTransaction((transaction) async {
+        // グループ側のカウントを減らす
+        final decrementNumPeople = groupRef;
+        transaction.update(decrementNumPeople, {
+          'numPeople': FieldValue.increment(-1),
+        });
+
         // グループ側を削除
         final deleteUserGroup = groupRef.collection('members').doc(uid);
         transaction.delete(deleteUserGroup);
@@ -200,6 +223,47 @@ class GroupMenuState extends State<GroupMenu> {
       });
     } catch (e) {
       print('\x1B[31m$e\x1B[0m');
+    }
+  }
+
+  // グループ消去
+  Future<void> _deleteGroup() async {
+    try {
+      final FirebaseFirestore db = FirebaseFirestore.instance;
+      await db.collection('groups').doc(widget.groupInfo.id).delete();
+      _deleteAllMembers(widget.groupInfo.id);
+    } catch (e) {
+      print('\x1B[31m$e\x1B[0m');
+    }
+  }
+
+  // メンバーを全削除
+  Future<void> _deleteAllMembers(String groupId) async {
+    final FirebaseFirestore db = FirebaseFirestore.instance;
+    final CollectionReference membersRef = db.collection('groups').doc(groupId).collection('members');
+
+    const int batchSize = 100;  // 一度に削除する数
+
+    while (true) {
+      final QuerySnapshot snapshot = await membersRef.limit(batchSize).get();
+
+      if (snapshot.docs.isEmpty) {
+        // もうドキュメントがないから終了
+        break;
+      }
+
+      final WriteBatch batch = db.batch();
+
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
+
+      // もし取得したドキュメント数がbatchSize未満ならもう削除完了
+      if (snapshot.docs.length < batchSize) {
+        break;
+      }
     }
   }
 }
@@ -251,9 +315,7 @@ class _MemberWidgetState extends State<_MemberWidget>
     _scrollController.addListener(() {
       print(_scrollController.position.pixels);
       if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent -
-                  300 // 画面の縦の高さは: 783.2727272727273
-          &&
+              _scrollController.position.maxScrollExtent - 300 &&
           !_isLoading &&
           !_isShowAll) {
         userSummaryAdd();

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cordial/screens/group_page/widget/group_bar_widget.dart';
 import 'package:cordial/data_models/group.dart';
@@ -207,6 +209,27 @@ class MakeGroupPageState extends State<MakeGroupPage> {
               ),
             ),
             onPressed: () async{
+              // 30個グループに入っていたら作成不可
+              final FirebaseFirestore db = FirebaseFirestore.instance;
+              final joinedGroupsCountSnapshot  = await db
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser!.uid)
+                  .collection('groups')
+                  .count()
+                  .get();
+              final int joinedGroupsCount = joinedGroupsCountSnapshot.count ?? 0;
+              const int maxGroupCount = 30;
+              if(joinedGroupsCount >= maxGroupCount){
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('同時に参加できるグループは$maxGroupCount個までです。'),
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+                return;
+              }
+
+
               if(_textController.text.trim().isEmpty)return;
 
               // 画面操作を無効

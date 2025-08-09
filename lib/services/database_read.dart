@@ -355,7 +355,6 @@ class DatabaseRead {
   // 所属グループを返す
   static Future<List<Group>?> joinedGroups() async {
     try {
-
       var result = await FirebaseFirestore.instance
           .collection('users')
           .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -366,18 +365,29 @@ class DatabaseRead {
       List<Group> groups = [];
 
       // 並列で group ドキュメントを取得
-      List<Future<DocumentSnapshot>> futures = result.docs.map((data) {
-        return FirebaseFirestore.instance
-            .collection('groups')
-            .doc(data.id)
-            .get();
+      List<Future<DocumentSnapshot<Map<String, dynamic>>?>> futures = result.docs.map((data) async {
+        try {
+          return await FirebaseFirestore.instance
+              .collection('groups')
+              .doc(data.id)
+              .get();
+        } catch (e) {
+          // ここでnullならもう存在しない
+          return null;
+        }
       }).toList();
 
-      List<DocumentSnapshot> groupInfos = await Future.wait(futures);
+      var groupInfos = await Future.wait(futures);
 
       for (int i = 0; i < groupInfos.length; i++) {
         var groupInfo = groupInfos[i];
         var data = result.docs[i];
+
+        if (groupInfo == null || groupInfo.exists == false) {
+          // 存在しない、ユーザーのgroupsサブコレクションから削除
+          await data.reference.delete();
+          continue;
+        }
 
         if (groupInfo['name'] == null || groupInfo['numPeople'] == null) continue;
 

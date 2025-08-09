@@ -176,6 +176,15 @@ Future<String> _joinGroup(String invitationId) async {
     // グループを追加
     try {
       await db.runTransaction((transaction) async {
+
+        // グループ側のカウントを増やす
+        final incrementNumPeople = db
+            .collection('groups')
+            .doc(invitationDoc['groupId']);
+        transaction.update(incrementNumPeople, {
+          'numPeople': FieldValue.increment(1),
+        });
+
         // グループ側にメンバーとして追加
         final addUserToGroup = db
             .collection('groups')
@@ -197,6 +206,7 @@ Future<String> _joinGroup(String invitationId) async {
         });
       });
     } catch (e) {
+      print(e);
       return 'グループの参加に失敗しました。';
     }
 
