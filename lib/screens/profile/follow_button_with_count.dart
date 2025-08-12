@@ -41,7 +41,11 @@ class FollowCountState extends State<FollowCount> {
   // フォロー,フォロワー数を取得
   Future _setFollowCount() async {
     // データ取得を待つ
-    _profile = await widget.profileFuture;
+    if (widget.profileFuture != null) {
+      _profile = await widget.profileFuture!;
+    } else {
+      _profile = null;
+    }
 
     if (!mounted) return;
     setState(() {
@@ -87,8 +91,8 @@ class FollowCountState extends State<FollowCount> {
                   targetWidget: FollowListPage(userId: widget.userId,), context: context);
             },
             child: Text(
-              "フォロー${follows ?? "..."}人\n"
-              "フォロワー${followers ?? "..."}人",
+              'フォロー${follows ?? '...'}人\n'
+              'フォロワー${followers ?? '...'}人',
               style: const TextStyle(
                 fontSize: 12,
                 color: Colors.black54,
@@ -127,7 +131,7 @@ class FollowCountState extends State<FollowCount> {
         children: [
           const Text('編集'),
           Image.asset(
-            "assets/edit_icon.png",
+            'assets/edit_icon.png',
             width: 35,
             height: 35,
             color: Colors.white,

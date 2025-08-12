@@ -28,7 +28,7 @@ class MakeGroupPageState extends State<MakeGroupPage> {
       id: '',
       name: '新しいグループ',
       leaderId: '',
-      icon: Icons.star,
+      iconCodePoint: Icons.star.codePoint,
       backgroundColor: Colors.red.shade600,
       numPeople: 1,
       lastAction: null,
@@ -115,7 +115,7 @@ class MakeGroupPageState extends State<MakeGroupPage> {
                         final icon = await showIconPicker(context);
                         if (icon != null) {
                           setState(() {
-                            _group.icon = icon;
+                            _group.iconCodePoint = icon.codePoint;
                           });
                         }
                       },
@@ -235,7 +235,7 @@ class MakeGroupPageState extends State<MakeGroupPage> {
               // 画面操作を無効
               _screenLockController.show();
 
-              await DatabaseWrite.makeGroup(_group.name, _group.icon, _group.backgroundColor);
+              await DatabaseWrite.makeGroup(_group.name, _group.iconCodePoint, _group.backgroundColor);
 
               if(!mounted)return;
 

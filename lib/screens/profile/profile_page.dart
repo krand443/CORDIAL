@@ -83,7 +83,7 @@ class ProfilePageState extends State<ProfilePage> {
               child: Align(
                 alignment: Alignment.topCenter,
                 child: Padding(
-                  padding: EdgeInsets.only(top: 5),
+                  padding: const EdgeInsets.only(top: 5),
                   child: ProfileCard(
                     profileFuture: _profileFuture,
                     userId: _userId!,

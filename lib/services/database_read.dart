@@ -259,7 +259,6 @@ class DatabaseRead {
           userSummaries: userSummaries, lastVisible: result.docs.last);
     } catch (e) {
       print('\x1B[31m$e\x1B[0m');
-      print('\x1B[31m$e\x1B[0m');
     }
 
     return null;
@@ -396,10 +395,7 @@ class DatabaseRead {
             id: data.id,
             name: groupInfo['name'],
             leaderId: groupInfo['leaderId'] ?? '',
-            icon: IconData(
-              (groupInfo['icon'] as int?) ?? Icons.star.codePoint,
-              fontFamily: 'MaterialIcons',
-            ),
+            iconCodePoint: (groupInfo['icon'] as int?) ?? Icons.star.codePoint,
             backgroundColor: Color(
               (groupInfo['backgroundColor'] as int?) ?? Colors.red.shade600.value,
             ),
@@ -496,45 +492,3 @@ class DatabaseRead {
     return false;
   }
 }
-
-/*// /// /// /// /// /// /// 以下firebaseDB全体構造// /// /// /// /// /// /// /// /// /// /// /
-
-/users/{userId}                          // 例:user001
-├── name: String                         // 田中太郎
-├── iconUrl: String (URL)
-├── nationality: String                  // Japan
-├── /profile
-│   ├── introduction: String             // 自己紹介(100文字程度)
-│   ├── backgroundPath: String             // 背景
-│   ├── lastAction: Timestamp
-│   ├── followCount: int
-│   └── followerCount: int
-├── /hidden
-│   └── {hiddenUserId}: {}               // 非表示ユーザーリスト
-├── /follows
-│   ├─── {followsUserId}                // フォローしているユーザーのID
-│       └── followedAt: Timestamp
-├─── /followers
-    ├─── {followerUserId}               // フォロワーのユーザーID
-        └── followedAt: Timestamp
-
-
-/posts/{postId}                          // 例:post001
-├── postedAt: Timestamp
-├── userid: String                       // 投稿者ID
-├── text: String                         // 本文
-├── selectedAiId: int                    // 返答したAIid
-├── response: String                     // AIからの返信
-├── nice: int
-├── /niceList
-│   └── {userId}: {}                     // いいねしたユーザー
-├─── /replies
-    ├─── {replyId}                       // reply001
-        ├── repliedAt: Timestamp
-        ├── userid: String               // リプライ投稿者ID
-        ├── text: String
-        ├── nice: int
-        └── /niceList
-            └── {userId}: {}             // リプライにいいねしたユーザー
-
- */

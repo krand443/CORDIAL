@@ -4,7 +4,6 @@ import 'package:cordial/screens/group_page/widget/group_post_card.dart';
 import 'package:cordial/services/database_read.dart';
 import 'package:cordial/data_models/timeline.dart';
 import 'package:cordial/data_models/post.dart';
-import 'package:cordial/widgets/admob_widgets.dart';
 import 'package:cordial/utils/network_status.dart';
 import 'package:rive/rive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -63,16 +62,6 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
         .orderBy('postedAt', descending: true)
         .limit(1)
         .snapshots();
-
-    // 上の方までまでスクロールをしたとき更新
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent - 300 &&
-          !isLoading &&
-          !isShowAll) {
-        _timelineAdd();
-      }
-    });
   }
 
   // タイムラインの初期化
@@ -110,49 +99,51 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
 
   // 新しい投稿を画面に追加する関数
   Future<void> _newPostAdd(DocumentChange<Object?> change) async {
-    final data = change.doc.data() as Map<String, dynamic>;
-    print('新しい投稿: ${data['text']}');
+    try{
+      final data = change.doc.data() as Map<String, dynamic>;
 
-    final postId = change.doc.id;
-    final userId = data['userid'];
+      final postId = change.doc.id;
+      final userId = data['userid'];
 
-    final userFuture =
-        FirebaseFirestore.instance.collection('users').doc(userId).get();
+      final userFuture =
+      FirebaseFirestore.instance.collection('users').doc(userId).get();
 
-    final results = await Future.wait([userFuture]);
+      final results = await Future.wait([userFuture]);
 
-    // Postオブジェクトを作成して返す
-    final post = Post(
-      postedAt:
-          ChangeFormat.timeAgoFromTimestamp(data['postedAt'] as Timestamp),
-      id: postId,
-      userId: userId,
-      userName: results[0]['name'] ?? 'unknown',
-      iconUrl: results[0]['iconUrl'],
-      postText: data['text'] ?? '',
-      selectedAiId: data['selectedAiId'] ?? 0,
-      response: data['response'] ?? '',
-      nice: 0,
-      isNice: false,
-    );
+      // Postオブジェクトを作成して返す
+      final post = Post(
+        postedAt:
+        ChangeFormat.timeAgoFromTimestamp(data['postedAt'] as Timestamp),
+        id: postId,
+        userId: userId,
+        userName: results[0]['name'] ?? 'unknown',
+        iconUrl: results[0]['iconUrl'],
+        postText: data['text'] ?? '',
+        selectedAiId: data['selectedAiId'] ?? 0,
+        response: data['response'] ?? '',
+        nice: 0,
+        isNice: false,
+      );
 
-    setState(() {
-      newPosts.insert(0, post);
-    });
-
-    // 最新の投稿を閲覧中なら
-    // スクロールを一番下へ
-    if (_scrollController.hasClients) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollController.animateTo(
-          _scrollController.position.minScrollExtent,
-          duration: const Duration(milliseconds: 1000),
-          curve: Curves.easeOut,
-        );
+      setState(() {
+        newPosts.insert(0, post);
       });
-    }
 
-    return;
+      // 最新の投稿を閲覧中なら
+      // スクロールを一番下へ
+      if (_scrollController.hasClients) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollController.animateTo(
+            _scrollController.position.minScrollExtent,
+            duration: const Duration(milliseconds: 1000),
+            curve: Curves.easeOut,
+          );
+        });
+      }
+    }
+    catch(e){
+      print('\x1B[31m$e\x1B[0m');
+    }
   }
 
   // タイムラインを追加する関数
@@ -258,51 +249,17 @@ class GroupChatTimelineState extends State<GroupChatTimeline>
 
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-        childCount: (() {
-          final postCount = timeline!.posts.length;
-          final adCount = (postCount / 7).floor();
-          return postCount + adCount + 1; // +1: ローディング
-        })(),
-        // 最後にローディング用ウィジェットを1つ追加
-        (BuildContext context, int index) {
-          // 表示する投稿数
-          final postCount = timeline!.posts.length;
-
-          // 投稿と広告の総アイテム数を計算
-          const adInterval = 7; // ADを数投稿ごとに挟む
-          final adCount = (postCount / adInterval).floor();
-          final totalItemCount = postCount + adCount + 1; // +1 ローディング
-
-          if (index == totalItemCount - 1) {
-            // 最後に読み込みを追加する
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 5),
-                child: !isShowAll
-                    // 読み込みアニメーション
-                    ? const CircularProgressIndicator(
-                        color: Colors.blue,
-                        backgroundColor: Colors.transparent,
-                      )
-                    : const SizedBox.shrink(), // falseのときは何も表示しない
-              ),
-            );
-          }
-
-          // 広告を挿入する位置かどうかを判定
-          if ((index + 1) % (adInterval + 1) == 0) {
-            return AdMob.getBannerAdUnit(); // 広告ウィジェット
-          }
-
-          // 実際のポストのインデックスを算出
-          final adsBefore = (index / (adInterval + 1)).floor();
-          final postIndex = index - adsBefore;
-
+            (BuildContext context, int index) {
+          final post = timeline!.posts[index];
           return GroupPostCard(
-              groupId: widget.groupId, post: timeline!.posts[postIndex]);
+            groupId: widget.groupId,
+            post: post,
+          );
         },
+        childCount: timeline!.posts.length,
       ),
     );
+
   }
 
   // タイムラインが取得できなかった場合に使用するメッセージ

@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cordial/widgets/custom_appbar.dart';
-import 'package:cordial/screens/timeline/change_theme.dart';
 import 'package:cordial/screens/login/login_page.dart';
-import 'package:cordial/navigation/page_transitions.dart';
 import 'package:cordial/screens/license_page.dart';
+
+import 'change_theme_sheet.dart';
 
 // タイムラインから操作できるメニュー
 class TimelineMenu extends StatelessWidget {
@@ -35,9 +35,12 @@ class TimelineMenu extends StatelessWidget {
                           leading: const Icon(Icons.color_lens_outlined),
                           title: const Text('テーマ設定'),
                           onTap: () {
-                            PageTransitions.fromBottom(
-                                targetWidget: const ChangeTheme(),
-                                context: context);
+                            showModalBottomSheet(
+                              context: context,
+                              backgroundColor: Colors.transparent, // 背景を透明にして角丸を有効化
+                              isScrollControlled: true,
+                              builder: (context) => const ChangeThemeSheet(),
+                            );
                           },
                         ),
                       ),

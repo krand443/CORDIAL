@@ -48,7 +48,6 @@ class SelectBackgroundPageState extends State<SelectBackgroundPage>{
                 setState(() {
                   _selectedImage = path;
                 });
-                // 選択後の処理があればここに追加（例: Navigator.popで返す）
               },
               child: Stack(
                 children: [

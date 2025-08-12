@@ -37,6 +37,8 @@ class GroupPageState extends State<GroupPage> {
     });
   }
 
+  bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -45,7 +47,25 @@ class GroupPageState extends State<GroupPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           CustomAppbar(
-            titleText: "グループ",
+            // 再読込アイコン
+            leading: IconButton(
+              icon: Icon(
+                Icons.refresh,
+                color: Theme.of(context).colorScheme.onSurface,
+                size: 27,
+              ),
+              onPressed: () async {
+                if(isLoading)return;
+
+                setState(() {
+                  _groups = null;
+                });
+                isLoading = true;
+                await fetchGroups();
+                isLoading = false;
+              },
+            ),
+            titleText: 'グループ',
             actions: [
               // グループ参加ボタン
               IconButton(
@@ -104,7 +124,7 @@ class GroupPageState extends State<GroupPage> {
 
   Widget _groupListWidget() {
     if (_groups != null) {
-      if (_groups!.isEmpty) return const Text('まだグループに参加していません。');
+      if (_groups!.isEmpty) return const Text('まだグループに参加していません。',style: TextStyle(color: Colors.grey));
 
       return Column(
         key: ValueKey(_groups!.length),

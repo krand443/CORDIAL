@@ -106,6 +106,6 @@ Future<String> _getInvitationCode(String groupId) async{
     }),
   );
 
-  return response.statusCode == 200 ? response.body : 'ERROR';
+  return response.statusCode == 200 ? response.body : '招待コードの取得に失敗しました。ステータスコード: ${response.statusCode}';
 
 }
