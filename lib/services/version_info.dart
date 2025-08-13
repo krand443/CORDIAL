@@ -14,7 +14,7 @@ class VersionInfo {
       // 設定
       await remoteConfig.setConfigSettings(RemoteConfigSettings(
         fetchTimeout: const Duration(seconds: 10),
-        minimumFetchInterval: Duration.zero, // 開発中は即時反映
+        minimumFetchInterval: const Duration(hours: 3),
       ));
 
       // デフォルト値（フェッチ失敗時用）

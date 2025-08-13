@@ -25,6 +25,13 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+
 android {
     namespace "ruten.cordial.cordial"
     //compileSdk flutter.compileSdkVersion
@@ -60,10 +67,10 @@ android {
 
     signingConfigs {
         release {
-            keyAlias 'my-release-key'
-            keyPassword 'irGrd5QJxRBQ'
-            storeFile file('path/to/my-release-key.jks')
-            storePassword 'キーストアのパスワード'
+            keyAlias keystoreProperties['KEYALIAS']
+            keyPassword keystoreProperties['KEY_PASSWORD']
+            storeFile file(keystoreProperties['STOREFILE'])
+            storePassword keystoreProperties['STORE_PASSWORD']
         }
     }
 

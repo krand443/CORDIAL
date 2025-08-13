@@ -325,6 +325,14 @@ class _LoginPageState extends State<LoginPage> {
                 return;
               }
 
+              // パスワードが6文字以下なら
+              if (_passwordController.text.length < 6) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('パスワードは6文字以上にしてください。')),
+                );
+                return;
+              }
+
               // メールアドレスの形式があってるか確かめる
               if (!EmailValidator.validate(_mailController.text)) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -337,9 +345,17 @@ class _LoginPageState extends State<LoginPage> {
                 _isCreatingAccount = true;
               });
 
-              // アカウントを作成する
-              await _createAccount(
-                  _mailController.text, _passwordController.text);
+              try{
+                // アカウントを作成する
+                await _createAccount(
+                    _mailController.text, _passwordController.text);
+              }
+              catch(e){
+                setState(() {
+                  _isCreatingAccount = false;
+                });
+                return;
+              }
 
               setState(() {
                 _isCreatingAccount = false;
@@ -397,11 +413,11 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
-      print(e);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('アカウントの作成に失敗しました。')),
       );
+      rethrow;
     }
   }
 

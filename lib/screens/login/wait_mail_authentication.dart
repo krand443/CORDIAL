@@ -159,7 +159,7 @@ class _WaitMailAuthenticationState extends State<WaitMailAuthentication> {
         });
         _startCooldown();
       } catch (e) {
-        print("送信エラー: $e");
+        print('送信エラー: $e');
         // エラーハンドリングを追加
       }
     }

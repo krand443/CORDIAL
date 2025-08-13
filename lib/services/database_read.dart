@@ -105,8 +105,7 @@ class DatabaseRead {
         final userFuture =
         FirebaseFirestore.instance.collection('users').doc(userId).get();
 
-        // 二つの要素を待つ
-        final results = await Future.wait([niceFuture, userFuture]);
+        final List<dynamic> results = await Future.wait([niceFuture, userFuture]);
 
         return Post(
             postedAt:
@@ -411,7 +410,7 @@ class DatabaseRead {
         if (b.lastAction == null) return -1;
         return b.lastAction!.compareTo(a.lastAction!); // 新しい順（降順）
       });
-      
+
       return groups;
     } catch (e) {
       print('\x1B[31m$e\x1B[0m');

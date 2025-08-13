@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cordial/widgets/custom_appbar.dart';
 import 'package:cordial/screens/login/login_page.dart';
 import 'package:cordial/screens/license_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'change_theme_sheet.dart';
 
@@ -37,7 +38,8 @@ class TimelineMenu extends StatelessWidget {
                           onTap: () {
                             showModalBottomSheet(
                               context: context,
-                              backgroundColor: Colors.transparent, // 背景を透明にして角丸を有効化
+                              backgroundColor: Colors.transparent,
+                              // 背景を透明にして角丸を有効化
                               isScrollControlled: true,
                               builder: (context) => const ChangeThemeSheet(),
                             );
@@ -57,14 +59,43 @@ class TimelineMenu extends StatelessWidget {
                       Material(
                         color: Colors.transparent, // 背景色
                         child: ListTile(
+                          leading: const Icon(Icons.privacy_tip_outlined),
+                          title: const Text('プライバシーポリシー'),
+                          onTap: () {
+                            _showConfirmDialog(
+                                context,
+                                'プライバシーポリシーのページへ移動しますか？(Webサイトに遷移します)',
+                                'https://doc-hosting.flycricket.io/cordial-privacy-policy/bec0fa86-f04d-4750-95a2-68e44f9e0846/privacy');
+                          },
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent, // 背景色
+                        child: ListTile(
+                          leading: const Icon(Icons.person_off),
+                          title: const Text('アカウント削除'),
+                          onTap: () {
+                            _showConfirmDialog(
+                              context,
+                              'アカウント削除用のページへ移動しますか？(Webサイトに遷移します)',
+                              'https://ruten-studio.sakura.ne.jp/cordial/delete-account/index.html'
+                            );
+                          },
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent, // 背景色
+                        child: ListTile(
                           leading: const Icon(Icons.logout, color: Colors.red),
                           title: const Text('ログアウト'),
                           onTap: () async {
                             if (!context.mounted) return;
                             await FirebaseAuth.instance.signOut();
-                            Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (_) => const LoginPage()),
-                                  (route) => false,
+                            Navigator.of(context, rootNavigator: true)
+                                .pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                  builder: (_) => const LoginPage()),
+                              (route) => false,
                             );
                           },
                         ),
@@ -91,5 +122,48 @@ class TimelineMenu extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _showConfirmDialog(BuildContext context, String text, String url) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('確認'),
+          content: Text(text),
+          actions: [
+            TextButton(
+              child: Text(
+                'はい',
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.tertiaryContainer),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // ダイアログを閉じる
+                _launchUrl(context, url); // URLを開く
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'キャンセル',
+                style: TextStyle(color: Colors.grey),
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _launchUrl(BuildContext context, String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('URLを開けませんでした')),
+      );
+    }
   }
 }
