@@ -14,7 +14,7 @@ class Group
   String leaderId;
 
   // アイコン(flutterのIconを使用する)
-  IconData icon;
+  int iconCodePoint;
 
   // 背景色
   Color backgroundColor;
@@ -29,7 +29,7 @@ class Group
     required this.id,
     required this.name,
     required this.leaderId,
-    required this.icon,
+    required this.iconCodePoint,
     required this.backgroundColor,
     required this.numPeople,
     required this.lastAction,

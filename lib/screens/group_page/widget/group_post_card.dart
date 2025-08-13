@@ -154,7 +154,7 @@ class GroupPostCardState extends State<GroupPostCard> with AutomaticKeepAliveCli
 
                         showCustomDialog(
                             context: context,
-                            onTap: () async{
+                            onTap: (){
                               DatabaseWrite.deleteGroupPost(widget.groupId,_post.id);
 
                               setState(() {

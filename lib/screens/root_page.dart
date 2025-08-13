@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:navigator_scope/navigator_scope.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cordial/screens/timeline/timeline_page.dart';
 import 'package:cordial/screens/profile/profile_page.dart';
 import 'package:cordial/screens/group_page/group_page.dart';
 import 'package:cordial/widgets/under_bar.dart';
 import 'package:cordial/screens/ranking_page.dart';
+import 'package:cordial/screens/login/login_page.dart';
 
 // ログイン後の画面を管理するクラス。複数画面にここから遷移する
 class RootPage extends StatefulWidget {
@@ -20,11 +23,61 @@ class RootPage extends StatefulWidget {
 class RootPageState extends State<RootPage> {
   // 現在選択されているタブのインデックス（0: home,1: ranking, 2: group ,3: profile）
   late int currentTab;
+  
+  // ユーザードキュメントの監視用
+  StreamSubscription<DocumentSnapshot>? _userDocumentSubscription;
 
   @override
   void initState() {
     super.initState();
     currentTab = widget.selectTab; // ここで受け取る
+    
+    // ユーザードキュメントの監視を開始
+    _startUserDocumentMonitoring();
+  }
+
+  @override
+  void dispose() {
+    _userDocumentSubscription?.cancel();
+    super.dispose();
+  }
+
+  // ユーザードキュメントの監視を開始
+  void _startUserDocumentMonitoring() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      _userDocumentSubscription = FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .snapshots()
+          .listen(
+        (documentSnapshot) {
+          // ドキュメントが存在しない、または削除された場合
+          if (!documentSnapshot.exists) {
+            _handleUserDeleted();
+          }
+        },
+        onError: (error) {
+          print('ユーザードキュメント監視エラー: $error');
+          // エラーが発生した場合も安全のためログインページに戻す
+          _handleUserDeleted();
+        },
+      );
+    }
+  }
+
+  // ユーザーが削除された場合の処理
+  void _handleUserDeleted() {
+    // 認証状態をクリア
+    FirebaseAuth.instance.signOut();
+    
+    // ログインページに遷移
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => const LoginPage(),
+      ),
+      (route) => false, // 全てのルートを削除
+    );
   }
 
   // 各タブに対応する Navigator のキー

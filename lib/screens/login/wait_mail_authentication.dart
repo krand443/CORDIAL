@@ -27,7 +27,7 @@ class _WaitMailAuthenticationState extends State<WaitMailAuthentication> {
     _startCooldown();
 
     // 一定時間ごとに認証確認
-    _checkVerifiedTimer = Timer.periodic(const Duration(seconds: 1), (_) => checkEmailVerified());
+    _checkVerifiedTimer = Timer.periodic(const Duration(seconds: 3), (_) => checkEmailVerified());
   }
 
   @override
@@ -159,7 +159,7 @@ class _WaitMailAuthenticationState extends State<WaitMailAuthentication> {
         });
         _startCooldown();
       } catch (e) {
-        print("送信エラー: $e");
+        print('送信エラー: $e');
         // エラーハンドリングを追加
       }
     }

@@ -81,7 +81,7 @@ class _SwipeBackWrapperState extends State<SwipeBackWrapper> {
     if (distance > _threshold) {
       setState(() => _isClosing = true);
       widget.onClose?.call();
-      Navigator.of(context).maybePop();
+      Navigator.of(context).pop();
     } else {
       setState(() => _dragOffset = Offset.zero);
     }

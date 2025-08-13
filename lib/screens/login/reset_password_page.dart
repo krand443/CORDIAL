@@ -66,8 +66,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                               _buildTextField(
                                 controller: _mailController,
                                 label: 'メールアドレス',
-                                textColor:Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
-                                labelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
+                                textColor: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimary
+                                    .withValues(alpha: 0.8),
+                                labelColor: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimary
+                                    .withValues(alpha: 0.8),
                               ),
                               const SizedBox(height: 24),
                               _resetButton(),
@@ -89,7 +95,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   }
 
   // パスワード再設定用関数
+  bool _isSending = false;
+
   Future _resetPassword(String email) async {
+    if (_isSending) return; // 重複防止
+    setState(() => _isSending = true);
     try {
       // 再設定用メールを送信
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
@@ -106,6 +116,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('アカウントが存在しません。')),
       );
+    }finally {
+      if (mounted) setState(() => _isSending = false);
     }
   }
 
@@ -175,8 +187,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide:
-          BorderSide(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.6)), // フォーカス時のボーダー色
+          borderSide: BorderSide(
+              color: Theme.of(context)
+                  .colorScheme
+                  .onPrimary
+                  .withValues(alpha: 0.6)), // フォーカス時のボーダー色
         ),
         contentPadding: const EdgeInsets.symmetric(
             vertical: 12, horizontal: 16), // 内側に余白を追加

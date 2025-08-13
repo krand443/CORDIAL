@@ -36,6 +36,15 @@ class PostPageState extends State<PostPage> {
     });
   }
 
+  @override
+  void dispose() {
+    _textController.dispose();
+    _textValue.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+
   // 最後までスクロールをしたときに投稿を追加するためのコントローラー
   final ScrollController _scrollController = ScrollController();
 

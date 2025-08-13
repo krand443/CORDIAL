@@ -69,7 +69,7 @@ class FollowListPageState extends State<FollowListPage> {
                     Navigator.pop(context);
                   },
                   icon: const Icon(Icons.arrow_back_ios)),
-              titleText: "フォロー",
+              titleText: 'フォロー',
               actions: [
                 IconButton(
                   icon: Icon(Icons.keyboard_double_arrow_right,
@@ -116,7 +116,7 @@ class FollowListPageState extends State<FollowListPage> {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             CustomAppbar(
-              titleText: "フォロワー",
+              titleText: 'フォロワー',
               leading: IconButton(
                 icon: Icon(Icons.keyboard_double_arrow_left,
                     color: Theme.of(context).colorScheme.onSurface),
@@ -220,8 +220,10 @@ class FollowersWidgetState extends State<FollowersWidget>
     _isLoading = true;
 
     UserSummaryList? _userSummaryList = _isFollowing == true
-        ? await DatabaseRead.followList(userId: _userId!,lastVisible: userSummaryList?.lastVisible)
-        : await DatabaseRead.followerList(userId: _userId!,lastVisible: userSummaryList?.lastVisible);
+        ? await DatabaseRead.followList(
+            userId: _userId!, lastVisible: userSummaryList?.lastVisible)
+        : await DatabaseRead.followerList(
+            userId: _userId!, lastVisible: userSummaryList?.lastVisible);
 
     // タイムラインを更新
     if (_userSummaryList != null) {
@@ -277,62 +279,15 @@ class FollowersWidgetState extends State<FollowersWidget>
       );
     } else {
       return userSummaryList == null
-          ? SliverToBoxAdapter(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-              ),
+          ? const SliverToBoxAdapter(
+              child: Text('リストに表示可能なものはありません',style: TextStyle(color: Colors.grey),),
             )
           : SliverList(
               delegate: SliverChildBuilderDelegate(
-                childCount: (() {
-                  final postCount = userSummaryList!.userSummaries.length;
-                  final adCount = (postCount / 7).floor();
-                  return postCount + adCount + 2; // +2: ローディング + 余白
-                })(),
-                // 最後にローディング用ウィジェットを1つ追加
+                childCount: userSummaryList!.userSummaries.length,
                 (BuildContext context, int index) {
-                  // 表示する投稿数
-                  final postCount = userSummaryList!.userSummaries.length;
-
-                  // 投稿と広告の総アイテム数を計算
-                  final adInterval = 7; // ADを数投稿ごとに挟む
-                  final adCount = (postCount / adInterval).floor();
-                  final totalItemCount = postCount + adCount + 2; // +2 は読み込み＋余白
-
-                  if (index == totalItemCount - 2) {
-                    // 最後に読み込みを追加する
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 5),
-                        child: !_isShowAll
-                            // 読み込みアニメーション
-                            ? const CircularProgressIndicator(
-                                color: Colors.blue,
-                                backgroundColor: Colors.transparent,
-                              )
-                            : const SizedBox.shrink(), // falseのときは何も表示しない
-                      ),
-                    );
-                  }
-
-                  // 末端に余白を追加する
-                  if (index == totalItemCount - 1) {
-                    return const SizedBox(
-                      height: 90,
-                    );
-                  }
-
-                  // 広告を挿入する位置かどうかを判定
-                  if ((index + 1) % (adInterval + 1) == 0) {
-                    return null;
-                  }
-
-                  // 実際のインデックスを算出
-                  final adsBefore = (index / (adInterval + 1)).floor();
-                  final cardIndex = index - adsBefore;
-
                   return UserSummaryCard(
-                    userSummary: userSummaryList!.userSummaries[cardIndex],
+                    userSummary: userSummaryList!.userSummaries[index],
                   );
                 },
               ),

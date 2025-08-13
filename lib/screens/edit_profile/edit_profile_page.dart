@@ -283,7 +283,7 @@ class EditProfilePageState extends State<EditProfilePage> {
     try {
       await FirestoreStorage.upload(_pickImage!, "icon");
     } catch (e) {
-      print(e);
+      print('\x1B[31m$e\x1B[0m');
     }
 
     // ユーザー情報を変更

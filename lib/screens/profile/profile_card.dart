@@ -115,9 +115,9 @@ class ProfileCardState extends State<ProfileCard> {
         if (snapshot.connectionState != ConnectionState.done ||
             !snapshot.hasData) {
           result = "..........";
+        }else {
+          result = snapshot.data?.name ?? '..........';
         }
-
-        result = snapshot.data?.name ?? '・・・・';
 
         // ユーザー名を返す（長くても横スクロールで対応）
         return Text(

@@ -21,14 +21,13 @@ class TimelinePageState extends State<TimelinePage> {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => widget, // super.widget ではなく widget
+        pageBuilder: (_, __, ___) => widget,
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),
     );
   }
 
-  // 画面を描画するbuildメソッド（Flutterフレームワークが呼び出す）
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -36,6 +36,12 @@ class GroupChatPageState extends State<GroupChatPage> {
     });
   }
 
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
   // 使用するAI
   int selectedAi = 0;
 
@@ -210,7 +216,7 @@ class GroupChatPageState extends State<GroupChatPage> {
                         },
                         // 送信中ならロードアニメーション
                         child: isSendingNow
-                            ? CircularProgressIndicator(
+                            ? const CircularProgressIndicator(
                                 color: Colors.white70,
                                 strokeWidth: 2.5,
                               )

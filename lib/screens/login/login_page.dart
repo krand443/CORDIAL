@@ -21,8 +21,15 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _mailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  bool _isLoadingLogin = false;
+
   // メールでログイン処理
   Future<void> _login() async {
+    if (_isLoadingLogin) return; // 重複防止
+    setState(() {
+      _isLoadingLogin = true;
+    });
+
     // 両方のTextを取得
     final String username = _mailController.text;
     final String password = _passwordController.text;
@@ -35,10 +42,12 @@ class _LoginPageState extends State<LoginPage> {
         print("ログインしました　${currentUser.email} , ${currentUser.uid}");
 
       // メールアドレス認証がまだなら認証画面へ
-      if(currentUser!.emailVerified == false){
+      if (!mounted) return;
+      if (currentUser!.emailVerified == false) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const WaitMailAuthentication()),
+          MaterialPageRoute(
+              builder: (context) => const WaitMailAuthentication()),
         );
 
         return;
@@ -47,19 +56,29 @@ class _LoginPageState extends State<LoginPage> {
       bool isUserName = await DatabaseRead.isUserName();
 
       // 画面遷移
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
             builder: (context) => isUserName
                 ? const RootPage()
-                : const EditProfilePage(disableCloseIcon: true,)), // ログイン後にホーム画面に遷移
+                : const EditProfilePage(
+                    disableCloseIcon: true,
+                  )), // ログイン後にホーム画面に遷移
       );
     } catch (e) {
       print(e);
+      if (!mounted) return;
       // ログイン失敗時にエラーメッセージを表示
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('ユーザー名またはパスワードが間違っています')),
       );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingLogin = false;
+        });
+      }
     }
   }
 
@@ -85,7 +104,9 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(
             builder: (context) => isUserName
                 ? const RootPage() // 既にアカウントが存在するならメインページに飛ばす
-                : const EditProfilePage(disableCloseIcon: true,)), // ログイン後にホーム画面に遷移
+                : const EditProfilePage(
+                    disableCloseIcon: true,
+                  )), // ログイン後にホーム画面に遷移
       );
     } catch (e) {
       if (!mounted) return;
@@ -111,139 +132,164 @@ class _LoginPageState extends State<LoginPage> {
         centerTitle: true,
         elevation: 0, // アプリバーの影を消す
       ),
-      body: Stack(children: [
-
-        Align(
-          alignment: Alignment.center,
-          child: Transform.scale(
-            scale: 1.5,
-            child: Image.asset(
-              'assets/icon.png',
-              width: 500,
-              height: 500,
+      body: Stack(
+        children: [
+          Align(
+            alignment: Alignment.center,
+            child: Transform.scale(
+              scale: 1.5,
+              child: Image.asset(
+                'assets/icon.png',
+                width: 500,
+                height: 500,
+              ),
             ),
           ),
-        ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Card(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .secondaryContainer
+                              .withValues(alpha: 0.7),
+                          elevation: 10,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // メールアドレス入力欄
+                                _buildTextField(
+                                  controller: _mailController,
+                                  label: 'メールアドレス',
+                                  textColor: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimary
+                                      .withValues(alpha: 0.8),
+                                  labelColor: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimary
+                                      .withValues(alpha: 0.8),
+                                ),
+                                const SizedBox(height: 16),
 
-        LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Card(
-                        color: Theme.of(context).colorScheme.secondaryContainer.withValues(alpha: 0.7),
-                        elevation: 10,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // メールアドレス入力欄
-                              _buildTextField(
-                                controller: _mailController,
-                                label: 'メールアドレス',
-                                textColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
-                                labelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
-                              ),
-                              const SizedBox(height: 16),
+                                // パスワード入力欄
+                                _buildTextField(
+                                  controller: _passwordController,
+                                  label: 'パスワード',
+                                  obscureText: true,
+                                  textColor: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimary
+                                      .withValues(alpha: 0.8),
+                                  labelColor: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimary
+                                      .withValues(alpha: 0.8),
+                                ),
+                                const SizedBox(height: 24),
 
-                              // パスワード入力欄
-                              _buildTextField(
-                                controller: _passwordController,
-                                label: 'パスワード',
-                                obscureText: true,
-                                textColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
-                                labelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
-                              ),
-                              const SizedBox(height: 24),
-
-                              // ログインボタンと新規作成ボタン
-                              Row(
-                                children: [
-                                  Expanded(
-                                    flex: 2,
-                                    child: _loginButton(),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    flex: 1,
-                                    child: _makeAccountLink(),
-                                  ),
-                                ],
-                              ),
-
-                              // パスワードを忘れた際のリンク
-                              _buildForgotPasswordLink(),
-                              const SizedBox(height: 16),
-
-                              // Googleでのログイン
-                              InkWell(
-                                borderRadius: BorderRadius.circular(30),
-                                onTap: _loginGoogle,
-                                child: Ink(
-                                  width: 180,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    image: const DecorationImage(
-                                      image: AssetImage(
-                                          'assets/google_logo.png'),
-                                      fit: BoxFit.contain,
+                                // ログインボタンと新規作成ボタン
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 2,
+                                      child: _loginButton(),
                                     ),
-                                    borderRadius:
-                                    BorderRadius.circular(30),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      flex: 1,
+                                      child: _makeAccountLink(),
+                                    ),
+                                  ],
+                                ),
+
+                                // パスワードを忘れた際のリンク
+                                _buildForgotPasswordLink(),
+                                const SizedBox(height: 16),
+
+                                // Googleでのログイン
+                                InkWell(
+                                  borderRadius: BorderRadius.circular(30),
+                                  onTap: _loginGoogle,
+                                  child: Ink(
+                                    width: 180,
+                                    height: 42,
+                                    decoration: BoxDecoration(
+                                      image: const DecorationImage(
+                                        image: AssetImage(
+                                            'assets/google_logo.png'),
+                                        fit: BoxFit.contain,
+                                      ),
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-      ],),
-
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
   // ログインボタン
   Widget _loginButton() {
     return ElevatedButton(
-      onPressed: _login,
+      onPressed: _isLoadingLogin ? null : _login,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green, // ボタンの色
-        padding: const EdgeInsets.symmetric(vertical: 16), // ボタンの高さを調整
+        backgroundColor: Colors.green,
+        // ボタンの色
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        // ボタンの高さを調整
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16), // ボタンの角を丸く
         ),
-        elevation: 5, // ボタンの影
+        elevation: 5,
+        // ボタンの影
         shadowColor: Colors.black54, // 影の色
       ),
-      child: const SizedBox(
-        width: 200, // 幅を200に設定
-        child: Text(
-          'ログイン',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.white, // テキストの色を白に設定
-          ),
-          textAlign: TextAlign.center, // テキストを中央揃え
-        ),
-      ),
+      child: _isLoadingLogin
+          ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : const SizedBox(
+              width: 200, // 幅を200に設定
+              child: Text(
+                'ログイン',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white, // テキストの色を白に設定
+                ),
+                textAlign: TextAlign.center, // テキストを中央揃え
+              ),
+            ),
     );
   }
 
@@ -256,49 +302,73 @@ class _LoginPageState extends State<LoginPage> {
       },
       child: Text(
         'パスワードを忘れた場合',
-        style: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.6)),
+        style: TextStyle(
+            color:
+                Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.6)),
       ),
     );
   }
 
-  bool _notWaitMakeAccount = true;
+  bool _isCreatingAccount = false;
+
   // 新規作成
   Widget _makeAccountLink() {
     return ElevatedButton(
-      onPressed: _notWaitMakeAccount ?() async {
-        // メールアドレスかパスワードが入力されていないなら
-        if (_mailController.text == "" || _passwordController.text == "") {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('メールアドレスまたはパスワードが入力されていません。')),
-          );
-          return;
-        }
+      onPressed: !_isCreatingAccount
+          ? () async {
+              // メールアドレスかパスワードが入力されていないなら
+              if (_mailController.text == "" ||
+                  _passwordController.text == "") {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('メールアドレスまたはパスワードが入力されていません。')),
+                );
+                return;
+              }
 
-        // メールアドレスの形式があってるか確かめる
-        if (!EmailValidator.validate(_mailController.text)) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('メールアドレスの形式が間違っています。')),
-          );
-          return;
-        }
+              // パスワードが6文字以下なら
+              if (_passwordController.text.length < 6) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('パスワードは6文字以上にしてください。')),
+                );
+                return;
+              }
 
-        setState(() {
-          _notWaitMakeAccount = false;
-        });
+              // メールアドレスの形式があってるか確かめる
+              if (!EmailValidator.validate(_mailController.text)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('メールアドレスの形式が間違っています。')),
+                );
+                return;
+              }
 
-        // アカウントを作成する
-        await _createAccount(_mailController.text, _passwordController.text);
+              setState(() {
+                _isCreatingAccount = true;
+              });
 
-        setState(() {
-          _notWaitMakeAccount = true;
-        });
+              try{
+                // アカウントを作成する
+                await _createAccount(
+                    _mailController.text, _passwordController.text);
+              }
+              catch(e){
+                setState(() {
+                  _isCreatingAccount = false;
+                });
+                return;
+              }
 
-        //認証画面へ
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const WaitMailAuthentication()),
-        );
-      }:null,
+              setState(() {
+                _isCreatingAccount = false;
+              });
+
+              //認証画面へ
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const WaitMailAuthentication()),
+              );
+            }
+          : null,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green, // ボタンの色
         padding: const EdgeInsets.symmetric(vertical: 13), // ボタンの高さを調整
@@ -326,7 +396,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       // アカウント登録
       UserCredential userCredential =
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: passWord,
       );
@@ -338,15 +408,16 @@ class _LoginPageState extends State<LoginPage> {
         if (!mounted) return;
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const WaitMailAuthentication()),
+          MaterialPageRoute(
+              builder: (context) => const WaitMailAuthentication()),
         );
       }
     } catch (e) {
-      print(e);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('アカウントの作成に失敗しました。')),
       );
+      rethrow;
     }
   }
 
@@ -371,8 +442,11 @@ class _LoginPageState extends State<LoginPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide:
-              BorderSide(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.6)), // フォーカス時のボーダー色
+          borderSide: BorderSide(
+              color: Theme.of(context)
+                  .colorScheme
+                  .onPrimary
+                  .withValues(alpha: 0.6)), // フォーカス時のボーダー色
         ),
         contentPadding: const EdgeInsets.symmetric(
             vertical: 12, horizontal: 16), // 内側に余白を追加

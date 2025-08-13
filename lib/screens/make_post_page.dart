@@ -35,7 +35,8 @@ class MakePostPageState extends State<MakePostPage> {
     '初めまして。私はあなたの心に寄り添いたいと思っています。どんなことでも、お話ししてくださったら嬉しいです。',
   ];
 
-  int _selectedAiIndex = int.parse(AppPreferences.load(Variable.selectedAi) ?? '0');
+  int _selectedAiIndex =
+      int.parse(AppPreferences.load(Variable.selectedAi) ?? '0');
 
   @override
   void initState() {
@@ -44,6 +45,13 @@ class MakePostPageState extends State<MakePostPage> {
     _textController.addListener(() {
       setState(() {}); // 入力変更で再描画
     });
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    _selectAiController.dispose();
+    super.dispose();
   }
 
   @override
@@ -151,7 +159,8 @@ class MakePostPageState extends State<MakePostPage> {
           padding: const EdgeInsets.only(top: 10, right: 20),
           child: Showcase(
             key: _showcaseKeys[3],
-            description: '最後にこのボタンで投稿します。投稿内容によってはAIが多くのいいねをつけてくれます！\n※多くの人の目に触れるため、過度な表現はお控えください。',
+            description:
+                '最後にこのボタンで投稿します。投稿内容によってはAIが多くのいいねをつけてくれます！\n※多くの人の目に触れるため、過度な表現はお控えください。',
             child: TextButton(
               onPressed: () {
                 // テキストが入力されていれば実行
@@ -221,7 +230,7 @@ class MakePostPageState extends State<MakePostPage> {
                     child: Transform.scale(
                       scale: _selectAiController.selectedItem == itemIndex
                           ? 1.0
-                          : 0.85,// 中央のアイテムは拡大
+                          : 0.85, // 中央のアイテムは拡大
                       child: CircleAvatar(
                         backgroundImage: AssetImage(images[itemIndex]),
                       ),
@@ -250,14 +259,14 @@ class MakePostPageState extends State<MakePostPage> {
                       color: Theme.of(context)
                           .colorScheme
                           .secondary
-                          .withOpacity(0.7),// 半透明
+                          .withOpacity(0.7), // 半透明
                       borderRadius: BorderRadius.circular(16), // 丸み
                       boxShadow: [
                         BoxShadow(
                           color: Theme.of(context)
                               .colorScheme
                               .onPrimary
-                              .withOpacity(0.1),// 影
+                              .withOpacity(0.1), // 影
                           blurRadius: 5,
                         ),
                       ],
@@ -320,7 +329,7 @@ class MakePostPageState extends State<MakePostPage> {
 
   // 投稿ボタンを押したときに呼ばれる処理
   void _post() {
-    AppPreferences.save(Variable.selectedAi,_selectedAiIndex.toString());
+    AppPreferences.save(Variable.selectedAi, _selectedAiIndex.toString());
 
     Navigator.pop(context); // 先に画面を閉じる
     Future.microtask(() {
@@ -385,39 +394,22 @@ class MakePostPageState extends State<MakePostPage> {
 
   // 入力欄に薄く表示する参考テキストをランダムに生成
   String _randomMessage() {
-    // 0.0～1未満の乱数生成
-    var random = math.Random();
-    // 0~100のパーセンテージに変換
-    double value = random.nextDouble() * 100;
+    final random = math.Random();
+    final value = random.nextInt(5); // 0~4の整数にしてswitchへ
 
-    String result;
-
-    switch (value ~/ 20) {
+    switch (value) {
       case 0:
-        result = "今日は雨だったからテルテル坊主作ったんだ！";
-        break;
-
+        return "今日は雨だったからテルテル坊主作ったんだ！";
       case 1:
-        result = "チラシで手を切っちゃた。痛い";
-        break;
-
+        return "チラシで手を切っちゃた。痛い";
       case 2:
-        result = "気分がいい！とにかく最高！！！";
-        break;
-
+        return "気分がいい！とにかく最高！！！";
       case 3:
-        result = "明日の注射めっちゃ怖い...";
-        break;
-
+        return "明日の注射めっちゃ怖い...";
       case 4:
-        result = "今日は忙しかったからとにかく褒めて！";
-        break;
-
+        return "今日は忙しかったからとにかく褒めて！";
       default:
-        result = "今日はなんだかいい気分!!";
-        break;
+        return "今日はなんだかいい気分!!";
     }
-
-    return result;
   }
 }

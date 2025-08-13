@@ -92,7 +92,6 @@ class _MainState extends State<Main> {
       home: UpgradeAlert(
         // ここにUpgradeAlertウィジェットを追加
         upgrader: Upgrader(
-          debugDisplayAlways: false, // 開発中の確認用
           languageCode: 'ja',
           minAppVersion: VersionInfo.minVersion, // 最低バージョン(これを下回ると強制アップデート)
         ),

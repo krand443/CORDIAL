@@ -88,6 +88,12 @@ class ThemeModel extends ChangeNotifier {
     // enumのnameプロパティを直接使う
     final String saveData = appThemeMode.name;
 
-    await AppPreferences.save(Variable.appThemeMode, saveData);
+    try{
+      await AppPreferences.save(Variable.appThemeMode, saveData);
+    }
+    catch(e){
+      print('\x1B[31m$e\x1B[0m');
+    }
+
   }
 }

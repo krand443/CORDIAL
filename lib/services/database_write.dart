@@ -237,7 +237,7 @@ class DatabaseWrite {
   }
 
   // グループを作成する
-  static Future<void> makeGroup(String name, IconData icon, Color backgroundColor) async {
+  static Future<void> makeGroup(String name, int iconCodePoint, Color backgroundColor) async {
     try {
       final FirebaseFirestore db = FirebaseFirestore.instance;
       final String uid = FirebaseAuth.instance.currentUser!.uid;
@@ -251,7 +251,7 @@ class DatabaseWrite {
         transaction.set(newGroupRef, {
           'leaderId': uid,
           'name': name,
-          'icon': icon.codePoint,
+          'icon': iconCodePoint,
           'backgroundColor': backgroundColor.value,
           'numPeople': 1,
           'lastAction': FieldValue.serverTimestamp(),
@@ -453,43 +453,3 @@ class DatabaseWrite {
     }
   }
 }
-
-/*// /// /// /// /// /// /// 以下firebaseDB全体構造// /// /// /// /// /// /// /// /// /// /// /
-
-/users/{userId}                          // 例:user001
-├── name: String                         // 田中太郎
-├── iconUrl: String (URL)
-├── nationality: String                  // Japan
-├── /profile
-│   ├── introduction: String             // 自己紹介(100文字程度)
-│   ├── lastAction: Timestamp
-│   ├── followCount: int
-│   └── followerCount: int
-├── /hidden
-│   └── {hiddenUserId}: {}               // 非表示ユーザーリスト
-├── /follows
-│   ├─── {followsUserId}                // フォローしているユーザーのID
-│       └── followedAt: Timestamp
-├─── /followers
-    ├─── {followerUserId}               // フォロワーのユーザーID
-        └── followedAt: Timestamp
-
-
-/posts/{postId}                          // 例:post001
-├── postedAt: Timestamp
-├── userid: String                       // 投稿者ID
-├── text: String                         // 本文
-├── response: String                     // AIからの返信
-├── nice: int
-├── /niceList
-│   └── {userId}: {}                     // いいねしたユーザー
-├─── /replies
-    ├─── {replyId}                       // reply001
-        ├── repliedAt: Timestamp
-        ├── userid: String               // リプライ投稿者ID
-        ├── text: String
-        ├── nice: int
-        └── /niceList
-            └── {userId}: {}             // リプライにいいねしたユーザー
-
- */

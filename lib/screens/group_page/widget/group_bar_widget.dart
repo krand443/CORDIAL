@@ -28,15 +28,6 @@ class GroupBarWidgetState extends State<GroupBarWidget>
   @override // スクロールしても状態を保持
   bool get wantKeepAlive => true;
 
-  late final Group _groupInfo;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _groupInfo = widget.groupInfo;
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context); //スクロールしても状態を保持
@@ -49,7 +40,7 @@ class GroupBarWidgetState extends State<GroupBarWidget>
         height: size,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: _groupInfo.backgroundColor,
+            backgroundColor: widget.groupInfo.backgroundColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -62,7 +53,7 @@ class GroupBarWidgetState extends State<GroupBarWidget>
             await PageTransitions.fromRight(
                 onUnderBar: true,
                 targetWidget: GroupChatPage(
-                  groupInfo: _groupInfo,
+                  groupInfo: widget.groupInfo,
                 ),
                 context: context);
 
@@ -77,14 +68,17 @@ class GroupBarWidgetState extends State<GroupBarWidget>
                 width: 10,
               ),
               Icon(
-                _groupInfo.icon,
+                IconData(
+                  widget.groupInfo.iconCodePoint,
+                  fontFamily: 'MaterialIcons',
+                ),
                 color: Colors.white,
-                size: size,
+                size: size-5,// ちょっとだけ小さくする
               ),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  _groupInfo.name,
+                  widget.groupInfo.name,
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.white,
@@ -93,7 +87,7 @@ class GroupBarWidgetState extends State<GroupBarWidget>
               ),
               const Spacer(), // 余白を埋める
               Text(
-                '(${_groupInfo.numPeople})',
+                '(${widget.groupInfo.numPeople})',
                 style: const TextStyle(
                     fontSize: 13,
                     //color: Theme.of(context).colorScheme.onPrimary,
