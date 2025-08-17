@@ -186,7 +186,13 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                                   showCustomDialog(
                                       context: context,
                                       onTap: () async{
-                                        DatabaseWrite.deletePost(_post.id);
+
+                                        if(_parentPostId != null){
+                                          DatabaseWrite.deleteReply(_parentPostId, _post.id);
+                                        }
+                                        else{
+                                          DatabaseWrite.deletePost(_post.id);
+                                        }
 
                                         setState(() {
                                           isDeleted = true;
