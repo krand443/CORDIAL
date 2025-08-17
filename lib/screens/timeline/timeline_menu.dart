@@ -65,7 +65,7 @@ class TimelineMenu extends StatelessWidget {
                             _showConfirmDialog(
                                 context,
                                 'プライバシーポリシーのページへ移動しますか？(Webサイトに遷移します)',
-                                'https://doc-hosting.flycricket.io/cordial-privacy-policy/bec0fa86-f04d-4750-95a2-68e44f9e0846/privacy');
+                                'https://ruten-studio.sakura.ne.jp/cordial/privacypolicy');
                           },
                         ),
                       ),
@@ -78,7 +78,7 @@ class TimelineMenu extends StatelessWidget {
                             _showConfirmDialog(
                               context,
                               'アカウント削除用のページへ移動しますか？(Webサイトに遷移します)',
-                              'https://ruten-studio.sakura.ne.jp/cordial/delete-account/index.html'
+                              'https://ruten-studio.sakura.ne.jp/cordial/delete-account'
                             );
                           },
                         ),

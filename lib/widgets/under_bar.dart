@@ -24,7 +24,7 @@ class UnderBar extends StatelessWidget {
               // 左側のHOMEボタン
               Expanded(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly ,
                   children: [
                     IconButton(
                       padding: const EdgeInsets.symmetric(horizontal: 17),
@@ -60,7 +60,7 @@ class UnderBar extends StatelessWidget {
               // 右側のGROUPとPROFILEボタン
               Expanded(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly ,
                   children: [
                     IconButton(
                       padding: const EdgeInsets.symmetric(horizontal: 17),

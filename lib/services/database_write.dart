@@ -82,6 +82,21 @@ class DatabaseWrite {
     }
   }
 
+  static Future<void> deleteReply(String postId,String replyId) async{
+    try {
+      // ドキュメント削除
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .collection('replies')
+          .doc(replyId)
+          .delete();
+
+    } catch (e) {
+      print('\x1B[31m$e\x1B[0m');
+    }
+  }
+
   // グループでの投稿を追加
   static Future<void> addGroupPost(String groupId,String text,int selectedAiId) async {
     // firebaseFunctionを使用して投稿をDBに入れると同時にAIからの返答も受け取る

@@ -73,14 +73,14 @@ class DatabaseRead {
           newQuery = query.orderBy('postedAt', descending: true);
       }
 
-      // ドキュメントが渡されていたらその次のドキュメントから取得する
-      if (lastVisible != null) {
-        newQuery = newQuery.startAfterDocument(lastVisible);
-      }
-
       // ユーザーIDが渡されてるならそのユーザーで絞り込む
       if (userId != null) {
         newQuery = newQuery.where('userid', isEqualTo: userId);
+      }
+
+      // ドキュメントが渡されていたらその次のドキュメントから取得する
+      if (lastVisible != null) {
+        newQuery = newQuery.startAfterDocument(lastVisible);
       }
 
       // タイムラインを取得

@@ -17,7 +17,8 @@ import 'package:cordial/services/version_info.dart';
 import 'package:cordial/widgets/admob_widgets.dart';
 import 'package:cordial/utils/app_preferences.dart';
 
-Future<void> main() async {
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

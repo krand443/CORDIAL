@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "592077403906-57q7proctqtbhut9vrsifgvgs1ldladm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ruten.cordial.cordial",
+            "certificate_hash": "3960d26ec4cf3579753abc817b439f9b05a7c273"
+          }
+        },
+        {
           "client_id": "592077403906-jkcorqhiq0c5iv7cb419jt6677lipj71.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

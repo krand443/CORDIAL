@@ -216,7 +216,7 @@ class TimelineWidgetState extends State<TimelineWidget>
 
                   // 広告を挿入する位置かどうかを判定
                   if ((index + 1) % (adInterval + 1) == 0) {
-                    if (_userId != null) return null;
+                    if (_userId != null) return const SizedBox();
 
                     return AdMob.getBannerAdUnit(); // 広告ウィジェット
                   }
