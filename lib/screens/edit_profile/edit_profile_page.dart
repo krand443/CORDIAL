@@ -123,7 +123,7 @@ class EditProfilePageState extends State<EditProfilePage> {
                   fontSize: 20, // ここで文字サイズを変更
                 ),
                 decoration: const InputDecoration(
-                  hintText: "ユーザー名を入力",
+                  hintText: 'ユーザー名を入力',
                   contentPadding: EdgeInsets.only(left: 20, right: 20),
                   border: InputBorder.none,
                 ),
@@ -281,7 +281,7 @@ class EditProfilePageState extends State<EditProfilePage> {
 
     // 画像を追加(任意)
     try {
-      await FirestoreStorage.upload(_pickImage!, "icon");
+      await FirestoreStorage.upload(_pickImage!, 'icon');
     } catch (e) {
       print('\x1B[31m$e\x1B[0m');
     }

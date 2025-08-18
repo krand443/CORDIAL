@@ -16,16 +16,21 @@ class TimelinePageState extends State<TimelinePage> {
   // 最後までスクロールをしたときに投稿を追加するためのコントローラー
   final ScrollController _scrollController = ScrollController();
 
+  // 親から呼ぶ(下部バーアイコンを再度タップしたらスクロールを戻すため)
+  void scrollToTop() {
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
+
+  // 画面をリロード
+  int _screenKey = 0;
+
   // 画面をリロード
   Future _reload() async {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => widget,
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
-    );
+    setState(() => _screenKey++);
   }
 
   @override
@@ -47,19 +52,23 @@ class TimelinePageState extends State<TimelinePage> {
                   curve: Curves.easeOut,
                 );
               },
-              titleText: "タイムライン",
+              titleText: 'タイムライン',
               leading: IconButton(
                 icon: Icon(Icons.menu,
                     color: Theme.of(context).colorScheme.onSurface),
                 onPressed: () {
                   PageTransitions.fromLeft(
-                      onUnderBar: true,targetWidget: const TimelineMenu(), context: context);
+                      onUnderBar: true,
+                      targetWidget: const TimelineMenu(),
+                      context: context);
                 },
               ),
             ),
 
             // タイムラインをリストで取得する
-            TimelineWidget(parentScrollController: _scrollController),
+            TimelineWidget(
+                key: ValueKey(_screenKey),
+                parentScrollController: _scrollController),
 
             const SliverToBoxAdapter(
               child: SafeArea(child: SizedBox()),

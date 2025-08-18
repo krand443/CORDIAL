@@ -34,11 +34,31 @@ class RankingPageState extends State<RankingPage>
   // 画面をリロード
   int _weeklyKey = 0;
   int _totalKey = 0;
+
   Future<void> _reloadWeekly() async {
     setState(() => _weeklyKey++);
   }
+
   Future<void> _reloadTotal() async {
     setState(() => _totalKey++);
+  }
+
+  // 親から呼ぶ(下部バーアイコンを再度タップしたらスクロールを戻すため)
+  void scrollToTop() {
+    switch(_tabController.index){
+      case 0:
+        _weeklyScrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      case 1:
+        _totalScrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+    }
   }
 
   @override
@@ -90,7 +110,7 @@ class RankingPageState extends State<RankingPage>
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 TimelineWidget(
-                  key: ValueKey(_weeklyKey),
+                    key: ValueKey(_weeklyKey),
                     parentScrollController: _weeklyScrollController,
                     rankingType: RankingType.weekly),
                 const SliverToBoxAdapter(child: SafeArea(child: SizedBox())),

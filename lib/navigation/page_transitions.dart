@@ -163,7 +163,7 @@ class PageTransitions {
     return showGeneralDialog<T>(
       context: context,
       barrierDismissible: true, // 外側タップで閉じる
-      barrierLabel: "dismiss",
+      barrierLabel: 'dismiss',
       barrierColor: Colors.transparent, // 背景透過
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (_, __, ___) => targetWidget,

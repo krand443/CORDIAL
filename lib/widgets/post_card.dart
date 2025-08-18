@@ -141,7 +141,7 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                     radius: 20,
                     backgroundImage: _post.iconUrl != null
                         ? NetworkImage(_post.iconUrl!) as ImageProvider
-                        : const AssetImage("assets/user_default_icon.png"),
+                        : const AssetImage('assets/user_default_icon.png'),
                   ),
                 ),
               ),
@@ -315,7 +315,7 @@ class PostCardState extends State<PostCard> with AutomaticKeepAliveClientMixin {
                     DatabaseWrite.unNice(_post.id, parentId: _parentPostId);
                   }
                 } catch (e) {
-                  print("アップロードエラー: $e");
+                  print('アップロードエラー: $e');
                 }
               });
             },

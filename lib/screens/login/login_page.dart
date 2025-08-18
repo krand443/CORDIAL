@@ -317,8 +317,8 @@ class _LoginPageState extends State<LoginPage> {
       onPressed: !_isCreatingAccount
           ? () async {
               // メールアドレスかパスワードが入力されていないなら
-              if (_mailController.text == "" ||
-                  _passwordController.text == "") {
+              if (_mailController.text == '' ||
+                  _passwordController.text == '') {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('メールアドレスまたはパスワードが入力されていません。')),
                 );

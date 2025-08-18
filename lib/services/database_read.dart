@@ -11,7 +11,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cordial/enums/ranking_type.dart';
 
-
 class DatabaseRead {
   // タイムラインを取得<以前の最後のドキュメントを参照し返す>
   static Future<Timeline?> timeline(
@@ -64,7 +63,8 @@ class DatabaseRead {
           final DateTime now = DateTime.now();
           final DateTime oneWeekAgo = now.subtract(const Duration(days: 7));
           newQuery = query.where('postedAt', isGreaterThanOrEqualTo: oneWeekAgo)
-              .orderBy('nice', descending: true); // いいね数順
+              .orderBy('nice', descending: true) // いいね数順
+              .orderBy('postedAt', descending: true);
           break;
         case RankingType.total://総合ランキング
           newQuery = query.orderBy('nice', descending: true); // いいね数順
@@ -127,7 +127,7 @@ class DatabaseRead {
       // タイムラインを最後のDocumentSnapshotと返す。
       return Timeline(posts: posts, lastVisible: result.docs.last);
     } catch (e) {
-      print('\x1B[31m$e\x1B[0m');
+      print('ここかなああああああ\x1B[31m$e\x1B[0m');
       return null;
     }
   }

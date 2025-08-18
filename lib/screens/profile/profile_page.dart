@@ -37,14 +37,21 @@ class ProfilePageState extends State<ProfilePage> {
   final ScrollController _scrollController = ScrollController();
 
   // 画面をリロード
+  int _screenKey = 0;
+
+  // 画面をリロード
   Future _reload() async {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => widget, // super.widget ではなく widget
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
+    // プロフィールデータをDBから取得
+    _profileFuture = DatabaseRead.profile(_userId!);
+    setState(() => _screenKey++);
+  }
+
+  // 親から呼ぶ(下部バーアイコンを再度タップしたらスクロールを戻すため)
+  void scrollToTop() {
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
     );
   }
 
@@ -69,6 +76,7 @@ class ProfilePageState extends State<ProfilePage> {
 
                 // タイムラインを取得
                 TimelineWidget(
+                    key: ValueKey(_screenKey),
                     parentScrollController: _scrollController,
                     userId: _userId),
 
@@ -85,6 +93,7 @@ class ProfilePageState extends State<ProfilePage> {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 5),
                   child: ProfileCard(
+                    key: ValueKey(_screenKey),
                     profileFuture: _profileFuture,
                     userId: _userId!,
                   ),
@@ -136,6 +145,7 @@ class ProfilePageState extends State<ProfilePage> {
   // 背景画像を表示する関数
   Widget _backgroundWidget(){
     return FutureBuilder<Profile?>(
+      key: ValueKey(_screenKey),
       future: _profileFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {

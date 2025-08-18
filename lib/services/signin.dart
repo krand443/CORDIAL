@@ -42,7 +42,7 @@ class SignIn
       return 0;
 
     } catch (e) {
-      print("Error during Google Sign In: $e");
+      print('Error during Google Sign In: $e');
       return 1;
     }
   }
