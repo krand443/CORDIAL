@@ -111,7 +111,7 @@ class GroupPostCardState extends State<GroupPostCard> with AutomaticKeepAliveCli
                   radius: 20,
                   backgroundImage: _post.iconUrl != null
                       ? NetworkImage(_post.iconUrl!) as ImageProvider
-                      : const AssetImage("assets/user_default_icon.png"),
+                      : const AssetImage('assets/user_default_icon.png'),
                 ),
               ),
 

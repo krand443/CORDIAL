@@ -93,9 +93,27 @@ class RootPageState extends State<RootPage> {
   NavigatorState get currentNavigator =>
       navigatorKeys[currentTab].currentState!;
 
+  // GlobalKey(関数呼び出し用)
+  final timelineKey = GlobalKey<TimelinePageState>();
+  final rankingKey = GlobalKey<RankingPageState>();
+  final profileKey = GlobalKey<ProfilePageState>();
+
   // タブが選択されたときの処理
   void onTabSelected(int tab) {
-    if (tab == currentTab && currentNavigator.canPop()) {
+    if (tab == currentTab) {
+      // 同じタブをタップしたら、特定の処理を呼び出す
+      switch(tab){
+        case 0:// HOME
+          timelineKey.currentState?.scrollToTop();
+          break;
+        case 1:// ランキング
+          rankingKey.currentState?.scrollToTop();
+          break;
+        case 3:// PROFILE
+          profileKey.currentState?.scrollToTop();
+          break;
+      }
+
       // 同じタブが再度タップされた場合、
       // そのタブ内のルートスタックを一番上（最初の画面）まで戻す。
       currentNavigator.popUntil((route) => route.isFirst);
@@ -132,13 +150,14 @@ class RootPageState extends State<RootPage> {
             builder: (context) {
               switch (index) {
                 case 0:
-                  return const TimelinePage();
+                  return TimelinePage(key: timelineKey,);
                 case 1:
-                  return const RankingPage();
+                  return RankingPage(key: rankingKey,);
                 case 2:
                   return const GroupPage();
                 case 3:
                   return ProfilePage(
+                    key: profileKey,
                     userId: FirebaseAuth.instance.currentUser?.uid,
                   );
                 default:

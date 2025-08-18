@@ -5,7 +5,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class AdMob {
   static final List<BannerAd> _adPool = []; // 広告プール
   static final List<bool> _adPoolStatus = []; // 各広告の使用状況
-  static const int _poolSize = 5; // プールサイズ
+  static const int _poolSize = 10; // プールサイズ
   static bool _isPoolInitialized = false;
 
   // 広告プールを初期化（アプリ起動時に呼び出す）

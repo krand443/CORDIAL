@@ -54,7 +54,7 @@ class UserSummaryCardState extends State<UserSummaryCard> with AutomaticKeepAliv
                 radius: 25,
                 backgroundImage: widget.userSummary.iconUrl != null
                     ? NetworkImage(widget.userSummary.iconUrl!) as ImageProvider
-                    : const AssetImage("assets/user_default_icon.png"),
+                    : const AssetImage('assets/user_default_icon.png'),
               ),
 
               const SizedBox(width: 12),

@@ -81,7 +81,7 @@ class PostPageState extends State<PostPage> {
           slivers: [
             // オリジナルAppbarを追加
             CustomAppbar(
-              titleText: "投稿",
+              titleText: '投稿',
               leading: IconButton(
                   onPressed: () {
                     Navigator.pop(context);

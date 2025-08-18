@@ -50,7 +50,7 @@ class UserIconState extends State<UserIcon> {
         if (snapshot.data?.iconUrl == null) {
           return CircleAvatar(
             radius: _size,
-            backgroundImage: const AssetImage("assets/user_default_icon.png"),
+            backgroundImage: const AssetImage('assets/user_default_icon.png'),
           );
         }
         return CircleAvatar(
