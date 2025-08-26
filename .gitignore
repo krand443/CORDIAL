@@ -1,7 +1,8 @@
-# Miscellaneous
-firebase_options.dart
-*.class
+# ========================
+# General
+# ========================
 *.log
+*.class
 *.pyc
 *.swp
 *.jks
@@ -14,43 +15,66 @@ firebase_options.dart
 .svn/
 migrate_working_dir/
 
-# IntelliJ related
+# ========================
+# Git metadata
+# ========================
+.gitignore
+.gitattributes
+
+# ========================
+# IDE / Editor
+# ========================
+# IntelliJ / Android Studio
 *.iml
 *.ipr
 *.iws
 .idea/
 
-# VSCode
-#.vscode/
+# VS Code
+.vscode/
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-build/
-.metadata
+# ========================
+# Flutter / Dart (mobile/)
+# ========================
+mobile/**/doc/api/
+mobile/**/ios/Flutter/.last_build_id
+mobile/**/.dart_tool/
+mobile/**/.flutter-plugins
+mobile/**/.flutter-plugins-dependencies
+mobile/**/.pub-cache/
+mobile/**/.pub/
+mobile/**/build/
+mobile/**/.metadata
 
-# Symbolication related
-app.*.symbols
+# Symbolication / Obfuscation
+mobile/**/app.*.symbols
+mobile/**/app.*.map.json
 
-# Obfuscation related
-app.*.map.json
+# Android
+mobile/**/.gradle/
+mobile/**/local.properties
+mobile/android/app/debug/
+mobile/android/app/profile/
+mobile/android/app/release/
 
-# Android related
-.gradle/
-local.properties
-/mobile/android/app/debug
-/mobile/android/app/profile
-/mobile/android/app/release
+# iOS
+mobile/ios/Pods/
+mobile/ios/Runner.xcworkspace/
+mobile/ios/Flutter/Flutter.podspec
+mobile/ios/Flutter/Generated.xcconfig
+mobile/ios/Flutter/ephemeral/
+mobile/ios/xcuserdata/
 
-# iOS related
-ios/Pods/
-ios/Runner.xcworkspace/
-ios/Flutter/Flutter.podspec
-ios/Flutter/Generated.xcconfig
-ios/Flutter/ephemeral/
-xcuserdata/
+# Firebase
+mobile/**/firebase_options.dart
+
+# ========================
+# Server (Node.js, etc.)
+# ========================
+server/node_modules/
+server/.npm/
+server/.yarn/
+server/package-lock.json
+server/yarn.lock
+server/dist/
+server/build/
