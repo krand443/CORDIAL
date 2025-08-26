@@ -22,12 +22,6 @@ exports.makeInvitation = onRequest(
       return res.status(400).send("Missing 'groupId'");
     }
 
-    // リクエストからデータを取得
-    let { selectedAiId } = req.body;
-    if (!selectedAiId) {
-      selectedAiId = 0;
-    }
-
     // =================ここから認証済み後実行可====================
 
     // 必要な情報を補完して投稿
