@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+// 広告を管理するウィジェット
 class AdMob {
   static final List<BannerAd> _adPool = []; // 広告プール
   static final List<bool> _adPoolStatus = []; // 各広告の使用状況
